@@ -22,9 +22,10 @@ export default class Controls {
       //     camera.cameraDirection.y += 1;
       // }
 
-      if (evt.type === 1 && evt.event.code === "ShiftLeft")
+      if (evt.type === 1 && evt.event.code === "ShiftLeft") {
         camera.speed = this.sprintSpeed;
-      else if (evt.type === 2) camera.speed = this.walkSpeed;
+        console.log(camera);
+      } else if (evt.type === 2) camera.speed = this.walkSpeed;
     });
   }
 }
