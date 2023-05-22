@@ -8,6 +8,7 @@ import {
   Color3,
   Mesh,
   Ray,
+  HighlightLayer,
 } from "@babylonjs/core";
 
 export default class Controller {
@@ -75,7 +76,6 @@ export default class Controller {
 
     camera.applyGravity = true;
     camera.checkCollisions = true;
-    console.log(camera.position);
 
     camera.ellipsoid = new Vector3(0.4, 0.8, 0.4);
 
@@ -84,39 +84,6 @@ export default class Controller {
     camera.inertia = 0;
     camera.angularSensibility = 600;
 
-    function vecToLocal(vector, mesh) {
-      var m = mesh.getWorldMatrix();
-      var v = Vector3.TransformCoordinates(vector, m);
-      return v;
-    }
-
-    function castRay() {
-      const origin = camera.position;
-
-      let forward = new Vector3(0, 0, 1);
-      forward = vecToLocal(forward, camera);
-
-      let direction = forward.subtract(origin);
-      direction = Vector3.Normalize(direction);
-      console.log(direction);
-
-      const length = 3;
-
-      const ray = new Ray(origin, direction, length);
-
-      const hit = scene.pickWithRay(ray);
-
-      const mat = new StandardMaterial("emissive mat", scene);
-      mat.emissiveColor = new Color3(0, 1, 0);
-
-      if (hit.pickedMesh) {
-        hit.pickedMesh.material = mat;
-      }
-    }
-
-    scene.registerBeforeRender(function () {
-      castRay();
-    });
     return camera;
   }
 }

@@ -5,6 +5,8 @@ import {
   Vector3,
   MeshBuilder,
   UniversalCamera,
+  StandardMaterial,
+  Color3,
 } from "@babylonjs/core";
 
 import Controller from "./controller";
@@ -16,7 +18,7 @@ export default class MainScene {
   camera: UniversalCamera;
 
   constructor(private canvas: HTMLCanvasElement) {
-    this.engine = new Engine(this.canvas, true);
+    this.engine = new Engine(this.canvas, true, { stencil: true });
     this.scene = this.CreateScene();
 
     this.CreateMeshes();
@@ -61,6 +63,19 @@ export default class MainScene {
     );
     box.position = new Vector3(0, 2, 7);
 
+    const mat = new StandardMaterial("emissive mat", this.scene);
+    mat.emissiveColor = new Color3(0, 1, 0);
+
+    for (let i = 0; i < 4; i++) {
+      const cash = MeshBuilder.CreateBox(
+        "cash",
+        { width: 1, height: 0.2, depth: 0.5 },
+        this.scene
+      );
+
+      cash.material = mat;
+      cash.position = new Vector3(3, 1, i);
+    }
     //???
     this.scene.meshes.map((mesh) => {
       mesh.checkCollisions = true;
