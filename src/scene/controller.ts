@@ -7,8 +7,6 @@ import {
   StandardMaterial,
   Color3,
   Mesh,
-  Ray,
-  HighlightLayer,
 } from "@babylonjs/core";
 
 export default class Controller {

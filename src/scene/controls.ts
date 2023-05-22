@@ -1,11 +1,6 @@
-import {
-  Vector3,
-  UniversalCamera,
-  Scene,
-  Ray,
-  StandardMaterial,
-  Color3,
-} from "@babylonjs/core";
+import { Vector3, UniversalCamera, Scene, Ray } from "@babylonjs/core";
+
+import { jump } from "./animations";
 
 export default class Controls {
   walkSpeed: number;
@@ -33,10 +28,17 @@ export default class Controls {
     camera.keysDown.push(83);
     camera.keysRight.push(68);
 
+    const animationFrames = jump(camera);
+
     const observer = scene.onKeyboardObservable.add((evt) => {
-      //   // if(evt.type===2 && evt.event.code ==='Space'){
-      //   //     camera.cameraDirection.y += 1;
-      //   // }
+      if (evt.type === 2 && evt.event.code === "Space") {
+        scene.beginAnimation(
+          camera,
+          animationFrames.fstFrame,
+          animationFrames.finalFrame,
+          false
+        );
+      }
 
       if (evt.type === 1 && evt.event.code === "ShiftLeft") {
         camera.speed = this.sprintSpeed;
