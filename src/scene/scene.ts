@@ -7,6 +7,9 @@ import {
   UniversalCamera,
   StandardMaterial,
   Color3,
+  Mesh,
+  Space,
+  Ray,
 } from "@babylonjs/core";
 
 import Controller from "./controller";
@@ -16,6 +19,7 @@ export default class MainScene {
   engine: Engine;
   controller: Controller;
   camera: UniversalCamera;
+  body: Mesh;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.engine = new Engine(this.canvas, true, { stencil: true });
@@ -25,8 +29,14 @@ export default class MainScene {
 
     this.controller = new Controller(this.scene, this.engine);
     this.camera = this.controller.camera;
+    this.body = this.controller.body;
 
     this.engine.runRenderLoop(() => {
+      // this.body.position.x = this.camera.position.x + 1;
+      // this.body.position.y = this.camera.position.y + 1;
+      // this.body.position.z = this.camera.position.z + 1;
+      this.body.position = this.camera.position;
+      this.body.rotation.y = this.camera.rotation.y;
       this.scene.render();
     });
   }
@@ -56,6 +66,7 @@ export default class MainScene {
       { width: 20, height: 1, depth: 20 },
       this.scene
     );
+
     const box = MeshBuilder.CreateBox(
       "box",
       { width: 3, height: 3, depth: 3 },
@@ -74,7 +85,7 @@ export default class MainScene {
       );
 
       cash.material = mat;
-      cash.position = new Vector3(3, 1, i);
+      cash.position = new Vector3(3, 0.6, i);
     }
     //???
     this.scene.meshes.map((mesh) => {

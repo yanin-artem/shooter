@@ -1,14 +1,27 @@
-import { Vector3, UniversalCamera, Scene, Ray } from "@babylonjs/core";
+import {
+  Vector3,
+  UniversalCamera,
+  Scene,
+  Ray,
+  Mesh,
+  MeshAssetTask,
+} from "@babylonjs/core";
 
 import { jump } from "./animations";
 
 export default class Controls {
   walkSpeed: number;
   sprintSpeed: number;
+  speed: number;
 
-  constructor(private camera: UniversalCamera, private scene: Scene) {
-    this.walkSpeed = 0.75;
+  constructor(
+    private camera: UniversalCamera,
+    private body: Mesh,
+    private scene: Scene
+  ) {
+    this.walkSpeed = 1;
     this.sprintSpeed = 2.5;
+    this.speed = this.walkSpeed;
 
     this.setControls();
   }
@@ -42,8 +55,12 @@ export default class Controls {
 
       if (evt.type === 1 && evt.event.code === "ShiftLeft") {
         camera.speed = this.sprintSpeed;
-        console.log(camera);
       } else if (evt.type === 2) camera.speed = this.walkSpeed;
+
+      // if (evt.event.code === "KeyW") body.position.z += 0.1 * this.speed;
+      // if (evt.event.code === "KeyS") body.position.z -= 0.1 * this.speed;
+      // if (evt.event.code === "KeyA") body.position.x -= 0.1 * this.speed;
+      // if (evt.event.code === "KeyD") body.position.x += 0.1 * this.speed;
     });
   }
 
@@ -91,7 +108,9 @@ export default class Controls {
 
       scene.onKeyboardObservable.addOnce((evt) => {
         if (evt.type === 2 && evt.event.code === "KeyE") {
-          hit.pickedMesh.dispose();
+          if (this.body.getChildMeshes()[0])
+            this.body.removeChild(this.body.getChildMeshes()[0]);
+          else this.body.addChild(hit.pickedMesh);
         }
       });
     }
