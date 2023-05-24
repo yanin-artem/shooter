@@ -5,6 +5,7 @@ import {
   Ray,
   Mesh,
   MeshAssetTask,
+  TransformNode,
 } from "@babylonjs/core";
 
 import { jump } from "./animations";
@@ -17,6 +18,7 @@ export default class Controls {
   constructor(
     private camera: UniversalCamera,
     private body: Mesh,
+    private hand: TransformNode,
     private scene: Scene
   ) {
     this.walkSpeed = 1;
@@ -57,6 +59,15 @@ export default class Controls {
         camera.speed = this.sprintSpeed;
       } else if (evt.type === 2) camera.speed = this.walkSpeed;
 
+      if (
+        evt.type === 2 &&
+        evt.event.code === "KeyE" &&
+        this.hand.getChildMeshes()[0].getChildMeshes().length > 0
+      ) {
+        this.hand
+          .getChildMeshes()[0]
+          .removeChild(this.hand.getChildMeshes()[0].getChildMeshes()[0]);
+      }
       // if (evt.event.code === "KeyW") body.position.z += 0.1 * this.speed;
       // if (evt.event.code === "KeyS") body.position.z -= 0.1 * this.speed;
       // if (evt.event.code === "KeyA") body.position.x -= 0.1 * this.speed;
@@ -66,8 +77,8 @@ export default class Controls {
 
   setPick(camera: UniversalCamera, scene: Scene): void {
     function vecToLocal(vector, mesh) {
-      var m = mesh.getWorldMatrix();
-      var v = Vector3.TransformCoordinates(vector, m);
+      const m = mesh.getWorldMatrix();
+      const v = Vector3.TransformCoordinates(vector, m);
       return v;
     }
 
@@ -105,12 +116,16 @@ export default class Controls {
       //   hit.pickedMesh,
       //   Color3.Green()
       // );
-
       scene.onKeyboardObservable.addOnce((evt) => {
-        if (evt.type === 2 && evt.event.code === "KeyE") {
-          if (this.body.getChildMeshes()[0])
-            this.body.removeChild(this.body.getChildMeshes()[0]);
-          else this.body.addChild(hit.pickedMesh);
+        if (
+          evt.type === 2 &&
+          evt.event.code === "KeyE" &&
+          this.hand.getChildMeshes()[0].getChildMeshes().length == 0
+        ) {
+          this.hand.getChildMeshes()[0].addChild(hit.pickedMesh);
+          hit.pickedMesh.position.x = this.hand.position.x - 50;
+          hit.pickedMesh.position.y = this.hand.position.y + 40;
+          hit.pickedMesh.position.z = this.hand.position.z - 30;
         }
       });
     }

@@ -16,6 +16,7 @@ export default class Controller {
   camera: UniversalCamera;
   gunSight: Mesh;
   body: Mesh;
+  hand: TransformNode;
 
   constructor(private scene: Scene, private engine: Engine) {
     this.camera = this.CreateController(this.scene, this.engine);
@@ -114,13 +115,13 @@ export default class Controller {
   }
 
   async createHand(): Promise<void> {
-    const hand = new TransformNode("hand");
-    hand.parent = this.camera;
-    hand.position.z = this.camera.position.z + 0.2;
-    hand.position.x = this.camera.position.x + 0.2;
-    hand.position.y -= 0.15;
+    this.hand = new TransformNode("hand");
+    this.hand.position.z = this.camera.position.z + 0.2;
+    this.hand.position.x = this.camera.position.x + 0.2;
+    this.hand.position.y -= 0.15;
+    this.hand.parent = this.camera;
 
-    hand.rotation = new Vector3(-1, 2.5, 0);
+    this.hand.rotation = new Vector3(-1, 2.5, 0);
 
     const meshes = await SceneLoader.ImportMeshAsync(
       "",
@@ -130,10 +131,8 @@ export default class Controller {
 
     meshes.meshes.forEach((mesh) => {
       mesh.scaling = new Vector3(0.02, 0.02, 0.02);
-      mesh.parent = hand;
+      mesh.parent = this.hand;
       mesh.isPickable = false;
     });
-
-    console.log("models", meshes);
   }
 }
