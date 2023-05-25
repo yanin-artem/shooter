@@ -126,6 +126,7 @@ export default class Controls {
           hit.pickedMesh.position.x = this.hand.position.x - 50;
           hit.pickedMesh.position.y = this.hand.position.y + 40;
           hit.pickedMesh.position.z = this.hand.position.z - 30;
+          hit.pickedMesh.rotation = new Vector3(0, 1.7, 1);
         }
       });
     }

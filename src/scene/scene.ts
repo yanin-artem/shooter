@@ -12,6 +12,10 @@ import {
   Ray,
 } from "@babylonjs/core";
 
+import { Inspector } from "@babylonjs/inspector";
+
+// ... YOUR SCENE CREATION
+
 import Controller from "./controller";
 
 export default class MainScene {
@@ -30,6 +34,8 @@ export default class MainScene {
     this.controller = new Controller(this.scene, this.engine);
     this.camera = this.controller.camera;
     this.body = this.controller.body;
+
+    this.createInspector();
 
     this.engine.runRenderLoop(() => {
       this.scene.render();
@@ -85,6 +91,32 @@ export default class MainScene {
     //???
     this.scene.meshes.map((mesh) => {
       mesh.checkCollisions = true;
+    });
+  }
+
+  createInspector(): void {
+    const secondCamera = new UniversalCamera(
+      "secondCamera",
+      new Vector3(0, 3, 0),
+      this.scene
+    );
+
+    this.scene.onKeyboardObservable.add((evt) => {
+      if (evt.type === 2 && evt.event.code === "KeyU") {
+        secondCamera.attachControl();
+        this.camera.detachControl();
+        Inspector.Show(this.scene, { embedMode: true });
+        this.engine.exitPointerlock;
+        this.scene.activeCameras = [];
+        this.scene.activeCameras.push(secondCamera);
+      } else if (evt.type === 2 && evt.event.code === "KeyI") {
+        if (!this.engine.isPointerLock) this.engine.enterPointerlock();
+        secondCamera.detachControl();
+        this.camera.attachControl();
+        Inspector.Hide();
+        this.scene.activeCameras = [];
+        this.scene.activeCameras.push(this.camera);
+      }
     });
   }
 }

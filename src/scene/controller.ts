@@ -68,7 +68,7 @@ export default class Controller {
   CreateController(scene: Scene, engine: Engine): UniversalCamera {
     const camera = new UniversalCamera(
       "camera",
-      new Vector3(0, 3, 0),
+      new Vector3(0, 1.7, 0),
       this.scene
     );
 
@@ -93,6 +93,7 @@ export default class Controller {
     const bodyNode = new TransformNode("bodyNode", this.scene);
     bodyNode.parent = camera;
     bodyNode.billboardMode = 2;
+    bodyNode.position.y -= 0.85;
     this.body.isPickable = false;
     this.body.parent = bodyNode;
 
@@ -101,13 +102,14 @@ export default class Controller {
 
     camera.attachControl();
 
-    scene.onPointerDown = () => {
-      if (!engine.isPointerLock) engine.enterPointerlock();
-    };
+    // scene.onPointerDown = () => {
+    //   if (!engine.isPointerLock) engine.enterPointerlock();
+    // };
 
     camera.applyGravity = true;
     camera.checkCollisions = true;
-    camera.ellipsoid = new Vector3(0.4, 0.8, 0.4);
+    camera.ellipsoid = new Vector3(0.4, 1.7, 0.4);
+    camera.ellipsoidOffset = new Vector3(0, 1.7, 0);
 
     camera.minZ = 0;
     camera.speed = 0.75;
