@@ -68,7 +68,7 @@ export default class Controller {
   CreateController(scene: Scene, engine: Engine): UniversalCamera {
     const camera = new UniversalCamera(
       "camera",
-      new Vector3(0, 1.7, 0),
+      new Vector3(0, 2.22, 0),
       this.scene
     );
 
@@ -102,9 +102,9 @@ export default class Controller {
 
     camera.attachControl();
 
-    // scene.onPointerDown = () => {
-    //   if (!engine.isPointerLock) engine.enterPointerlock();
-    // };
+    scene.onPointerDown = () => {
+      if (!engine.isPointerLock) engine.enterPointerlock();
+    };
 
     camera.applyGravity = true;
     camera.checkCollisions = true;

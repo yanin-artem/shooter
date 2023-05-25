@@ -101,6 +101,13 @@ export default class MainScene {
       this.scene
     );
 
+    secondCamera.speed = 1;
+
+    secondCamera.keysUp.push(87);
+    secondCamera.keysLeft.push(65);
+    secondCamera.keysDown.push(83);
+    secondCamera.keysRight.push(68);
+
     this.scene.onKeyboardObservable.add((evt) => {
       if (evt.type === 2 && evt.event.code === "KeyU") {
         secondCamera.attachControl();

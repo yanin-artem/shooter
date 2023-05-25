@@ -50,9 +50,10 @@ export default class Controls {
         scene.beginAnimation(
           camera,
           animationFrames.fstFrame,
-          animationFrames.finalFrame,
+          animationFrames.finFrame,
           false
         );
+        console.log(camera.position.y);
       }
 
       if (evt.type === 1 && evt.event.code === "ShiftLeft") {
