@@ -7,6 +7,8 @@ import {
   UniversalCamera,
   StandardMaterial,
   Color3,
+  DirectionalLight,
+  ShadowGenerator,
 } from "@babylonjs/core";
 
 import { Inspector } from "@babylonjs/inspector";
@@ -21,6 +23,7 @@ export default class MainScene {
   controller: Character;
   camera: UniversalCamera;
   fps: HTMLElement;
+  light: DirectionalLight;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.engine = new Engine(this.canvas, true, { stencil: true });
@@ -35,6 +38,8 @@ export default class MainScene {
 
     this.fps = document.getElementById("fps");
 
+    this.setShadow();
+
     this.engine.runRenderLoop(() => {
       this.fps.innerHTML = this.engine.getFps().toFixed() + " fps";
       this.scene.render();
@@ -44,13 +49,15 @@ export default class MainScene {
   CreateScene(): Scene {
     const scene = new Scene(this.engine);
 
-    const hemiLight = new HemisphericLight(
-      "hemiLight",
-      new Vector3(0, 1, 0),
+    this.light = new DirectionalLight(
+      "directionalLight",
+      new Vector3(0.947, -0.319, -0.04),
       this.scene
     );
 
-    hemiLight.intensity = 0.5;
+    this.light.position = new Vector3(-10, -0.319, -0.04);
+
+    this.light.intensity = 0.9;
 
     const framesPerSecond = 60;
     const gravity = -9.81;
@@ -123,6 +130,17 @@ export default class MainScene {
         this.scene.activeCameras = [];
         this.scene.activeCameras.push(this.camera);
       }
+    });
+  }
+
+  setShadow(): void {
+    this.light.shadowEnabled = true;
+    const shadowGenerator = new ShadowGenerator(2048, this.light);
+
+    this.scene.meshes.map((mesh) => {
+      mesh.receiveShadows = true;
+      shadowGenerator.addShadowCaster(mesh);
+      console.log(mesh);
     });
   }
 }
