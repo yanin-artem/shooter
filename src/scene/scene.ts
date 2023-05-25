@@ -20,6 +20,7 @@ export default class MainScene {
   engine: Engine;
   controller: Character;
   camera: UniversalCamera;
+  fps: HTMLElement;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.engine = new Engine(this.canvas, true, { stencil: true });
@@ -32,7 +33,10 @@ export default class MainScene {
 
     this.createInspector();
 
+    this.fps = document.getElementById("fps");
+
     this.engine.runRenderLoop(() => {
+      this.fps.innerHTML = this.engine.getFps().toFixed() + " fps";
       this.scene.render();
     });
   }
