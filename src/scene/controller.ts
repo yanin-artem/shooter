@@ -90,11 +90,14 @@ export default class Controller {
 
     this.body = Mesh.MergeMeshes([body1, body2]);
 
-    // const node = new TransformNode("node", this.scene);
-    // this.body.parent = node;
-    // camera.parent = node;
+    const bodyNode = new TransformNode("bodyNode", this.scene);
+    bodyNode.parent = camera;
+    bodyNode.billboardMode = 2;
     this.body.isPickable = false;
-    this.body.parent = this.camera;
+    this.body.parent = bodyNode;
+
+    // для демонтрации тела
+    // this.body.position.z += 2;
 
     camera.attachControl();
 

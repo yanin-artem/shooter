@@ -32,11 +32,6 @@ export default class MainScene {
     this.body = this.controller.body;
 
     this.engine.runRenderLoop(() => {
-      // this.body.position.x = this.camera.position.x + 1;
-      // this.body.position.y = this.camera.position.y + 1;
-      // this.body.position.z = this.camera.position.z + 1;
-      this.body.position = this.camera.position;
-      this.body.rotation.y = this.camera.rotation.y;
       this.scene.render();
     });
   }
