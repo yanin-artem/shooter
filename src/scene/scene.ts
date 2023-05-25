@@ -7,23 +7,19 @@ import {
   UniversalCamera,
   StandardMaterial,
   Color3,
-  Mesh,
-  Space,
-  Ray,
 } from "@babylonjs/core";
 
 import { Inspector } from "@babylonjs/inspector";
 
 // ... YOUR SCENE CREATION
 
-import Controller from "./controller";
+import Character from "../character/character";
 
 export default class MainScene {
   scene: Scene;
   engine: Engine;
-  controller: Controller;
+  controller: Character;
   camera: UniversalCamera;
-  body: Mesh;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.engine = new Engine(this.canvas, true, { stencil: true });
@@ -31,9 +27,8 @@ export default class MainScene {
 
     this.CreateMeshes();
 
-    this.controller = new Controller(this.scene, this.engine);
+    this.controller = new Character(this.scene, this.engine);
     this.camera = this.controller.camera;
-    this.body = this.controller.body;
 
     this.createInspector();
 
