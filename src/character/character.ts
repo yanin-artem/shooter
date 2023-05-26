@@ -15,16 +15,16 @@ import Controls from "./controls";
 
 export default class Character {
   camera: UniversalCamera;
-  protected _gunSight: Mesh;
+  protected gunSight: Mesh;
   body: Mesh;
   hand: TransformNode;
   characterOpportunities: Controls;
 
   constructor(private scene: Scene, private engine: Engine) {
-    this.camera = this._createController(this.scene, this.engine);
-
-    this._setBody(this.camera, this.scene);
-    this._createHand(this.camera);
+    this.camera = this.createController(this.scene, this.engine);
+    //убрать подчеркивания
+    this.setBody(this.camera, this.scene);
+    this.createHand(this.camera);
 
     this.characterOpportunities = new Controls(
       this.camera,
@@ -34,7 +34,7 @@ export default class Character {
     this.characterOpportunities.setControls();
   }
 
-  private _createController(scene: Scene, engine: Engine): UniversalCamera {
+  private createController(scene: Scene, engine: Engine): UniversalCamera {
     const camera = new UniversalCamera(
       "camera",
       new Vector3(0, 2.22, 0),
@@ -57,12 +57,12 @@ export default class Character {
     camera.inertia = 0;
     camera.angularSensibility = 600;
 
-    this._gunSight = this._addGunSight(scene);
+    this.gunSight = this.addGunSight(scene);
 
     return camera;
   }
 
-  private _addGunSight(scene: Scene): Mesh {
+  private addGunSight(scene: Scene): Mesh {
     if (scene.activeCameras.length === 0) {
       scene.activeCameras.push(scene.activeCamera);
     }
@@ -103,7 +103,7 @@ export default class Character {
     return gunSight;
   }
 
-  private async _createHand(camera: UniversalCamera): Promise<void> {
+  private async createHand(camera: UniversalCamera): Promise<void> {
     this.hand = new TransformNode("hand");
     this.hand.position.x = camera.position.x + 0.2;
     this.hand.position.y -= 0.15;
@@ -111,7 +111,7 @@ export default class Character {
     this.hand.position.z = camera.position.z + 0.2;
 
     this.hand.rotation = new Vector3(-1, 2.5, 0);
-
+    //деструктуризация
     const meshes = await SceneLoader.ImportMeshAsync(
       "",
       "../assets/models/",
@@ -125,7 +125,7 @@ export default class Character {
     });
   }
 
-  private _setBody(camera: UniversalCamera, scene: Scene): Mesh {
+  private setBody(camera: UniversalCamera, scene: Scene): Mesh {
     // this.body = MeshBuilder.CreateCapsule("body", {
     //   height: 1.7,
     //   radius: 0.3,

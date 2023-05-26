@@ -13,8 +13,6 @@ import {
 
 import { Inspector } from "@babylonjs/inspector";
 
-// ... YOUR SCENE CREATION
-
 import Character from "../character/character";
 
 export default class MainScene {
@@ -84,6 +82,8 @@ export default class MainScene {
     const mat = new StandardMaterial("emissive mat", this.scene);
     mat.emissiveColor = new Color3(0, 1, 0);
 
+    const pickableItems = [];
+
     for (let i = 0; i < 4; i++) {
       const cash = MeshBuilder.CreateBox(
         "cash",
@@ -93,10 +93,16 @@ export default class MainScene {
 
       cash.material = mat;
       cash.position = new Vector3(3, 0.6, i);
+      pickableItems.push(cash);
     }
     //???
     this.scene.meshes.map((mesh) => {
       mesh.checkCollisions = true;
+      mesh.isPickable = false;
+    });
+
+    pickableItems.map((mesh) => {
+      mesh.isPickable = true;
     });
   }
 
