@@ -68,7 +68,7 @@ export default class MainScene {
   CreateMeshes(): void {
     const ground = MeshBuilder.CreateBox(
       "ground",
-      { width: 20, height: 1, depth: 20 },
+      { width: 40, height: 1, depth: 40 },
       this.scene
     );
 

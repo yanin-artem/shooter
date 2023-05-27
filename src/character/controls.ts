@@ -7,64 +7,125 @@ import {
   KeyboardInfo,
   Mesh,
   AbstractMesh,
+  Axis,
 } from "@babylonjs/core";
 
 import { jump } from "./animations/animations";
 
-export default class Controls {
+export default class Controls extends AbstractMesh {
   private walkSpeed: number;
   private sprintSpeed: number;
   private pickedMesh: AbstractMesh;
+  private isRunning = false;
+  private movingForward = false;
+  private movingBack = false;
+  private movingLeft = false;
+  private movingRight = false;
 
   constructor(
     private camera: UniversalCamera,
     private hand: TransformNode,
+    private body: Mesh,
     private scene: Scene
   ) {
+    super("Player");
+
     this.walkSpeed = 1;
     this.sprintSpeed = 2.5;
   }
   //player controller
   setControls(): void {
+    this.setMovement(this.camera, this.scene);
+
     const observer = this.scene.onKeyboardObservable.add((event) => {
-      this.setMovement(event, this.camera, this.scene);
       this.drop(this.hand, event);
       this.setPick(this.camera, this.scene, this.hand, event);
     });
   }
 
-  private setMovement(
-    event: KeyboardInfo,
-    camera: UniversalCamera,
-    scene: Scene
-  ): void {
+  private setMovement(camera: UniversalCamera, scene: Scene): void {
     //walk
-    camera.keysUp.push(87);
-    camera.keysLeft.push(65);
-    camera.keysDown.push(83);
-    camera.keysRight.push(68);
+    // camera.keysUp.push(87);
+    // camera.keysLeft.push(65);
+    // camera.keysDown.push(83);
+    // camera.keysRight.push(68);
 
     //jump
-    const animationFrames = jump(camera);
+    // this.playerWrapper = this;
+    // this.body.setParent(this.playerWrapper);
+    const playerWrapper = new AbstractMesh("playerWrapper");
+    playerWrapper.scaling = new Vector3(0.4, 1.7, 0.4);
+    this.body.parent = playerWrapper;
+    playerWrapper.scaling = this.body.scaling;
+    // console.log(this.body.parent);
+    camera.parent = playerWrapper;
+    camera.position.y = 2;
+    this.body.position.y = 1.3;
 
-    if (event.type === 2 && event.event.code === "Space") {
-      scene.beginAnimation(
-        camera,
-        animationFrames.fstFrame,
-        animationFrames.finFrame,
-        false
-      );
-    }
+    scene.registerBeforeRender(() => {
+      const deltaTime = scene.getEngine().getDeltaTime() / 1000;
 
-    //sprint
-    if (event.type === 1 && event.event.code === "ShiftLeft") {
-      camera.speed = this.sprintSpeed;
-    } else if (event.type === 2) camera.speed = this.walkSpeed;
+      const cameraDirection = camera
+        .getDirection(Vector3.Forward())
+        .normalizeToNew();
 
-    // if (evt.event.code === "KeyW") body.position.z += 0.1 * this.speed;
-    // if (evt.event.code === "KeyS") body.position.z -= 0.1 * this.speed;
-    // if (evt.event.code === "KeyA") body.position.x -= 0.1 * this.speed;
-    // if (evt.event.code === "KeyD") body.position.x += 0.1 * this.speed;
+      const currentSpeed = this.isRunning ? this.sprintSpeed : this.walkSpeed;
+      if (this.movingForward) {
+        playerWrapper.moveWithCollisions(
+          cameraDirection.scale(currentSpeed * deltaTime)
+        );
+      }
+
+      if (this.movingBack) {
+        playerWrapper.moveWithCollisions(
+          cameraDirection.scale(-currentSpeed * 0.6 * deltaTime)
+        );
+      }
+
+      if (this.movingLeft) {
+        playerWrapper.moveWithCollisions(
+          cameraDirection.cross(Axis.Y).scale(currentSpeed * deltaTime)
+        );
+      }
+
+      if (this.movingRight) {
+        playerWrapper.moveWithCollisions(
+          cameraDirection.cross(Axis.Y).scale(-currentSpeed * deltaTime)
+        );
+      }
+      playerWrapper.position.y = 0;
+    });
+    // const animationFrames = jump(camera);
+
+    // if (event.type === 2 && event.event.code === "Space") {
+    //   scene.beginAnimation(
+    //     camera,
+    //     animationFrames.fstFrame,
+    //     animationFrames.finFrame,
+    //     false
+    //   );
+    // }
+
+    // //sprint
+    // if (event.type === 1 && event.event.code === "ShiftLeft") {
+    //   camera.speed = this.sprintSpeed;
+    // } else if (event.type === 2) camera.speed = this.walkSpeed;
+    const observer = scene.onKeyboardObservable.add((event) => {
+      if (event.event.code === "KeyW" && event.type === 1) {
+        this.movingForward = true;
+      } else if (event.type === 2) {
+        this.movingForward = false;
+      }
+      if (event.event.code === "KeyS" && event.type === 1)
+        this.movingBack = true;
+      else if (event.type === 2) this.movingBack = false;
+      if (event.event.code === "KeyD" && event.type === 1)
+        this.movingRight = true;
+      else if (event.type === 2) this.movingRight = false;
+      if (event.event.code === "KeyA" && event.type === 1)
+        this.movingLeft = true;
+      else if (event.type === 2) this.movingLeft = false;
+    });
   }
 
   private drop(hand: TransformNode, event: KeyboardInfo): void {
@@ -110,7 +171,7 @@ export default class Controls {
       let direction = forward.subtract(origin);
       direction = Vector3.Normalize(direction);
 
-      const length = 3;
+      const length = 4;
 
       const ray = new Ray(origin, direction, length);
 
@@ -120,6 +181,7 @@ export default class Controls {
 
       //ПЕРЕДЕЛАТЬ ПО КНОПКЕ
       //сделать переменную для меша
+      console.log("function");
 
       if (hit.pickedMesh) {
         // hl.addMesh(
@@ -128,6 +190,7 @@ export default class Controls {
         //   Color3.Green()
         // );
         // this. = hit.pickedMesh;
+        console.log(hit);
         this.pickedMesh = hit.pickedMesh;
         hand.getChildMeshes()[0].addChild(hit.pickedMesh);
         hit.pickedMesh.position.x = hand.position.x - 50;
@@ -138,6 +201,7 @@ export default class Controls {
     }
 
     if (event.type === 2 && event.event.code === "KeyE" && !this.pickedMesh) {
+      console.log("pick");
       setPick.call(this);
     }
   }

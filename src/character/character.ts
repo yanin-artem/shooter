@@ -22,13 +22,13 @@ export default class Character {
 
   constructor(private scene: Scene, private engine: Engine) {
     this.camera = this.createController(this.scene, this.engine);
-    //убрать подчеркивания
-    this.setBody(this.camera, this.scene);
+    this.body = this.setBody(this.camera, this.scene);
     this.createHand(this.camera);
 
     this.characterOpportunities = new Controls(
       this.camera,
       this.hand,
+      this.body,
       this.scene
     );
     this.characterOpportunities.setControls();
@@ -37,7 +37,7 @@ export default class Character {
   private createController(scene: Scene, engine: Engine): UniversalCamera {
     const camera = new UniversalCamera(
       "camera",
-      new Vector3(0, 2.22, 0),
+      new Vector3(0, 0.85, 0),
       this.scene
     );
 
@@ -47,10 +47,10 @@ export default class Character {
       if (!engine.isPointerLock) engine.enterPointerlock();
     };
 
-    camera.applyGravity = true;
-    camera.checkCollisions = true;
-    camera.ellipsoid = new Vector3(0.4, 1.7, 0.4);
-    camera.ellipsoidOffset = new Vector3(0, 1.7, 0);
+    // camera.applyGravity = true;
+    // camera.checkCollisions = true;
+    // camera.ellipsoid = new Vector3(0.4, 1.7, 0.4);
+    // camera.ellipsoidOffset = new Vector3(0, 1.7, 0);
 
     camera.minZ = 0;
     camera.speed = 0.75;
@@ -111,14 +111,14 @@ export default class Character {
     this.hand.position.z = camera.position.z + 0.2;
 
     this.hand.rotation = new Vector3(-1, 2.5, 0);
-    //деструктуризация
-    const meshes = await SceneLoader.ImportMeshAsync(
+
+    const { meshes } = await SceneLoader.ImportMeshAsync(
       "",
       "../assets/models/",
       "handbynadevaynoskix.obj"
     );
 
-    meshes.meshes.forEach((mesh) => {
+    meshes.forEach((mesh) => {
       mesh.scaling = new Vector3(0.02, 0.02, 0.02);
       mesh.parent = this.hand;
       mesh.isPickable = false;
@@ -143,13 +143,16 @@ export default class Character {
     });
 
     const body = Mesh.MergeMeshes([body1, body2]);
+    body.position.y = 1.7;
 
-    const bodyNode = new TransformNode("bodyNode", scene);
-    bodyNode.parent = camera;
-    bodyNode.billboardMode = 2;
-    bodyNode.position.y -= 0.85;
+    // const bodyNode = new TransformNode("bodyNode", scene);
+    // camera.parent = body;
+    // bodyNode.parent = camera;
+    body.billboardMode = 2;
+    // bodyNode.position.y -= 0.85;
     body.isPickable = false;
-    body.parent = bodyNode;
+    // body.parent = bodyNode;
+    // body.checkCollisions = true;
 
     return body;
   }
