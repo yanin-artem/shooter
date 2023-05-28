@@ -8,11 +8,12 @@ import {
   Mesh,
   AbstractMesh,
   Axis,
+  Matrix,
 } from "@babylonjs/core";
 
 import { jump } from "./animations/animations";
 
-export default class Controls extends AbstractMesh {
+export default class playerController {
   private walkSpeed: number;
   private sprintSpeed: number;
   private pickedMesh: AbstractMesh;
@@ -21,21 +22,19 @@ export default class Controls extends AbstractMesh {
   private movingBack = false;
   private movingLeft = false;
   private movingRight = false;
+  private isMoving = false;
 
   constructor(
     private camera: UniversalCamera,
     private hand: TransformNode,
-    private body: Mesh,
+    private body: AbstractMesh,
     private scene: Scene
   ) {
-    super("Player");
-
-    this.walkSpeed = 1;
-    this.sprintSpeed = 2.5;
+    this.walkSpeed = 5;
+    this.sprintSpeed = 15;
   }
-  //player controller
-  setControls(): void {
-    this.setMovement(this.camera, this.scene);
+  setController(): void {
+    this.handleMovement();
 
     const observer = this.scene.onKeyboardObservable.add((event) => {
       this.drop(this.hand, event);
@@ -43,89 +42,82 @@ export default class Controls extends AbstractMesh {
     });
   }
 
-  private setMovement(camera: UniversalCamera, scene: Scene): void {
-    //walk
-    // camera.keysUp.push(87);
-    // camera.keysLeft.push(65);
-    // camera.keysDown.push(83);
-    // camera.keysRight.push(68);
+  private handleMovement(): void {
+    this.setMovement();
 
-    //jump
-    // this.playerWrapper = this;
-    // this.body.setParent(this.playerWrapper);
-    const playerWrapper = new AbstractMesh("playerWrapper");
-    playerWrapper.scaling = new Vector3(0.4, 1.7, 0.4);
-    this.body.parent = playerWrapper;
-    playerWrapper.scaling = this.body.scaling;
-    // console.log(this.body.parent);
-    camera.parent = playerWrapper;
-    camera.position.y = 2;
-    this.body.position.y = 1.3;
-
-    scene.registerBeforeRender(() => {
-      const deltaTime = scene.getEngine().getDeltaTime() / 1000;
-
-      const cameraDirection = camera
-        .getDirection(Vector3.Forward())
-        .normalizeToNew();
-
-      const currentSpeed = this.isRunning ? this.sprintSpeed : this.walkSpeed;
-      if (this.movingForward) {
-        playerWrapper.moveWithCollisions(
-          cameraDirection.scale(currentSpeed * deltaTime)
-        );
-      }
-
-      if (this.movingBack) {
-        playerWrapper.moveWithCollisions(
-          cameraDirection.scale(-currentSpeed * 0.6 * deltaTime)
-        );
-      }
-
-      if (this.movingLeft) {
-        playerWrapper.moveWithCollisions(
-          cameraDirection.cross(Axis.Y).scale(currentSpeed * deltaTime)
-        );
-      }
-
-      if (this.movingRight) {
-        playerWrapper.moveWithCollisions(
-          cameraDirection.cross(Axis.Y).scale(-currentSpeed * deltaTime)
-        );
-      }
-      playerWrapper.position.y = 0;
-    });
-    // const animationFrames = jump(camera);
-
-    // if (event.type === 2 && event.event.code === "Space") {
-    //   scene.beginAnimation(
-    //     camera,
-    //     animationFrames.fstFrame,
-    //     animationFrames.finFrame,
-    //     false
-    //   );
-    // }
-
-    // //sprint
-    // if (event.type === 1 && event.event.code === "ShiftLeft") {
-    //   camera.speed = this.sprintSpeed;
-    // } else if (event.type === 2) camera.speed = this.walkSpeed;
-    const observer = scene.onKeyboardObservable.add((event) => {
+    const observer = this.scene.onKeyboardObservable.add((event) => {
       if (event.event.code === "KeyW" && event.type === 1) {
+        this.isMoving = true;
         this.movingForward = true;
       } else if (event.type === 2) {
+        this.isMoving = false;
         this.movingForward = false;
       }
-      if (event.event.code === "KeyS" && event.type === 1)
+      if (event.event.code === "KeyS" && event.type === 1) {
+        this.isMoving = true;
         this.movingBack = true;
-      else if (event.type === 2) this.movingBack = false;
-      if (event.event.code === "KeyD" && event.type === 1)
+      } else if (event.type === 2) {
+        this.isMoving = false;
+        this.movingBack = false;
+      }
+      if (event.event.code === "KeyD" && event.type === 1) {
+        this.isMoving = true;
         this.movingRight = true;
-      else if (event.type === 2) this.movingRight = false;
-      if (event.event.code === "KeyA" && event.type === 1)
+      } else if (event.type === 2) {
+        this.isMoving = false;
+        this.movingRight = false;
+      }
+      if (event.event.code === "KeyA" && event.type === 1) {
+        this.isMoving = true;
         this.movingLeft = true;
-      else if (event.type === 2) this.movingLeft = false;
+      } else if (event.type === 2) {
+        this.isMoving = false;
+        this.movingLeft = false;
+      }
+
+      if (event.type === 1 && event.event.code === "ShiftLeft") {
+        this.isRunning = true;
+      } else if (event.type === 2) this.isRunning = false;
     });
+  }
+
+  private setMovement(): void {
+    this.scene.registerBeforeRender(() => {
+      const deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
+
+      const currentSpeed = this.isRunning ? this.sprintSpeed : this.walkSpeed;
+
+      if (this.isMoving) {
+        this.body.moveWithCollisions(
+          this.setMovementDirection().scale(currentSpeed * deltaTime)
+        );
+      }
+    });
+  }
+
+  private setMovementDirection(): Vector3 {
+    const vector = Vector3.Zero();
+    if (this.movingForward && this.movingLeft) {
+      vector.set(-1, 0, 1);
+    } else if (this.movingForward && this.movingRight) {
+      vector.set(1, 0, 1);
+    } else if (this.movingBack && this.movingLeft) {
+      vector.set(-1, 0, -1);
+    } else if (this.movingBack && this.movingRight) {
+      vector.set(1, 0, -1);
+    } else if (this.movingForward) {
+      vector.set(0, 0, 1);
+    } else if (this.movingBack) {
+      vector.set(0, 0, -1);
+    } else if (this.movingLeft) {
+      vector.set(-1, 0, 0);
+    } else if (this.movingRight) {
+      vector.set(1, 0, 0);
+    }
+
+    const m = Matrix.RotationAxis(Axis.Y, this.camera.rotation.y);
+    Vector3.TransformCoordinatesToRef(vector, m, vector);
+    return vector;
   }
 
   private drop(hand: TransformNode, event: KeyboardInfo): void {
@@ -177,20 +169,7 @@ export default class Controls extends AbstractMesh {
 
       const hit = scene.pickWithRay(ray);
 
-      //const hl = new HighlightLayer("hl1", scene);
-
-      //ПЕРЕДЕЛАТЬ ПО КНОПКЕ
-      //сделать переменную для меша
-      console.log("function");
-
       if (hit.pickedMesh) {
-        // hl.addMesh(
-        //   //??
-        //   hit.pickedMesh,
-        //   Color3.Green()
-        // );
-        // this. = hit.pickedMesh;
-        console.log(hit);
         this.pickedMesh = hit.pickedMesh;
         hand.getChildMeshes()[0].addChild(hit.pickedMesh);
         hit.pickedMesh.position.x = hand.position.x - 50;
@@ -201,7 +180,6 @@ export default class Controls extends AbstractMesh {
     }
 
     if (event.type === 2 && event.event.code === "KeyE" && !this.pickedMesh) {
-      console.log("pick");
       setPick.call(this);
     }
   }

@@ -9,29 +9,30 @@ import {
   Mesh,
   TransformNode,
   SceneLoader,
+  AbstractMesh,
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
-import Controls from "./controls";
+import playerController from "./controls";
 
 export default class Character {
   camera: UniversalCamera;
   protected gunSight: Mesh;
-  body: Mesh;
+  body: AbstractMesh;
   hand: TransformNode;
-  characterOpportunities: Controls;
+  characterOpportunities: playerController;
 
   constructor(private scene: Scene, private engine: Engine) {
     this.camera = this.createController(this.scene, this.engine);
-    this.body = this.setBody(this.camera, this.scene);
     this.createHand(this.camera);
+    this.setBody(this.camera, this.scene);
 
-    this.characterOpportunities = new Controls(
+    this.characterOpportunities = new playerController(
       this.camera,
       this.hand,
       this.body,
       this.scene
     );
-    this.characterOpportunities.setControls();
+    this.characterOpportunities.setController();
   }
 
   private createController(scene: Scene, engine: Engine): UniversalCamera {
@@ -47,13 +48,7 @@ export default class Character {
       if (!engine.isPointerLock) engine.enterPointerlock();
     };
 
-    // camera.applyGravity = true;
-    // camera.checkCollisions = true;
-    // camera.ellipsoid = new Vector3(0.4, 1.7, 0.4);
-    // camera.ellipsoidOffset = new Vector3(0, 1.7, 0);
-
     camera.minZ = 0;
-    camera.speed = 0.75;
     camera.inertia = 0;
     camera.angularSensibility = 600;
 
@@ -125,7 +120,7 @@ export default class Character {
     });
   }
 
-  private setBody(camera: UniversalCamera, scene: Scene): Mesh {
+  private setBody(camera: UniversalCamera, scene: Scene) {
     // this.body = MeshBuilder.CreateCapsule("body", {
     //   height: 1.7,
     //   radius: 0.3,
@@ -143,17 +138,13 @@ export default class Character {
     });
 
     const body = Mesh.MergeMeshes([body1, body2]);
-    body.position.y = 1.7;
-
-    // const bodyNode = new TransformNode("bodyNode", scene);
-    // camera.parent = body;
-    // bodyNode.parent = camera;
     body.billboardMode = 2;
-    // bodyNode.position.y -= 0.85;
     body.isPickable = false;
-    // body.parent = bodyNode;
-    // body.checkCollisions = true;
+    this.body = new AbstractMesh("playerWrapper");
+    body.parent = this.body;
+    camera.parent = this.body;
 
-    return body;
+    this.body.scaling = body.scaling;
+    this.body.position.y = 1.3;
   }
 }
