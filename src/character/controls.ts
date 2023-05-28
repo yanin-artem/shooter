@@ -23,6 +23,8 @@ export default class playerController {
   private movingLeft = false;
   private movingRight = false;
   private isMoving = false;
+  protected vSpeed = 0;
+  private moveVector: Vector3;
 
   constructor(
     private camera: UniversalCamera,
@@ -43,7 +45,8 @@ export default class playerController {
   }
 
   private handleMovement(): void {
-    this.setMovement();
+    this.setHorizontalMovement();
+    this.setVerticalMovement();
 
     const observer = this.scene.onKeyboardObservable.add((event) => {
       if (event.event.code === "KeyW" && event.type === 1) {
@@ -81,13 +84,13 @@ export default class playerController {
     });
   }
 
-  private setMovement(): void {
+  private setHorizontalMovement(): void {
     this.scene.registerBeforeRender(() => {
       const deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
 
       const currentSpeed = this.isRunning ? this.sprintSpeed : this.walkSpeed;
 
-      if (this.isMoving) {
+      if (this.isMoving || !this.isGround()) {
         this.body.moveWithCollisions(
           this.setMovementDirection().scale(currentSpeed * deltaTime)
         );
@@ -96,28 +99,43 @@ export default class playerController {
   }
 
   private setMovementDirection(): Vector3 {
-    const vector = Vector3.Zero();
+    this.moveVector = Vector3.Zero();
     if (this.movingForward && this.movingLeft) {
-      vector.set(-1, 0, 1);
+      this.moveVector.set(-1, 0, 1);
     } else if (this.movingForward && this.movingRight) {
-      vector.set(1, 0, 1);
+      this.moveVector.set(1, 0, 1);
     } else if (this.movingBack && this.movingLeft) {
-      vector.set(-1, 0, -1);
+      this.moveVector.set(-1, 0, -1);
     } else if (this.movingBack && this.movingRight) {
-      vector.set(1, 0, -1);
+      this.moveVector.set(1, 0, -1);
     } else if (this.movingForward) {
-      vector.set(0, 0, 1);
+      this.moveVector.set(0, 0, 1);
     } else if (this.movingBack) {
-      vector.set(0, 0, -1);
+      this.moveVector.set(0, 0, -1);
     } else if (this.movingLeft) {
-      vector.set(-1, 0, 0);
+      this.moveVector.set(-1, 0, 0);
     } else if (this.movingRight) {
-      vector.set(1, 0, 0);
+      this.moveVector.set(1, 0, 0);
     }
-
+    this.moveVector.y = this.vSpeed;
     const m = Matrix.RotationAxis(Axis.Y, this.camera.rotation.y);
-    Vector3.TransformCoordinatesToRef(vector, m, vector);
-    return vector;
+    Vector3.TransformCoordinatesToRef(this.moveVector, m, this.moveVector);
+    return this.moveVector;
+  }
+
+  setVerticalMovement(): void {
+    this.scene.registerBeforeRender(() => {
+      if (!this.isGround()) {
+        this.vSpeed = -1;
+      } else {
+        this.vSpeed = 0;
+      }
+    });
+  }
+
+  isGround(): boolean {
+    const ray = new Ray(this.body.position, Vector3.Down());
+    return this.scene.pickWithRay(ray).hit;
   }
 
   private drop(hand: TransformNode, event: KeyboardInfo): void {
@@ -140,20 +158,9 @@ export default class playerController {
         return v;
       }
 
-      // function predicate(mesh: Mesh): boolean {
-      //   //??
-      //   //разбить проверки
-      //   //свойство metadata. ... добавить свойство
-      //   // return etadata.
-      //   if (
-      //     mesh.name == "box" ||
-      //     mesh.name == "ground" ||
-      //     mesh.isPickable === false
-      //   ) {
-      //     return false;
-      //   }
-      //   return true;
-      // }
+      function predicate(mesh: Mesh): boolean {
+        return mesh.metadata.isTool && mesh.isPickable;
+      }
 
       const origin = camera.position;
 
@@ -167,7 +174,7 @@ export default class playerController {
 
       const ray = new Ray(origin, direction, length);
 
-      const hit = scene.pickWithRay(ray);
+      const hit = scene.pickWithRay(ray, predicate);
 
       if (hit.pickedMesh) {
         this.pickedMesh = hit.pickedMesh;

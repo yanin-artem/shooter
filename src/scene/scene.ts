@@ -26,7 +26,6 @@ export default class MainScene {
   constructor(private canvas: HTMLCanvasElement) {
     this.engine = new Engine(this.canvas, true, { stencil: true });
     this.scene = this.CreateScene();
-
     this.CreateMeshes();
 
     this.controller = new Character(this.scene, this.engine);
@@ -83,7 +82,6 @@ export default class MainScene {
     mat.emissiveColor = new Color3(0, 1, 0);
 
     const pickableItems = [];
-
     for (let i = 0; i < 4; i++) {
       const cash = MeshBuilder.CreateBox(
         "cash",
@@ -98,11 +96,11 @@ export default class MainScene {
     //???
     this.scene.meshes.map((mesh) => {
       mesh.checkCollisions = true;
-      mesh.isPickable = false;
+      mesh.metadata = { isTool: false };
     });
 
     pickableItems.map((mesh) => {
-      mesh.isPickable = true;
+      mesh.metadata.isTool = true;
     });
   }
 
@@ -146,7 +144,6 @@ export default class MainScene {
     this.scene.meshes.map((mesh) => {
       mesh.receiveShadows = true;
       shadowGenerator.addShadowCaster(mesh);
-      console.log(mesh);
     });
   }
 }

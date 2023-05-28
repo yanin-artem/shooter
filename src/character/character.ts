@@ -145,6 +145,6 @@ export default class Character {
     camera.parent = this.body;
 
     this.body.scaling = body.scaling;
-    this.body.position.y = 1.3;
+    this.body.position.y = 2;
   }
 }
