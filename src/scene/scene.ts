@@ -101,6 +101,7 @@ export default class MainScene {
 
     pickableItems.map((mesh) => {
       mesh.metadata.isTool = true;
+      console.log(mesh);
     });
   }
 

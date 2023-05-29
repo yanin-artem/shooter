@@ -95,6 +95,8 @@ export default class Character {
 
     gunSight.material = mat;
     gunSight.isPickable = false;
+    gunSight.metadata = { isTool: false };
+
     return gunSight;
   }
 
@@ -117,6 +119,7 @@ export default class Character {
       mesh.scaling = new Vector3(0.02, 0.02, 0.02);
       mesh.parent = this.hand;
       mesh.isPickable = false;
+      mesh.metadata = { isTool: false };
     });
   }
 
@@ -137,12 +140,14 @@ export default class Character {
       depth: 0.1,
     });
 
-    const InnerMesh = Mesh.MergeMeshes([body1, body2]);
+    const InnerMesh = Mesh.MergeMeshes([body1, body2], true);
     InnerMesh.billboardMode = 2;
     InnerMesh.isPickable = false;
     this.body = new AbstractMesh("playerWrapper");
     InnerMesh.parent = this.body;
     camera.parent = this.body;
+    this.body.metadata = { isTool: false };
+    InnerMesh.metadata = { isTool: false };
 
     // this.body.scaling = body.scaling;
     // body.position = this.body.position;
