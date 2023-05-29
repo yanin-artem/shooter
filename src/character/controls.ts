@@ -23,6 +23,9 @@ export default class playerController {
   private movingLeft = false;
   private movingRight = false;
   private isMoving = false;
+  private isJump = false;
+  private deltaTime: number;
+  private deltaJump: number;
   protected vSpeed = 0;
   private moveVector: Vector3;
 
@@ -47,7 +50,6 @@ export default class playerController {
   private handleMovement(): void {
     this.setHorizontalMovement();
     this.setVerticalMovement();
-
     const observer = this.scene.onKeyboardObservable.add((event) => {
       if (event.event.code === "KeyW" && event.type === 1) {
         this.isMoving = true;
@@ -79,20 +81,27 @@ export default class playerController {
       }
 
       if (event.type === 1 && event.event.code === "ShiftLeft") {
+        this.isMoving = true;
         this.isRunning = true;
       } else if (event.type === 2) this.isRunning = false;
+
+      if (event.type === 1 && event.event.code === "Space" && this.isGround()) {
+        this.isMoving = true;
+        this.deltaJump = this.deltaTime * 20;
+        this.isJump = true;
+      }
     });
   }
 
   private setHorizontalMovement(): void {
     this.scene.registerBeforeRender(() => {
-      const deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
+      this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
 
       const currentSpeed = this.isRunning ? this.sprintSpeed : this.walkSpeed;
 
-      if (this.isMoving || !this.isGround()) {
+      if (this.isMoving || !this.isGround() || this.isJump) {
         this.body.moveWithCollisions(
-          this.setMovementDirection().scale(currentSpeed * deltaTime)
+          this.setMovementDirection().scale(currentSpeed * this.deltaTime)
         );
       }
     });
@@ -117,7 +126,7 @@ export default class playerController {
     } else if (this.movingRight) {
       this.moveVector.set(1, 0, 0);
     }
-    this.moveVector.y = this.vSpeed;
+    this.moveVector.subtractInPlace(new Vector3(0, -this.vSpeed, 0));
     const m = Matrix.RotationAxis(Axis.Y, this.camera.rotation.y);
     Vector3.TransformCoordinatesToRef(this.moveVector, m, this.moveVector);
     return this.moveVector;
@@ -125,16 +134,31 @@ export default class playerController {
 
   setVerticalMovement(): void {
     this.scene.registerBeforeRender(() => {
-      if (!this.isGround()) {
-        this.vSpeed = -1;
+      if (!this.isGround() && !this.isJump) {
+        this.vSpeed = -3;
+      } else if (this.isJump) {
+        this.jump();
       } else {
         this.vSpeed = 0;
       }
     });
   }
 
+  private jump(): void {
+    if (this.deltaJump < 0) {
+      this.isJump = false;
+    } else {
+      this.deltaJump -= this.deltaTime;
+      this.vSpeed = 9.81 * this.deltaJump;
+    }
+
+    // if (this.isGround()) {
+    //   this.canJump = true;
+    // }
+  }
+
   isGround(): boolean {
-    const ray = new Ray(this.body.position, Vector3.Down());
+    const ray = new Ray(this.body.position, Vector3.Down(), 0.85 + 0.2);
     return this.scene.pickWithRay(ray).hit;
   }
 

@@ -137,14 +137,15 @@ export default class Character {
       depth: 0.1,
     });
 
-    const body = Mesh.MergeMeshes([body1, body2]);
-    body.billboardMode = 2;
-    body.isPickable = false;
+    const InnerMesh = Mesh.MergeMeshes([body1, body2]);
+    InnerMesh.billboardMode = 2;
+    InnerMesh.isPickable = false;
     this.body = new AbstractMesh("playerWrapper");
-    body.parent = this.body;
+    InnerMesh.parent = this.body;
     camera.parent = this.body;
 
-    this.body.scaling = body.scaling;
-    this.body.position.y = 2;
+    // this.body.scaling = body.scaling;
+    // body.position = this.body.position;
+    this.body.position.y = 10;
   }
 }
