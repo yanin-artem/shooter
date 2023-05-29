@@ -10,6 +10,7 @@ import {
   Axis,
   Matrix,
   RayHelper,
+  PhysicsImpostor,
 } from "@babylonjs/core";
 
 import { jump } from "./animations/animations";
@@ -86,7 +87,7 @@ export default class playerController {
       } else if (event.type === 2) this.isRunning = false;
 
       if (event.type === 1 && event.event.code === "Space" && this.isGround()) {
-        this.deltaJump = this.deltaTime * 20;
+        this.deltaJump = this.deltaTime * 10;
         this.isJump = true;
       }
     });
@@ -135,7 +136,7 @@ export default class playerController {
   setVerticalMovement(): void {
     this.scene.registerBeforeRender(() => {
       if (!this.isGround() && !this.isJump) {
-        this.vSpeed = -3;
+        this.vSpeed = -2;
       } else if (this.isJump) {
         this.jump();
       } else {
@@ -161,6 +162,11 @@ export default class playerController {
   private drop(hand: TransformNode, event: KeyboardInfo): void {
     if (event.type === 2 && event.event.code === "KeyE" && this.pickedMesh) {
       hand.getChildMeshes()[0].removeChild(this.pickedMesh);
+      this.pickedMesh.physicsImpostor = new PhysicsImpostor(
+        this.pickedMesh,
+        PhysicsImpostor.BoxImpostor,
+        { mass: 1 }
+      );
       this.pickedMesh = null;
     } else return;
   }
@@ -198,11 +204,12 @@ export default class playerController {
 
       if (hit.pickedMesh) {
         this.pickedMesh = hit.pickedMesh;
+        hit.pickedMesh.physicsImpostor.dispose();
         hand.getChildMeshes()[0].addChild(hit.pickedMesh);
-        hit.pickedMesh.position.x = hand.position.x - 50;
-        hit.pickedMesh.position.y = hand.position.y + 40;
+        hit.pickedMesh.position.x = hand.position.x - 30;
+        hit.pickedMesh.position.y = hand.position.y + 30;
         hit.pickedMesh.position.z = hand.position.z - 30;
-        hit.pickedMesh.rotation = new Vector3(0, 1.7, 1);
+        hit.pickedMesh.rotation = new Vector3(0, 1.7, 0.8);
       }
     }
 

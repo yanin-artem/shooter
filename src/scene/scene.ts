@@ -9,7 +9,10 @@ import {
   Color3,
   DirectionalLight,
   ShadowGenerator,
+  CannonJSPlugin,
+  PhysicsImpostor,
 } from "@babylonjs/core";
+import * as CANNON from "cannon";
 
 import { Inspector } from "@babylonjs/inspector";
 
@@ -61,6 +64,11 @@ export default class MainScene {
     scene.gravity = new Vector3(0, gravity / framesPerSecond, 0);
     scene.collisionsEnabled = true;
 
+    scene.enablePhysics(
+      new Vector3(0, -9.81, 0),
+      new CannonJSPlugin(true, 10, CANNON)
+    );
+
     return scene;
   }
 
@@ -71,12 +79,24 @@ export default class MainScene {
       this.scene
     );
 
+    ground.physicsImpostor = new PhysicsImpostor(
+      ground,
+      PhysicsImpostor.BoxImpostor,
+      { mass: 0 }
+    );
+
     const box = MeshBuilder.CreateBox(
       "box",
       { width: 3, height: 3, depth: 3 },
       this.scene
     );
     box.position = new Vector3(0, 2, 7);
+
+    box.physicsImpostor = new PhysicsImpostor(
+      box,
+      PhysicsImpostor.BoxImpostor,
+      { mass: 0 }
+    );
 
     const mat = new StandardMaterial("emissive mat", this.scene);
     mat.emissiveColor = new Color3(0, 1, 0);
@@ -92,6 +112,11 @@ export default class MainScene {
       cash.material = mat;
       cash.position = new Vector3(3, 0.6, i);
       pickableItems.push(cash);
+      cash.physicsImpostor = new PhysicsImpostor(
+        cash,
+        PhysicsImpostor.BoxImpostor,
+        { mass: 1 }
+      );
     }
     //???
     this.scene.meshes.map((mesh) => {
@@ -101,7 +126,6 @@ export default class MainScene {
 
     pickableItems.map((mesh) => {
       mesh.metadata.isTool = true;
-      console.log(mesh);
     });
   }
 
@@ -123,7 +147,7 @@ export default class MainScene {
       if (evt.type === 2 && evt.event.code === "KeyU") {
         secondCamera.attachControl();
         this.camera.detachControl();
-        Inspector.Show(this.scene, { embedMode: true });
+        Inspector.Show(this.scene, {});
         this.engine.exitPointerlock;
         this.scene.activeCameras = [];
         this.scene.activeCameras.push(secondCamera);
