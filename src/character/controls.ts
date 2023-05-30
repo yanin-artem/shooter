@@ -13,8 +13,6 @@ import {
   PhysicsImpostor,
 } from "@babylonjs/core";
 
-import { jump } from "./animations/animations";
-
 export default class playerController {
   private walkSpeed: number;
   private sprintSpeed: number;
@@ -56,35 +54,36 @@ export default class playerController {
       if (event.event.code === "KeyW" && event.type === 1) {
         this.isMoving = true;
         this.movingForward = true;
-      } else if (event.type === 2) {
+      } else if (event.type === 2 && event.event.code === "KeyW") {
         this.isMoving = false;
         this.movingForward = false;
       }
       if (event.event.code === "KeyS" && event.type === 1) {
         this.isMoving = true;
         this.movingBack = true;
-      } else if (event.type === 2) {
+      } else if (event.type === 2 && event.event.code === "KeyS") {
         this.isMoving = false;
         this.movingBack = false;
       }
       if (event.event.code === "KeyD" && event.type === 1) {
         this.isMoving = true;
         this.movingRight = true;
-      } else if (event.type === 2) {
+      } else if (event.type === 2 && event.event.code === "KeyD") {
         this.isMoving = false;
         this.movingRight = false;
       }
       if (event.event.code === "KeyA" && event.type === 1) {
         this.isMoving = true;
         this.movingLeft = true;
-      } else if (event.type === 2) {
+      } else if (event.type === 2 && event.event.code === "KeyA") {
         this.isMoving = false;
         this.movingLeft = false;
       }
 
       if (event.type === 1 && event.event.code === "ShiftLeft") {
         this.isRunning = true;
-      } else if (event.type === 2) this.isRunning = false;
+      } else if (event.type === 2 && event.event.code === "ShiftLeft")
+        this.isRunning = false;
 
       if (event.type === 1 && event.event.code === "Space" && this.isGround()) {
         this.deltaJump = this.deltaTime * 10;
