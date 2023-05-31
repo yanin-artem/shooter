@@ -21,14 +21,19 @@ export default class playerController extends characterStatus {
   private movingBack = false;
   private movingLeft = false;
   private movingRight = false;
-  private inertia: Vector3;
-  private isJump = false;
-  private deltaTime: number;
-  private deltaJump: number;
-  protected vSpeed = 0;
+
+  private hSpeedVector: Vector3;
+  private vSpeedVector = 0;
   private speedVector: Vector3;
+
   private boostPerTime: number;
   private currentBoost = 0;
+  private maxBoost: number;
+
+  private isJump = false;
+  private currentJumpBoost: number;
+
+  private deltaTime: number;
 
   constructor(
     private camera: UniversalCamera,
@@ -47,7 +52,7 @@ export default class playerController extends characterStatus {
   }
 
   private handleMovement(): void {
-    this.setHorizontalMovement();
+    this.setMovement();
     const observer = this.scene.onKeyboardObservable.add((event) => {
       if (event.event.code === "KeyW" && event.type === 1) {
         this.movingForward = true;
@@ -76,7 +81,7 @@ export default class playerController extends characterStatus {
         this.isRunning = false;
 
       if (event.type === 1 && event.event.code === "Space" && this.isGround()) {
-        this.deltaJump = this.deltaTime * 20;
+        this.currentJumpBoost = this.jumpBoost;
         this.isJump = true;
       }
     });
@@ -84,62 +89,65 @@ export default class playerController extends characterStatus {
 
   moveForvard(): void {
     if (!this.movingForward) return;
-    if (!this.movingLeft && !this.movingRight) this.inertia.x = 0;
+    if (!this.movingLeft && !this.movingRight) this.hSpeedVector.x = 0;
     if (this.currentBoost < this.maxBoost)
       this.currentBoost += this.boostPerTime;
-    this.inertia.z = 1;
+    this.hSpeedVector.z = 1;
   }
 
   moveBack(): void {
     if (!this.movingBack) return;
-    if (!this.movingLeft && !this.movingRight) this.inertia.x = 0;
+    if (!this.movingLeft && !this.movingRight) this.hSpeedVector.x = 0;
     if (this.currentBoost < this.maxBoost)
       this.currentBoost += this.boostPerTime;
-    this.inertia.z = -1;
+    this.hSpeedVector.z = -1;
   }
 
   moveLeft(): void {
     if (!this.movingLeft) return;
-    if (!this.movingForward && !this.movingBack) this.inertia.z = 0;
+    if (!this.movingForward && !this.movingBack) this.hSpeedVector.z = 0;
     if (this.currentBoost < this.maxBoost)
       this.currentBoost += this.boostPerTime;
-    this.inertia.x = -1;
+    this.hSpeedVector.x = -1;
   }
 
   moveRight(): void {
     if (!this.movingRight) return;
-    if (!this.movingForward && !this.movingBack) this.inertia.z = 0;
+    if (!this.movingForward && !this.movingBack) this.hSpeedVector.z = 0;
     if (this.currentBoost < this.maxBoost)
       this.currentBoost += this.boostPerTime;
-    this.inertia.x = 1;
+    this.hSpeedVector.x = 1;
   }
 
-  private setHorizontalMovement(): void {
-    this.inertia = Vector3.Zero();
+  private setMovement(): void {
+    this.hSpeedVector = Vector3.Zero();
     this.speedVector = Vector3.Zero();
 
     this.scene.registerBeforeRender(() => {
-      this.boostPerTime = this.isRunning ? this.runBoost : this.walkBoost;
       this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
-      this.maxBoost = this.boostPerTime * 10;
+
+      this.boostPerTime = this.isRunning ? this.runBoost : this.walkBoost;
+      this.maxBoost = this.boostPerTime * this.maxBoostK;
+
+      if (this.currentBoost > 0) {
+        this.currentBoost -= this.currentBoost * this.friсtionK;
+
+        if (this.currentBoost <= 0) {
+          this.hSpeedVector = Vector3.Zero();
+        }
+      }
 
       this.moveForvard();
       this.moveBack();
       this.moveLeft();
       this.moveRight();
-      this.setVerticalMovement();
+      this.moveVertical();
 
-      if (this.currentBoost > 0) {
-        this.currentBoost -= this.friсtion;
+      this.speedVector = this.hSpeedVector.scale(
+        this.deltaTime * this.currentBoost
+      );
 
-        if (this.currentBoost <= 0) {
-          this.inertia = Vector3.Zero();
-        }
-      }
-
-      this.speedVector = this.inertia.scale(this.deltaTime * this.currentBoost);
-
-      this.speedVector.y = this.vSpeed;
+      this.speedVector.y = this.vSpeedVector;
 
       const m = Matrix.RotationAxis(Axis.Y, this.camera.rotation.y);
       Vector3.TransformCoordinatesToRef(this.speedVector, m, this.speedVector);
@@ -148,22 +156,22 @@ export default class playerController extends characterStatus {
     });
   }
 
-  setVerticalMovement(): void {
+  moveVertical(): void {
     if (!this.isGround() && !this.isJump) {
-      this.vSpeed = -9.81 * this.deltaTime;
+      this.vSpeedVector = -this.g * this.deltaTime;
     } else if (this.isJump) {
       this.jump();
     } else {
-      this.vSpeed = 0;
+      this.vSpeedVector = 0;
     }
   }
 
   private jump(): void {
-    if (this.deltaJump < 0) {
+    if (this.currentJumpBoost < 0) {
       this.isJump = false;
     } else {
-      this.deltaJump -= this.deltaTime;
-      this.vSpeed = 2 * this.deltaJump;
+      this.currentJumpBoost -= this.airResistance * this.deltaTime;
+      this.vSpeedVector = this.currentJumpBoost * this.deltaTime;
     }
   }
 
