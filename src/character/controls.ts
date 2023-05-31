@@ -9,25 +9,26 @@ import {
   AbstractMesh,
   Axis,
   Matrix,
-  RayHelper,
   PhysicsImpostor,
 } from "@babylonjs/core";
 
-export default class playerController {
-  private walkSpeed: number;
-  private sprintSpeed: number;
+import characterStatus from "./characterStatus";
+
+export default class playerController extends characterStatus {
   private pickedMesh: AbstractMesh;
   private isRunning = false;
   private movingForward = false;
   private movingBack = false;
   private movingLeft = false;
   private movingRight = false;
-  private isMoving = false;
+  private inertia: Vector3;
   private isJump = false;
   private deltaTime: number;
   private deltaJump: number;
   protected vSpeed = 0;
-  private moveVector: Vector3;
+  private speedVector: Vector3;
+  private boostPerTime: number;
+  private currentBoost = 0;
 
   constructor(
     private camera: UniversalCamera,
@@ -35,12 +36,10 @@ export default class playerController {
     private body: AbstractMesh,
     private scene: Scene
   ) {
-    this.walkSpeed = 5;
-    this.sprintSpeed = 15;
+    super();
   }
   setController(): void {
     this.handleMovement();
-
     const observer = this.scene.onKeyboardObservable.add((event) => {
       this.drop(this.hand, event);
       this.setPick(this.camera, this.scene, this.hand, event);
@@ -49,34 +48,25 @@ export default class playerController {
 
   private handleMovement(): void {
     this.setHorizontalMovement();
-    this.setVerticalMovement();
     const observer = this.scene.onKeyboardObservable.add((event) => {
       if (event.event.code === "KeyW" && event.type === 1) {
-        this.isMoving = true;
         this.movingForward = true;
       } else if (event.type === 2 && event.event.code === "KeyW") {
-        this.isMoving = false;
         this.movingForward = false;
       }
       if (event.event.code === "KeyS" && event.type === 1) {
-        this.isMoving = true;
         this.movingBack = true;
       } else if (event.type === 2 && event.event.code === "KeyS") {
-        this.isMoving = false;
         this.movingBack = false;
       }
       if (event.event.code === "KeyD" && event.type === 1) {
-        this.isMoving = true;
         this.movingRight = true;
       } else if (event.type === 2 && event.event.code === "KeyD") {
-        this.isMoving = false;
         this.movingRight = false;
       }
       if (event.event.code === "KeyA" && event.type === 1) {
-        this.isMoving = true;
         this.movingLeft = true;
       } else if (event.type === 2 && event.event.code === "KeyA") {
-        this.isMoving = false;
         this.movingLeft = false;
       }
 
@@ -86,62 +76,86 @@ export default class playerController {
         this.isRunning = false;
 
       if (event.type === 1 && event.event.code === "Space" && this.isGround()) {
-        this.deltaJump = this.deltaTime * 10;
+        this.deltaJump = this.deltaTime * 20;
         this.isJump = true;
       }
     });
   }
 
-  private setHorizontalMovement(): void {
-    this.scene.registerBeforeRender(() => {
-      this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
-
-      const currentSpeed = this.isRunning ? this.sprintSpeed : this.walkSpeed;
-
-      if (this.isMoving || !this.isGround() || this.isJump) {
-        this.body.moveWithCollisions(
-          this.setMovementDirection().scale(currentSpeed * this.deltaTime)
-        );
-      }
-    });
+  moveForvard(): void {
+    if (!this.movingForward) return;
+    if (!this.movingLeft && !this.movingRight) this.inertia.x = 0;
+    if (this.currentBoost < this.maxBoost)
+      this.currentBoost += this.boostPerTime;
+    this.inertia.z = 1;
   }
 
-  private setMovementDirection(): Vector3 {
-    this.moveVector = Vector3.Zero();
+  moveBack(): void {
+    if (!this.movingBack) return;
+    if (!this.movingLeft && !this.movingRight) this.inertia.x = 0;
+    if (this.currentBoost < this.maxBoost)
+      this.currentBoost += this.boostPerTime;
+    this.inertia.z = -1;
+  }
 
-    if (this.movingForward && this.movingLeft) {
-      this.moveVector.set(-1, 0, 1);
-    } else if (this.movingForward && this.movingRight) {
-      this.moveVector.set(1, 0, 1);
-    } else if (this.movingBack && this.movingLeft) {
-      this.moveVector.set(-1, 0, -1);
-    } else if (this.movingBack && this.movingRight) {
-      this.moveVector.set(1, 0, -1);
-    } else if (this.movingForward) {
-      this.moveVector.set(0, 0, 1);
-    } else if (this.movingBack) {
-      this.moveVector.set(0, 0, -1);
-    } else if (this.movingLeft) {
-      this.moveVector.set(-1, 0, 0);
-    } else if (this.movingRight) {
-      this.moveVector.set(1, 0, 0);
-    }
-    this.moveVector.y = this.vSpeed;
-    const m = Matrix.RotationAxis(Axis.Y, this.camera.rotation.y);
-    Vector3.TransformCoordinatesToRef(this.moveVector, m, this.moveVector);
-    return this.moveVector;
+  moveLeft(): void {
+    if (!this.movingLeft) return;
+    if (!this.movingForward && !this.movingBack) this.inertia.z = 0;
+    if (this.currentBoost < this.maxBoost)
+      this.currentBoost += this.boostPerTime;
+    this.inertia.x = -1;
+  }
+
+  moveRight(): void {
+    if (!this.movingRight) return;
+    if (!this.movingForward && !this.movingBack) this.inertia.z = 0;
+    if (this.currentBoost < this.maxBoost)
+      this.currentBoost += this.boostPerTime;
+    this.inertia.x = 1;
+  }
+
+  private setHorizontalMovement(): void {
+    this.inertia = Vector3.Zero();
+    this.speedVector = Vector3.Zero();
+
+    this.scene.registerBeforeRender(() => {
+      this.boostPerTime = this.isRunning ? this.runBoost : this.walkBoost;
+      this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
+      this.maxBoost = this.boostPerTime * 10;
+
+      this.moveForvard();
+      this.moveBack();
+      this.moveLeft();
+      this.moveRight();
+      this.setVerticalMovement();
+
+      if (this.currentBoost > 0) {
+        this.currentBoost -= this.friсtion;
+
+        if (this.currentBoost <= 0) {
+          this.inertia = Vector3.Zero();
+        }
+      }
+
+      this.speedVector = this.inertia.scale(this.deltaTime * this.currentBoost);
+
+      this.speedVector.y = this.vSpeed;
+
+      const m = Matrix.RotationAxis(Axis.Y, this.camera.rotation.y);
+      Vector3.TransformCoordinatesToRef(this.speedVector, m, this.speedVector);
+
+      this.body.moveWithCollisions(this.speedVector);
+    });
   }
 
   setVerticalMovement(): void {
-    this.scene.registerBeforeRender(() => {
-      if (!this.isGround() && !this.isJump) {
-        this.vSpeed = -2;
-      } else if (this.isJump) {
-        this.jump();
-      } else {
-        this.vSpeed = 0;
-      }
-    });
+    if (!this.isGround() && !this.isJump) {
+      this.vSpeed = -9.81 * this.deltaTime;
+    } else if (this.isJump) {
+      this.jump();
+    } else {
+      this.vSpeed = 0;
+    }
   }
 
   private jump(): void {
@@ -149,7 +163,7 @@ export default class playerController {
       this.isJump = false;
     } else {
       this.deltaJump -= this.deltaTime;
-      this.vSpeed = 9.81 * this.deltaJump;
+      this.vSpeed = 2 * this.deltaJump;
     }
   }
 
