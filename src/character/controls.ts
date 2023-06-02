@@ -17,21 +17,12 @@ import characterStatus from "./characterStatus";
 export default class playerController extends characterStatus {
   private pickedMesh: AbstractMesh;
   private isRunning = false;
-  private movingForward = false;
-  private movingBack = false;
-  private movingLeft = false;
-  private movingRight = false;
 
-  private hSpeedVector: Vector3;
-  private vSpeedVector = 0;
   private speedVector: Vector3;
 
-  private boostPerTime: number;
-  private currentBoost = 0;
-  private maxBoost: number;
-
-  private isJump = false;
-  private currentJumpBoost: number;
+  private isJumping = false;
+  private currentJumpAcceleration: number;
+  private YAcceleration = 0;
 
   private deltaTime: number;
 
@@ -44,136 +35,174 @@ export default class playerController extends characterStatus {
     super();
   }
   setController(): void {
-    this.handleMovement();
+    this.setMovementEvents();
     const observer = this.scene.onKeyboardObservable.add((event) => {
       this.drop(this.hand, event);
       this.setPick(this.camera, this.scene, this.hand, event);
     });
   }
-
-  private handleMovement(): void {
-    this.setMovement();
+  private setMovementEvents(): void {
+    this.speedVector = Vector3.Zero();
+    this.currentJumpAcceleration = 0;
+    let accelerationDir = Vector3.Zero();
     const observer = this.scene.onKeyboardObservable.add((event) => {
+      accelerationDir = Vector3.Zero();
+      if (event.event.code === "ShiftLeft") {
+        this.isRunning = event.type === 1;
+      }
+      //  else {
+      //   accelerationDir = Vector3.Zero();
+      // }
+
       if (event.event.code === "KeyW" && event.type === 1) {
-        this.movingForward = true;
-      } else if (event.type === 2 && event.event.code === "KeyW") {
-        this.movingForward = false;
+        accelerationDir = Vector3.Forward();
       }
       if (event.event.code === "KeyS" && event.type === 1) {
-        this.movingBack = true;
-      } else if (event.type === 2 && event.event.code === "KeyS") {
-        this.movingBack = false;
+        accelerationDir = Vector3.Backward();
       }
       if (event.event.code === "KeyD" && event.type === 1) {
-        this.movingRight = true;
-      } else if (event.type === 2 && event.event.code === "KeyD") {
-        this.movingRight = false;
+        accelerationDir = Vector3.Right();
       }
       if (event.event.code === "KeyA" && event.type === 1) {
-        this.movingLeft = true;
-      } else if (event.type === 2 && event.event.code === "KeyA") {
-        this.movingLeft = false;
+        accelerationDir = Vector3.Left();
       }
-
-      if (event.type === 1 && event.event.code === "ShiftLeft") {
-        this.isRunning = true;
-      } else if (event.type === 2 && event.event.code === "ShiftLeft")
-        this.isRunning = false;
 
       if (event.type === 1 && event.event.code === "Space" && this.isGround()) {
-        this.currentJumpBoost = this.jumpBoost;
-        this.isJump = true;
+        this.isJumping = true;
+        accelerationDir.addInPlace(Vector3.Up());
       }
     });
-  }
-
-  moveForvard(): void {
-    if (!this.movingForward) return;
-    if (!this.movingLeft && !this.movingRight) this.hSpeedVector.x = 0;
-    if (this.currentBoost < this.maxBoost)
-      this.currentBoost += this.boostPerTime;
-    this.hSpeedVector.z = 1;
-  }
-
-  moveBack(): void {
-    if (!this.movingBack) return;
-    if (!this.movingLeft && !this.movingRight) this.hSpeedVector.x = 0;
-    if (this.currentBoost < this.maxBoost)
-      this.currentBoost += this.boostPerTime;
-    this.hSpeedVector.z = -1;
-  }
-
-  moveLeft(): void {
-    if (!this.movingLeft) return;
-    if (!this.movingForward && !this.movingBack) this.hSpeedVector.z = 0;
-    if (this.currentBoost < this.maxBoost)
-      this.currentBoost += this.boostPerTime;
-    this.hSpeedVector.x = -1;
-  }
-
-  moveRight(): void {
-    if (!this.movingRight) return;
-    if (!this.movingForward && !this.movingBack) this.hSpeedVector.z = 0;
-    if (this.currentBoost < this.maxBoost)
-      this.currentBoost += this.boostPerTime;
-    this.hSpeedVector.x = 1;
-  }
-
-  private setMovement(): void {
-    this.hSpeedVector = Vector3.Zero();
-    this.speedVector = Vector3.Zero();
-
     this.scene.registerBeforeRender(() => {
       this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
-
-      this.boostPerTime = this.isRunning ? this.runBoost : this.walkBoost;
-      this.maxBoost = this.boostPerTime * this.maxBoostK;
-
-      if (this.currentBoost > 0) {
-        this.currentBoost -= this.currentBoost * this.friсtionK;
-
-        if (this.currentBoost <= 0) {
-          this.hSpeedVector = Vector3.Zero();
-        }
-      }
-
-      this.moveForvard();
-      this.moveBack();
-      this.moveLeft();
-      this.moveRight();
-      this.moveVertical();
-
-      this.speedVector = this.hSpeedVector.scale(
-        this.deltaTime * this.currentBoost
-      );
-
-      this.speedVector.y = this.vSpeedVector;
-
-      const m = Matrix.RotationAxis(Axis.Y, this.camera.rotation.y);
-      Vector3.TransformCoordinatesToRef(this.speedVector, m, this.speedVector);
-
-      this.body.moveWithCollisions(this.speedVector);
+      this.handleMovement(accelerationDir);
     });
   }
+  //убрать return
+  //
 
-  moveVertical(): void {
-    if (!this.isGround() && !this.isJump) {
-      this.vSpeedVector = -this.g * this.deltaTime;
-    } else if (this.isJump) {
-      this.jump();
-    } else {
-      this.vSpeedVector = 0;
-    }
+  handleMovement(accelerationDir: Vector3): void {
+    /**вычисляем добавочный вектор (ускорения которое добавляется каждый кадр). нормализовать вектор и вычтено торможение, если нет ускорения. умножили на ускорение*/
+    const addingAcceleration = this.calcAddingAcceleration(
+      accelerationDir,
+      this.getAcceleration() /**внутри ф-ии выбираем ускорение бега или ходьбы */
+    );
+
+    const resultVector = this.getResultSpeedVector(
+      addingAcceleration,
+      accelerationDir
+    );
+
+    this.body.moveWithCollisions(resultVector);
+  }
+  //переименовать
+  private getAcceleration(): number {
+    return this.isRunning ? this.runAcceleration : this.walkAcceleration;
+  }
+  //переписать отдельно для бега и ходьбы
+  private getMaxSpeed(): number {
+    return this.getAcceleration() * this.maxAccelerationK;
   }
 
-  private jump(): void {
-    if (this.currentJumpBoost < 0) {
-      this.isJump = false;
-    } else {
-      this.currentJumpBoost -= this.airResistance * this.deltaTime;
-      this.vSpeedVector = this.currentJumpBoost * this.deltaTime;
+  private calcAddingAcceleration(
+    accelerationDir: Vector3,
+    acceleration: number
+  ): Vector3 {
+    if (!this.isGround()) {
+      this.isJumping = false;
+      accelerationDir.y = -1;
     }
+
+    accelerationDir.normalize();
+
+    if (this.isJumping) {
+    }
+
+    // accelerationDir.y = this.YAcceleration;
+    console.log(accelerationDir);
+
+    return accelerationDir.normalize().scale(acceleration);
   }
+
+  private getResultSpeedVector(
+    addingAcceleration: Vector3,
+    accelerationDir: Vector3
+  ): Vector3 {
+    const resultVector = Vector3.Zero();
+    const maxSpeed = this.getMaxSpeed();
+    //квадратная длинна вектора сравниваем с квадратом скорости
+    //если квадрат скорости больше максимальной скорости то я нахожоу нормализованный вектор скорости(направление) и умножаем на максимальную
+    this.speedVector.addInPlace(addingAcceleration.scale(this.deltaTime));
+    // console.log(this.speedVector);
+
+    if (addingAcceleration.equals(Vector3.Zero())) this.doBrake();
+
+    if (Math.abs(this.speedVector.z) >= maxSpeed)
+      this.speedVector.z = maxSpeed * accelerationDir.z;
+    if (Math.abs(this.speedVector.x) >= maxSpeed)
+      this.speedVector.x = maxSpeed * accelerationDir.x;
+    //переписать направление камеры от капсуля
+    const m = Matrix.RotationAxis(Axis.Y, this.camera.rotation.y);
+    Vector3.TransformCoordinatesToRef(this.speedVector, m, resultVector);
+    return resultVector;
+  }
+
+  doBrake() {
+    //использовать квадрат длинны
+    if (this.speedVector.length() > 0.001)
+      this.speedVector.subtractInPlace(this.speedVector.scale(this.slowdownK));
+    else this.speedVector = Vector3.Zero();
+  }
+  //
+  // private setMovement(): void {
+  //   this.hSpeedVector = Vector3.Zero();
+  //   this.speedVector = Vector3.Zero();
+
+  //   this.scene.registerBeforeRender(() => {
+  //     this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
+
+  //     this.maxBoost = this.boostPerTime * this.maxBoostK;
+
+  //     if (this.currentBoost > 0) {
+  //       this.currentBoost -= this.currentBoost * this.friсtionK;
+
+  //       if (this.currentBoost <= 0) {
+  //         this.hSpeedVector = Vector3.Zero();
+  //       }
+  //     }
+
+  //     this.moveVertical();
+  //     //вектор скорости и вектор ускорения
+  //     this.speedVector = this.hSpeedVector.scale(
+  //       this.deltaTime * this.currentBoost
+  //     );
+
+  //     this.speedVector.y = this.vSpeedVector;
+
+  //     const m = Matrix.RotationAxis(Axis.Y, this.camera.rotation.y);
+  //     Vector3.TransformCoordinatesToRef(this.speedVector, m, this.speedVector);
+
+  //     this.body.moveWithCollisions(this.speedVector);
+  //   });
+  // // }
+
+  // moveVertical(): void {
+  //   if (!this.isGround() && !this.isJump) {
+  //     this.vSpeedVector = -this.g * this.deltaTime;
+  //   } else if (this.isJump) {
+  //     this.jump();
+  //   } else {
+  //     this.vSpeedVector = 0;
+  //   }
+  // }
+
+  // private jump(): void {
+  //   if (this.currentJumpBoost < 0) {
+  //     this.isJump = false;
+  //   } else {
+  //     this.currentJumpBoost -= this.airResistance * this.deltaTime;
+  //     this.vSpeedVector = this.currentJumpBoost * this.deltaTime;
+  //   }
+  // }
 
   isGround(): boolean {
     const ray = new Ray(this.body.position, Vector3.Down(), 0.85 + 0.2);

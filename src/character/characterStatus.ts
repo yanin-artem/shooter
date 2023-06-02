@@ -1,22 +1,23 @@
 export default class characterStatus {
-  protected walkBoost: number;
-  protected runBoost: number;
+  protected walkAcceleration: number;
+  protected runAcceleration: number;
   protected mass: number;
   //коэффицент для максимального ускорения
-  protected maxBoostK: number;
+  protected maxAccelerationK: number;
   //коэффицент трения
-  protected friсtionK: number;
-  protected jumpBoost: number;
+  protected slowdownK: number;
+  protected jumpAcceleration: number;
   protected g: number;
   protected airResistance: number;
   constructor() {
-    this.walkBoost = 0.2;
-    this.runBoost = 0.7;
+    this.walkAcceleration = 0.2;
+    this.runAcceleration = 0.7;
     this.mass = 60;
-    this.friсtionK = 0.1;
-    this.jumpBoost = 10;
-    this.maxBoostK = 10;
+    //коэф замедления
+    this.slowdownK = 0.1;
+    this.jumpAcceleration = 10;
+    this.maxAccelerationK = 0.5;
     this.g = 9.81;
-    this.airResistance = 20;
+    this.airResistance = 0.001;
   }
 }
