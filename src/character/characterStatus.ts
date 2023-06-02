@@ -1,9 +1,9 @@
 export default class characterStatus {
   protected walkAcceleration: number;
   protected runAcceleration: number;
+  protected walkMaxSpeed: number;
+  protected runMaxSpeed: number;
   protected mass: number;
-  //коэффицент для максимального ускорения
-  protected maxAccelerationK: number;
   //коэффицент трения
   protected slowdownK: number;
   protected jumpAcceleration: number;
@@ -13,10 +13,12 @@ export default class characterStatus {
     this.walkAcceleration = 0.2;
     this.runAcceleration = 0.7;
     this.mass = 60;
+    this.walkMaxSpeed = 0.1;
+    this.runMaxSpeed = 0.3;
     //коэф замедления
     this.slowdownK = 0.1;
     this.jumpAcceleration = 2;
-    this.maxAccelerationK = 0.5;
+
     this.g = 9.81;
     this.airResistance = 0.1;
   }

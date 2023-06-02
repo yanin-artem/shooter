@@ -100,7 +100,7 @@ export default class playerController extends characterStatus {
   }
   //переписать отдельно для бега и ходьбы
   private getMaxSpeed(): number {
-    return this.getAcceleration() * this.maxAccelerationK;
+    return this.isRunning ? this.runMaxSpeed : this.walkMaxSpeed;
   }
 
   private calcAddingAcceleration(
@@ -129,29 +129,32 @@ export default class playerController extends characterStatus {
     accelerationDir: Vector3
   ): Vector3 {
     const resultVector = Vector3.Zero();
-    const maxSpeed = this.getMaxSpeed();
-    //квадратная длинна вектора сравниваем с квадратом скорости
-    //если квадрат скорости больше максимальной скорости то я нахожоу нормализованный вектор скорости(направление) и умножаем на максимальную
     this.speedVector.addInPlace(addingAcceleration.scale(this.deltaTime));
-    // console.log(this.speedVector);
+
+    this.checkMaxSpeed();
 
     if (addingAcceleration.equals(Vector3.Zero())) this.doBrake();
 
-    if (Math.abs(this.speedVector.z) >= maxSpeed)
-      this.speedVector.z = maxSpeed * accelerationDir.z;
-    if (Math.abs(this.speedVector.x) >= maxSpeed)
-      this.speedVector.x = maxSpeed * accelerationDir.x;
+    console.log(this.speedVector);
     //переписать направление камеры от капсуля
     const m = Matrix.RotationAxis(Axis.Y, this.camera.rotation.y);
     Vector3.TransformCoordinatesToRef(this.speedVector, m, resultVector);
     return resultVector;
   }
 
-  doBrake() {
+  private doBrake() {
     //использовать квадрат длинны
     if (this.speedVector.length() > 0.001)
       this.speedVector.subtractInPlace(this.speedVector.scale(this.slowdownK));
     else this.speedVector = Vector3.Zero();
+  }
+
+  private checkMaxSpeed() {
+    const maxSpeed = this.getMaxSpeed();
+
+    if (this.speedVector.lengthSquared() > Math.pow(maxSpeed, 2)) {
+      this.speedVector = this.speedVector.normalize().scale(maxSpeed);
+    }
   }
   //
   // private setMovement(): void {
