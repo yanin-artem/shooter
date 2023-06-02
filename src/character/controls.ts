@@ -69,7 +69,7 @@ export default class playerController extends characterStatus {
 
       if (event.type === 1 && event.event.code === "Space" && this.isGround()) {
         this.isJumping = true;
-        accelerationDir.addInPlace(Vector3.Up());
+        this.YAcceleration = this.jumpAcceleration;
       }
     });
     this.scene.registerBeforeRender(() => {
@@ -107,20 +107,21 @@ export default class playerController extends characterStatus {
     accelerationDir: Vector3,
     acceleration: number
   ): Vector3 {
+    accelerationDir.y = this.getYAcceleration();
+    return accelerationDir.normalize().scale(acceleration);
+  }
+
+  getYAcceleration(): number {
     if (!this.isGround()) {
       this.isJumping = false;
-      accelerationDir.y = -1;
+      return (this.YAcceleration -= this.g * this.deltaTime);
     }
-
-    accelerationDir.normalize();
-
-    if (this.isJumping) {
+    if (this.isJumping && this.YAcceleration > 0) {
+      return (this.YAcceleration -= this.airResistance * this.deltaTime);
     }
-
-    // accelerationDir.y = this.YAcceleration;
-    console.log(accelerationDir);
-
-    return accelerationDir.normalize().scale(acceleration);
+    if (this.isGround() && !this.isJumping) {
+      return (this.YAcceleration = 0);
+    }
   }
 
   private getResultSpeedVector(

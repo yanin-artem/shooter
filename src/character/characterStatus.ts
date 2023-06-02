@@ -15,9 +15,9 @@ export default class characterStatus {
     this.mass = 60;
     //коэф замедления
     this.slowdownK = 0.1;
-    this.jumpAcceleration = 10;
+    this.jumpAcceleration = 2;
     this.maxAccelerationK = 0.5;
     this.g = 9.81;
-    this.airResistance = 0.001;
+    this.airResistance = 0.1;
   }
 }
