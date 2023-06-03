@@ -12,7 +12,7 @@ import {
   AbstractMesh,
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
-import playerController from "./controls";
+import playerController from "./PlayerController";
 
 export default class Character {
   camera: UniversalCamera;

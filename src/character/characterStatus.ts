@@ -6,9 +6,10 @@ export default class characterStatus {
   protected mass: number;
   //коэффицент трения
   protected slowdownK: number;
-  protected jumpAcceleration: number;
-  protected g: number;
+  protected jumpSpeed: number;
+  protected gravity: number;
   protected airResistance: number;
+  protected jumpHeight: number;
   constructor() {
     this.walkAcceleration = 0.2;
     this.runAcceleration = 0.7;
@@ -17,9 +18,9 @@ export default class characterStatus {
     this.runMaxSpeed = 0.3;
     //коэф замедления
     this.slowdownK = 0.1;
-    this.jumpAcceleration = 2;
-
-    this.g = 9.81;
+    this.jumpSpeed = 0.5;
+    this.jumpHeight = 2;
+    this.gravity = 9.81;
     this.airResistance = 0.1;
   }
 }
