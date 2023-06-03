@@ -19,18 +19,22 @@ export default class Character {
   protected gunSight: Mesh;
   body: AbstractMesh;
   hand: TransformNode;
+  head: Mesh;
   characterOpportunities: playerController;
 
   constructor(private scene: Scene, private engine: Engine) {
     this.camera = this.createController(this.scene, this.engine);
     this.createHand(this.camera);
     this.setBody(this.camera, this.scene);
+    this.head = this.createHead();
 
     this.characterOpportunities = new playerController(
       this.camera,
       this.hand,
       this.body,
-      this.scene
+      this.scene,
+      this.engine,
+      this.head
     );
     this.characterOpportunities.setController();
   }
@@ -41,8 +45,6 @@ export default class Character {
       new Vector3(0, 0.85, 0),
       this.scene
     );
-
-    camera.attachControl();
 
     scene.onPointerDown = () => {
       if (!engine.isPointerLock) engine.enterPointerlock();
@@ -123,6 +125,15 @@ export default class Character {
     });
   }
 
+  private createHead(): Mesh {
+    const head = MeshBuilder.CreateSphere("head", { diameter: 0.4 });
+    head.parent = this.body;
+    head.position.y = 1;
+    head.isPickable = false;
+    this.camera.parent = head;
+    return head;
+  }
+
   private setBody(camera: UniversalCamera, scene: Scene) {
     // this.body = MeshBuilder.CreateCapsule("body", {
     //   height: 1.7,
@@ -145,9 +156,9 @@ export default class Character {
     InnerMesh.isPickable = false;
     this.body = new AbstractMesh("playerWrapper");
     InnerMesh.parent = this.body;
-    camera.parent = this.body;
     this.body.metadata = { isTool: false };
     InnerMesh.metadata = { isTool: false };
+    // this.camera.parent = this.body;
 
     // this.body.scaling = body.scaling;
     // body.position = this.body.position;

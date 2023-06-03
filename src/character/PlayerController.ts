@@ -10,6 +10,7 @@ import {
   Axis,
   Matrix,
   PhysicsImpostor,
+  Engine,
 } from "@babylonjs/core";
 
 import characterStatus from "./characterStatus";
@@ -18,6 +19,10 @@ import ControllEvents from "./characterControls";
 export default class playerController extends characterStatus {
   private pickedMesh: AbstractMesh;
   private isRunning = false;
+
+  private mouseX = 0;
+  private mouseY = 0;
+  private mouseSensitivity = 200;
 
   private speedVector: Vector3;
   private controls: ControllEvents;
@@ -34,7 +39,9 @@ export default class playerController extends characterStatus {
     private camera: UniversalCamera,
     private hand: TransformNode,
     private body: AbstractMesh,
-    private scene: Scene
+    private scene: Scene,
+    private engine: Engine,
+    private head: Mesh
   ) {
     super();
     this.controls = new ControllEvents();
@@ -77,9 +84,28 @@ export default class playerController extends characterStatus {
       this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
       this.handleMovement(accelerationDir);
     });
+    this.handleMouse();
+  }
+  //вращение тела от движения мыши
+  private handleMouse() {
+    // this.body.billboardMode = 2;
+    this.scene.onPointerObservable.add((evt) => {
+      if (this.engine.isPointerLock) {
+        const mouseYCheck =
+          this.mouseY + evt.event.movementX / this.mouseSensitivity;
+        if (mouseYCheck >= 1.25) {
+          this.mouseY = 1.25;
+        } else if (mouseYCheck <= -1.25) {
+          this.mouseY = -1.25;
+        } else this.mouseY += evt.event.movementY / this.mouseSensitivity;
+        this.mouseX += evt.event.movementX / this.mouseSensitivity;
+        this.head.rotation.set(this.mouseY, this.mouseX, 0);
+        // console.log(this.body.rotation);
+      }
+    });
   }
 
-  handleMovement(accelerationDir: Vector3): void {
+  private handleMovement(accelerationDir: Vector3): void {
     this.handleStartJumping();
     const addingAcceleration = this.calcAddingAcceleration(
       accelerationDir,
@@ -151,9 +177,7 @@ export default class playerController extends characterStatus {
     if (addingAcceleration.equals(Vector3.Zero())) this.doBrake();
 
     this.speedVector = this.handleJumping(this.speedVector);
-    console.log(this.speedVector);
-    //переписать направление камеры от капсуля
-    const m = Matrix.RotationAxis(Axis.Y, this.camera.rotation.y);
+    const m = Matrix.RotationAxis(Axis.Y, this.head.rotation.y);
     Vector3.TransformCoordinatesToRef(this.speedVector, m, resultVector);
     return resultVector;
   }
