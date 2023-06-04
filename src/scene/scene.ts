@@ -11,6 +11,10 @@ import {
   ShadowGenerator,
   CannonJSPlugin,
   PhysicsImpostor,
+  SceneLoader,
+  Mesh,
+  Axis,
+  Space,
 } from "@babylonjs/core";
 import * as CANNON from "cannon";
 
@@ -72,7 +76,7 @@ export default class MainScene {
     return scene;
   }
 
-  CreateMeshes(): void {
+  async CreateMeshes(): Promise<void> {
     const ground = MeshBuilder.CreateBox(
       "ground",
       { width: 40, height: 1, depth: 40 },
@@ -85,48 +89,160 @@ export default class MainScene {
       { mass: 0 }
     );
 
-    const box = MeshBuilder.CreateBox(
-      "box",
-      { width: 3, height: 3, depth: 3 },
-      this.scene
-    );
-    box.position = new Vector3(0, 2, 7);
+    ground.checkCollisions = true;
+    ground.position.y = 3.859;
+    ground.isVisible = false;
 
-    box.physicsImpostor = new PhysicsImpostor(
-      box,
+    const pickableItems = [];
+    // for (let i = 0; i < 4; i++) {
+    //   const cash = MeshBuilder.CreateBox(
+    //     "cash",
+    //     { width: 1, height: 0.2, depth: 0.5 },
+    //     this.scene
+    //   );
+
+    //   cash.material = mat;
+    //   cash.position = new Vector3(3, 0.6, i);
+    //   pickableItems.push(cash);
+    //   cash.physicsImpostor = new PhysicsImpostor(
+    //     cash,
+    //     PhysicsImpostor.BoxImpostor,
+    //     { mass: 1 }
+    //   );
+    // }
+    //???
+    const homeMeshes = await SceneLoader.ImportMeshAsync(
+      "",
+      "../assets/models/",
+      "home.glb"
+    );
+    const home = homeMeshes.meshes[1];
+    home.physicsImpostor = new PhysicsImpostor(
+      home,
       PhysicsImpostor.BoxImpostor,
       { mass: 0 }
     );
 
-    const mat = new StandardMaterial("emissive mat", this.scene);
-    mat.emissiveColor = new Color3(0, 1, 0);
+    home.position.y = home.position.y - home.position.y / 2;
+    home.checkCollisions = true;
 
-    const pickableItems = [];
-    for (let i = 0; i < 4; i++) {
-      const cash = MeshBuilder.CreateBox(
-        "cash",
-        { width: 1, height: 0.2, depth: 0.5 },
-        this.scene
-      );
+    const plinthMeshes = await SceneLoader.ImportMeshAsync(
+      "",
+      "../assets/models/",
+      "for_konder.glb"
+    );
+    console.log(plinthMeshes);
+    const plinth = plinthMeshes.meshes;
+    plinth[0].position.set(-2.99, 4.48, -6.745);
 
-      cash.material = mat;
-      cash.position = new Vector3(3, 0.6, i);
-      pickableItems.push(cash);
-      cash.physicsImpostor = new PhysicsImpostor(
-        cash,
+    plinth.forEach((mesh) => {
+      mesh.physicsImpostor = new PhysicsImpostor(
+        mesh,
         PhysicsImpostor.BoxImpostor,
-        { mass: 1 }
+        { mass: 0 }
       );
-    }
-    //???
-    this.scene.meshes.map((mesh) => {
       mesh.checkCollisions = true;
-      mesh.metadata = { isTool: false };
     });
 
-    pickableItems.map((mesh) => {
-      mesh.metadata.isTool = true;
+    const conditionerMeshes = await SceneLoader.ImportMeshAsync(
+      "",
+      "../assets/models/",
+      "konder.glb"
+    );
+
+    const conditioner = conditionerMeshes.meshes;
+
+    conditioner[0].position.set(-2.9, 4.3, -6);
+    conditioner[0].rotate(Axis.Y, Math.PI / 2, Space.WORLD);
+
+    conditioner.forEach((mesh) => {
+      mesh.physicsImpostor = new PhysicsImpostor(
+        mesh,
+        PhysicsImpostor.BoxImpostor,
+        { mass: 0 }
+      );
+      mesh.checkCollisions = true;
     });
+
+    const instrumentsBoxMeshes = await SceneLoader.ImportMeshAsync(
+      "",
+      "../assets/models/",
+      "box_instrument.glb"
+    );
+
+    const instrumentsBox = instrumentsBoxMeshes.meshes;
+
+    instrumentsBox[0].position.set(-5, 4.68, -7);
+
+    instrumentsBox.forEach((mesh) => {
+      mesh.physicsImpostor = new PhysicsImpostor(
+        mesh,
+        PhysicsImpostor.BoxImpostor,
+        { mass: 0 }
+      );
+      mesh.checkCollisions = true;
+    });
+
+    const pliersMeshes = await SceneLoader.ImportMeshAsync(
+      "",
+      "../assets/models/",
+      "instrument_01.glb"
+    );
+
+    const pliers = pliersMeshes.meshes;
+
+    pliers[0].position.set(-6, 5, -5);
+
+    pliers[0].physicsImpostor = new PhysicsImpostor(
+      pliers[0],
+      PhysicsImpostor.BoxImpostor,
+      { mass: 0.1 }
+    );
+    pliers[0].checkCollisions = true;
+
+    const screwdriverMeshes = await SceneLoader.ImportMeshAsync(
+      "",
+      "../assets/models/",
+      "instrument_02.glb"
+    );
+
+    const screwdriver = screwdriverMeshes.meshes;
+
+    screwdriver[0].position.set(-5, 5, -6);
+
+    screwdriver[0].physicsImpostor = new PhysicsImpostor(
+      screwdriver[0],
+      PhysicsImpostor.BoxImpostor,
+      { mass: 0.1 }
+    );
+    screwdriver[0].checkCollisions = true;
+
+    const scissorsMeshes = await SceneLoader.ImportMeshAsync(
+      "",
+      "../assets/models/",
+      "instrument_03.glb"
+    );
+
+    const scissors = scissorsMeshes.meshes;
+
+    scissors[0].position.set(-6, 5, -6);
+
+    scissors[0].physicsImpostor = new PhysicsImpostor(
+      scissors[0],
+      PhysicsImpostor.BoxImpostor,
+      { mass: 0.1 }
+    );
+    scissors[0].checkCollisions = true;
+
+    // console.log(home);
+    // this.scene.meshes.map((mesh) => {
+    //   mesh.checkCollisions = true;
+    //   mesh.metadata = { isTool: false };
+    // });
+
+    // pickableItems.map((mesh) => {
+    //   mesh.metadata.isTool = true;
+    // });
   }
 
   createInspector(): void {
@@ -136,7 +252,7 @@ export default class MainScene {
       this.scene
     );
 
-    secondCamera.speed = 1;
+    secondCamera.speed = 0.3;
 
     secondCamera.keysUp.push(87);
     secondCamera.keysLeft.push(65);

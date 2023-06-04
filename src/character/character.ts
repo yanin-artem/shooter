@@ -42,7 +42,7 @@ export default class Character {
   private createController(scene: Scene, engine: Engine): UniversalCamera {
     const camera = new UniversalCamera(
       "camera",
-      new Vector3(0, 0.85, 0),
+      new Vector3(0, 0, 0),
       this.scene
     );
 
@@ -126,9 +126,9 @@ export default class Character {
   }
 
   private createHead(): Mesh {
-    const head = MeshBuilder.CreateSphere("head", { diameter: 0.4 });
+    const head = MeshBuilder.CreateSphere("head", { diameter: 0.2 });
     head.parent = this.body;
-    head.position.y = 1;
+    head.position.y = 0.4;
     head.isPickable = false;
     this.camera.parent = head;
     return head;
@@ -141,13 +141,13 @@ export default class Character {
     // });
 
     const body1 = MeshBuilder.CreateCapsule("body", {
-      height: 1.7,
-      radius: 0.3,
+      height: 1.3,
+      radius: 0.2,
     });
 
     const body2 = MeshBuilder.CreateBox("box", {
       height: 0.1,
-      width: 1,
+      width: 0.5,
       depth: 0.1,
     });
 
@@ -158,10 +158,9 @@ export default class Character {
     InnerMesh.parent = this.body;
     this.body.metadata = { isTool: false };
     InnerMesh.metadata = { isTool: false };
-    // this.camera.parent = this.body;
+    InnerMesh.position.y = -0.35;
 
-    // this.body.scaling = body.scaling;
-    // body.position = this.body.position;
-    this.body.position.y = 10;
+    this.body.position.y = 20;
+    this.body.position.z = -7;
   }
 }
