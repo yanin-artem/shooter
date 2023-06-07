@@ -10,6 +10,8 @@ import {
   TransformNode,
   SceneLoader,
   AbstractMesh,
+  Axis,
+  Space,
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
 import playerController from "./PlayerController";
@@ -18,15 +20,15 @@ export default class Character {
   camera: UniversalCamera;
   protected gunSight: Mesh;
   body: AbstractMesh;
-  hand: TransformNode;
+  hand: AbstractMesh;
   head: Mesh;
   characterOpportunities: playerController;
 
   constructor(private scene: Scene, private engine: Engine) {
     this.camera = this.createController(this.scene, this.engine);
-    this.createHand(this.camera);
     this.setBody(this.camera, this.scene);
     this.head = this.createHead();
+    this.createHand(this.camera);
 
     this.characterOpportunities = new playerController(
       this.camera,
@@ -103,26 +105,31 @@ export default class Character {
   }
 
   private async createHand(camera: UniversalCamera): Promise<void> {
-    this.hand = new TransformNode("hand");
-    this.hand.position.x = camera.position.x + 0.2;
-    this.hand.position.y -= 0.15;
-    this.hand.parent = camera;
-    this.hand.position.z = camera.position.z + 0.2;
-
-    this.hand.rotation = new Vector3(-1, 2.5, 0);
-
-    const { meshes } = await SceneLoader.ImportMeshAsync(
+    const meshes = await SceneLoader.ImportMeshAsync(
       "",
       "../assets/models/",
-      "handbynadevaynoskix.obj"
+      "arm.glb"
     );
 
-    meshes.forEach((mesh) => {
-      mesh.scaling = new Vector3(0.02, 0.02, 0.02);
-      mesh.parent = this.hand;
-      mesh.isPickable = false;
-      mesh.metadata = { isTool: false };
-    });
+    const hand = meshes.meshes[1];
+    hand.position.set(0.15, -0.139, 0.358);
+    hand.rotate(Axis.X, -Math.PI / 7.8, Space.WORLD);
+    hand.rotate(Axis.Y, Math.PI / 2.16, Space.WORLD);
+
+    hand.parent = this.head;
+
+    hand.isPickable = false;
+    hand.metadata = { isTool: false };
+    hand.scaling.z = -1;
+    // this.camera.target = meshes.meshes[0].position;
+    // console.log(meshes.meshes);
+
+    // meshes.forEach((mesh) => {
+    //   mesh.scaling = new Vector3(0.02, 0.02, 0.02);
+    //   mesh.parent = this.hand;
+    //   mesh.isPickable = false;
+    //   mesh.metadata = { isTool: false };
+    // });
   }
 
   private createHead(): Mesh {

@@ -94,23 +94,7 @@ export default class MainScene {
     ground.isVisible = false;
 
     const pickableItems = [];
-    // for (let i = 0; i < 4; i++) {
-    //   const cash = MeshBuilder.CreateBox(
-    //     "cash",
-    //     { width: 1, height: 0.2, depth: 0.5 },
-    //     this.scene
-    //   );
 
-    //   cash.material = mat;
-    //   cash.position = new Vector3(3, 0.6, i);
-    //   pickableItems.push(cash);
-    //   cash.physicsImpostor = new PhysicsImpostor(
-    //     cash,
-    //     PhysicsImpostor.BoxImpostor,
-    //     { mass: 1 }
-    //   );
-    // }
-    //???
     const homeMeshes = await SceneLoader.ImportMeshAsync(
       "",
       "../assets/models/",
@@ -131,7 +115,6 @@ export default class MainScene {
       "../assets/models/",
       "for_konder.glb"
     );
-    console.log(plinthMeshes);
     const plinth = plinthMeshes.meshes;
     plinth[0].position.set(-2.99, 4.48, -6.745);
 
@@ -200,6 +183,8 @@ export default class MainScene {
     );
     pliers[0].checkCollisions = true;
 
+    pickableItems.push(pliers[0]);
+
     const screwdriverMeshes = await SceneLoader.ImportMeshAsync(
       "",
       "../assets/models/",
@@ -217,6 +202,8 @@ export default class MainScene {
     );
     screwdriver[0].checkCollisions = true;
 
+    pickableItems.push(screwdriver[0]);
+
     const scissorsMeshes = await SceneLoader.ImportMeshAsync(
       "",
       "../assets/models/",
@@ -233,13 +220,17 @@ export default class MainScene {
       { mass: 0.1 }
     );
     scissors[0].checkCollisions = true;
+    console.log(scissors[0]);
+    pickableItems.push(scissors[0]);
 
     // console.log(home);
-    // this.scene.meshes.map((mesh) => {
-    //   mesh.checkCollisions = true;
-    //   mesh.metadata = { isTool: false };
-    // });
+    this.scene.meshes.map((mesh) => {
+      mesh.metadata = { isTool: false };
+    });
 
+    pickableItems.map((mesh) => {
+      mesh.metadata = { isTool: true };
+    });
     // pickableItems.map((mesh) => {
     //   mesh.metadata.isTool = true;
     // });
@@ -251,6 +242,7 @@ export default class MainScene {
       new Vector3(0, 3, 0),
       this.scene
     );
+    secondCamera.minZ = 0;
 
     secondCamera.speed = 0.3;
 

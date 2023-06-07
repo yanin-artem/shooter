@@ -251,7 +251,7 @@ export default class playerController extends characterStatus {
       let direction = forward.subtract(origin);
       direction = Vector3.Normalize(direction);
 
-      const length = 2;
+      const length = 3;
 
       const ray = new Ray(origin, direction, length);
 
