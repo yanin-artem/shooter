@@ -185,7 +185,6 @@ export default class MainScene {
       { mass: 0.1 }
     );
     pliers[0].checkCollisions = true;
-    console.log(pliers[1]);
     pickableItems.push(pliers);
 
     const screwdriverMeshes = await SceneLoader.ImportMeshAsync(
@@ -233,8 +232,8 @@ export default class MainScene {
       mesh.metadata = { isTool: false };
     });
 
-    pickableItems.map((mesh) => {
-      mesh[0].metadata = { isTool: true };
+    pickableItems.map((mesh, index) => {
+      mesh[0].metadata = { isTool: true, toolIndex: index };
       mesh[1].metadata = { isTool: true };
     });
 

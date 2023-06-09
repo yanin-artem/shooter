@@ -60,6 +60,7 @@ export default class playerController extends characterStatus {
         this.pickedMesh,
         event
       );
+      this.doToolAction(event);
     });
   }
   private setMovementEvents(): void {
@@ -277,22 +278,48 @@ export default class playerController extends characterStatus {
 
       const hit = scene.pickWithRay(ray, predicate);
 
-      // const rayHelper = new RayHelper(ray);
-      // rayHelper.show(scene);S
-      console.log(hand);
       if (hit.pickedMesh) {
         pickedMesh = hit.pickedMesh.parent;
         pickedMesh.physicsImpostor.dispose();
         pickedMesh.parent = hand;
         pickedMesh.position = Vector3.Zero();
-        // hand.addChild(pickedMesh);
-        // pickedMesh.position = hand.position;
-        // pickedMesh.position = hand.getAbsolutePosition();
         return pickedMesh;
       }
     }
     if (event.type === 2 && event.event.code === "KeyE" && !this.pickedMesh) {
       this.pickedMesh = setPick();
+    }
+  }
+  private doToolAction(event: KeyboardInfo) {
+    if (
+      this.pickedMesh?.metadata.toolIndex === 0 &&
+      event.type === 2 &&
+      event.event.code === "KeyF"
+    ) {
+      function vecToLocal(vector: Vector3, mesh: Mesh): Vector3 {
+        const m = mesh.getWorldMatrix();
+        const v = Vector3.TransformCoordinates(vector, m);
+        return v;
+      }
+      function predicate(mesh: AbstractMesh): boolean {
+        // console.log(mesh);
+        return mesh.isPickable;
+      }
+      const origin = this.head.getAbsolutePosition();
+      let forward = new Vector3(0, 0, 1);
+      forward = vecToLocal(forward, this.head);
+
+      let direction = forward.subtract(origin);
+      direction = Vector3.Normalize(direction);
+
+      const length = 2;
+
+      const ray = new Ray(origin, direction, length);
+
+      const hit = this.scene.pickWithRay(ray, predicate);
+      if (hit.pickedMesh) {
+        hit.pickedMesh.dispose();
+      }
     }
   }
 }

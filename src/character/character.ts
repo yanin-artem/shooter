@@ -115,8 +115,9 @@ export default class Character {
         });
 
         this.hand.position.set(0.15, -0.139, 0.358);
-        this.hand.rotate(Axis.X, -Math.PI / 7.8, Space.WORLD);
-        this.hand.rotate(Axis.Y, Math.PI / 2.16, Space.WORLD);
+        this.hand.rotation.set(Math.PI / 3.33, Math.PI / 2, Math.PI / 6.66);
+        // this.hand.rotate(Axis.X, -Math.PI / 7.8, Space.WORLD);
+        // this.hand.rotate(Axis.Y, Math.PI / 2.16, Space.WORLD);
 
         this.hand.parent = this.head;
         hand.position = Vector3.Zero();
@@ -125,8 +126,6 @@ export default class Character {
         this.hand.scaling.z = -1;
       }
     );
-    console.log(this.hand);
-    // return hand;
   }
 
   private createHead(): Mesh {
