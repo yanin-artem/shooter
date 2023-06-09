@@ -19,6 +19,8 @@ import ControllEvents from "./characterControls";
 
 export default class playerController extends characterStatus {
   private pickedMesh: any;
+  private pickedDetail: any;
+
   private isRunning = false;
 
   private mouseX = 0;
@@ -61,6 +63,7 @@ export default class playerController extends characterStatus {
         event
       );
       this.doToolAction(event);
+      this.dropDetail(event);
     });
   }
   private setMovementEvents(): void {
@@ -226,8 +229,12 @@ export default class playerController extends characterStatus {
   }
 
   private drop(hand: AbstractMesh, event: KeyboardInfo): void {
-    if (event.type === 2 && event.event.code === "KeyE" && this.pickedMesh) {
-      console.log(this.pickedMesh);
+    if (
+      event.type === 2 &&
+      event.event.code === "KeyE" &&
+      this.pickedMesh &&
+      !this.pickedDetail
+    ) {
       hand.removeChild(this.pickedMesh);
       this.pickedMesh.physicsImpostor = new PhysicsImpostor(
         this.pickedMesh,
@@ -318,8 +325,28 @@ export default class playerController extends characterStatus {
 
       const hit = this.scene.pickWithRay(ray, predicate);
       if (hit.pickedMesh) {
-        hit.pickedMesh.dispose();
+        this.pickedDetail = hit.pickedMesh;
+        this.pickedMesh.getChildMeshes()[0].isVisible = false;
+        this.hand.addChild(this.pickedDetail);
+        this.pickedDetail.position = Vector3.Forward();
       }
+    }
+  }
+  private dropDetail(event: KeyboardInfo) {
+    if (
+      event.type === 2 &&
+      event.event.code === "KeyE" &&
+      this.pickedMesh &&
+      this.pickedDetail
+    ) {
+      this.hand.removeChild(this.pickedDetail);
+      this.pickedDetail.physicsImpostor = new PhysicsImpostor(
+        this.pickedDetail,
+        PhysicsImpostor.BoxImpostor,
+        { mass: 0.1 }
+      );
+      this.pickedDetail = null;
+      this.pickedMesh.getChildMeshes()[0].isVisible = true;
     }
   }
 }
