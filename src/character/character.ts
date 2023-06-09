@@ -28,7 +28,8 @@ export default class Character {
     this.camera = this.createController(this.scene, this.engine);
     this.setBody(this.camera, this.scene);
     this.head = this.createHead();
-    this.createHand(this.camera);
+    this.hand = this.createHand();
+    console.log(this.hand);
 
     this.characterOpportunities = new playerController(
       this.camera,
@@ -104,32 +105,28 @@ export default class Character {
     return gunSight;
   }
 
-  private async createHand(camera: UniversalCamera): Promise<void> {
-    const meshes = await SceneLoader.ImportMeshAsync(
-      "",
-      "../assets/models/",
-      "arm.glb"
+  private createHand(): AbstractMesh {
+    let hand = new AbstractMesh("hand");
+    SceneLoader.ImportMeshAsync("", "../assets/models/", "arm.glb").then(
+      (meshes) => {
+        const importMeshes = meshes;
+        hand = meshes.meshes[1];
+        console.log(meshes.meshes[1]);
+        meshes.meshes.map((mesh) => {
+          mesh.metadata = { isTool: false };
+          mesh.isPickable = false;
+        });
+        hand.position.set(0.15, -0.139, 0.358);
+        hand.rotate(Axis.X, -Math.PI / 7.8, Space.WORLD);
+        hand.rotate(Axis.Y, Math.PI / 2.16, Space.WORLD);
+
+        hand.parent = this.head;
+
+        hand.scaling.z = -1;
+      }
     );
-
-    const hand = meshes.meshes[1];
-    hand.position.set(0.15, -0.139, 0.358);
-    hand.rotate(Axis.X, -Math.PI / 7.8, Space.WORLD);
-    hand.rotate(Axis.Y, Math.PI / 2.16, Space.WORLD);
-
-    hand.parent = this.head;
-
-    hand.isPickable = false;
-    hand.metadata = { isTool: false };
-    hand.scaling.z = -1;
-    // this.camera.target = meshes.meshes[0].position;
-    // console.log(meshes.meshes);
-
-    // meshes.forEach((mesh) => {
-    //   mesh.scaling = new Vector3(0.02, 0.02, 0.02);
-    //   mesh.parent = this.hand;
-    //   mesh.isPickable = false;
-    //   mesh.metadata = { isTool: false };
-    // });
+    console.log(hand);
+    return hand;
   }
 
   private createHead(): Mesh {
@@ -137,6 +134,7 @@ export default class Character {
     head.parent = this.body;
     head.position.y = 0.4;
     head.isPickable = false;
+    head.metadata = { isTool: false };
     this.camera.parent = head;
     return head;
   }
@@ -166,7 +164,7 @@ export default class Character {
     this.body.metadata = { isTool: false };
     InnerMesh.metadata = { isTool: false };
     InnerMesh.position.y = -0.35;
-
+    InnerMesh.isVisible = false;
     this.body.position.y = 20;
     this.body.position.z = -7;
   }

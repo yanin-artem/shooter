@@ -11,13 +11,14 @@ import {
   Matrix,
   PhysicsImpostor,
   Engine,
+  RayHelper,
 } from "@babylonjs/core";
 
 import characterStatus from "./characterStatus";
 import ControllEvents from "./characterControls";
 
 export default class playerController extends characterStatus {
-  private pickedMesh: AbstractMesh;
+  private pickedMesh: any;
   private isRunning = false;
 
   private mouseX = 0;
@@ -37,7 +38,7 @@ export default class playerController extends characterStatus {
 
   constructor(
     private camera: UniversalCamera,
-    private hand: TransformNode,
+    private hand: AbstractMesh,
     private body: AbstractMesh,
     private scene: Scene,
     private engine: Engine,
@@ -48,9 +49,17 @@ export default class playerController extends characterStatus {
   }
   setController(): void {
     this.setMovementEvents();
+
     const observer = this.scene.onKeyboardObservable.add((event) => {
       this.drop(this.hand, event);
-      this.setPick(this.camera, this.scene, this.hand, event);
+      this.setPick(
+        this.camera,
+        this.head,
+        this.scene,
+        this.hand,
+        this.pickedMesh,
+        event
+      );
     });
   }
   private setMovementEvents(): void {
@@ -87,6 +96,7 @@ export default class playerController extends characterStatus {
     this.handleMouse();
   }
   //вращение тела от движения мыши
+  //константы вместо чисел
   private handleMouse() {
     // this.body.billboardMode = 2;
     this.scene.onPointerObservable.add((evt) => {
@@ -214,13 +224,14 @@ export default class playerController extends characterStatus {
     return this.scene.pickWithRay(ray).hit;
   }
 
-  private drop(hand: TransformNode, event: KeyboardInfo): void {
+  private drop(hand: AbstractMesh, event: KeyboardInfo): void {
     if (event.type === 2 && event.event.code === "KeyE" && this.pickedMesh) {
-      hand.getChildMeshes()[0].removeChild(this.pickedMesh);
+      console.log(this.pickedMesh);
+      this.head.removeChild(this.pickedMesh);
       this.pickedMesh.physicsImpostor = new PhysicsImpostor(
         this.pickedMesh,
         PhysicsImpostor.BoxImpostor,
-        { mass: 1 }
+        { mass: 0.1 }
       );
       this.pickedMesh = null;
     } else return;
@@ -228,48 +239,57 @@ export default class playerController extends characterStatus {
 
   private setPick(
     camera: UniversalCamera,
+    head: Mesh,
     scene: Scene,
-    hand: TransformNode,
+    hand: AbstractMesh,
+    pickedMesh: any,
     event: KeyboardInfo
   ): void {
     function setPick() {
-      function vecToLocal(vector: Vector3, mesh: UniversalCamera): Vector3 {
-        const m = mesh.getWorldMatrix();
+      function vecToLocal(
+        vector: Vector3,
+        mesh: Mesh,
+        camera: UniversalCamera
+      ): Vector3 {
+        const m = head.getWorldMatrix();
         const v = Vector3.TransformCoordinates(vector, m);
         return v;
       }
 
-      function predicate(mesh: Mesh): boolean {
+      function predicate(mesh: AbstractMesh): boolean {
+        // console.log(mesh);
         return mesh.metadata.isTool && mesh.isPickable;
       }
-
-      const origin = camera.globalPosition;
-
+      const origin = head.getAbsolutePosition();
       let forward = new Vector3(0, 0, 1);
-      forward = vecToLocal(forward, camera);
+      forward = vecToLocal(forward, head, camera);
 
       let direction = forward.subtract(origin);
       direction = Vector3.Normalize(direction);
 
-      const length = 3;
+      const length = 2;
 
       const ray = new Ray(origin, direction, length);
 
       const hit = scene.pickWithRay(ray, predicate);
 
+      // const rayHelper = new RayHelper(ray);
+      // rayHelper.show(scene);S
+
       if (hit.pickedMesh) {
-        this.pickedMesh = hit.pickedMesh;
-        hit.pickedMesh.physicsImpostor.dispose();
-        hand.getChildMeshes()[0].addChild(hit.pickedMesh);
-        hit.pickedMesh.position.x = hand.position.x - 30;
-        hit.pickedMesh.position.y = hand.position.y + 30;
-        hit.pickedMesh.position.z = hand.position.z - 30;
-        hit.pickedMesh.rotation = new Vector3(0, 1.7, 0.8);
+        pickedMesh = hit.pickedMesh.parent;
+        pickedMesh.physicsImpostor.dispose();
+        head.addChild(pickedMesh);
+        pickedMesh.position = hand
+          .getAbsolutePosition()
+          .addInPlace(new Vector3(0.15, -0.15, 0.28));
+        pickedMesh.rotation = new Vector3(0, 1.7, 0.8);
+        return pickedMesh;
       }
     }
-
     if (event.type === 2 && event.event.code === "KeyE" && !this.pickedMesh) {
-      setPick.call(this);
+      this.pickedMesh = setPick();
+      console.log(this.pickedMesh);
     }
   }
 }
