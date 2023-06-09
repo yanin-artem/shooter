@@ -17,6 +17,7 @@ import {
   Space,
   CubeTexture,
   Texture,
+  HDRCubeTexture,
 } from "@babylonjs/core";
 import * as CANNON from "cannon";
 
@@ -44,7 +45,6 @@ export default class MainScene {
 
     this.fps = document.getElementById("fps");
 
-    this.setShadow();
     this.createSkyBox();
 
     this.engine.runRenderLoop(() => {
@@ -93,7 +93,7 @@ export default class MainScene {
     );
 
     ground.checkCollisions = true;
-    ground.position.y = 3.859;
+    ground.position.y = 3.858;
     ground.isVisible = false;
 
     const pickableItems = [];
@@ -204,7 +204,6 @@ export default class MainScene {
       { mass: 0.1 }
     );
     screwdriver[0].checkCollisions = true;
-    console.log(screwdriver[0]);
     pickableItems.push(screwdriver);
 
     const scissorsMeshes = await SceneLoader.ImportMeshAsync(
@@ -223,7 +222,6 @@ export default class MainScene {
       { mass: 0.1 }
     );
     scissors[0].checkCollisions = true;
-    console.log(scissors[0]);
     pickableItems.push(scissors);
 
     // console.log(home);
@@ -236,10 +234,11 @@ export default class MainScene {
     });
 
     pickableItems.map((mesh) => {
-      console.log(mesh);
       mesh[0].metadata = { isTool: true };
       mesh[1].metadata = { isTool: true };
     });
+
+    this.setShadow();
   }
 
   createInspector(): void {
@@ -279,7 +278,9 @@ export default class MainScene {
   setShadow(): void {
     this.light.shadowEnabled = true;
     const shadowGenerator = new ShadowGenerator(2048, this.light);
-
+    shadowGenerator.useBlurCloseExponentialShadowMap = true;
+    this.light.shadowMaxZ = 10;
+    this.light.shadowMinZ = 1;
     this.scene.meshes.map((mesh) => {
       mesh.receiveShadows = true;
       shadowGenerator.addShadowCaster(mesh);
@@ -287,21 +288,13 @@ export default class MainScene {
   }
 
   createSkyBox(): void {
-    const skybox = MeshBuilder.CreateBox(
-      "skyBox",
-      { size: 1000.0 },
-      this.scene
+    const skyboxMaterial = new HDRCubeTexture(
+      "../assets/skyboxes/sunset_jhbcentral_4k.hdr",
+      this.scene,
+      1000
     );
-    const skyboxMaterial = new StandardMaterial("skyBox", this.scene);
-    skyboxMaterial.backFaceCulling = false;
-    skyboxMaterial.reflectionTexture = new CubeTexture(
-      "../assets/skyboxes/skybox",
-      this.scene
-    );
-    skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-    skyboxMaterial.diffuseColor = new Color3(0, 0, 0);
-    skyboxMaterial.specularColor = new Color3(0, 0, 0);
-    skybox.material = skyboxMaterial;
-    skybox.position.y -= 100;
+
+    // this.scene.environmentTexture = skyboxMaterial;
+    this.scene.createDefaultSkybox(skyboxMaterial, true);
   }
 }

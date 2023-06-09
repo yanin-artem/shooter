@@ -130,7 +130,9 @@ export default class Character {
   }
 
   private createHead(): Mesh {
-    const head = MeshBuilder.CreateSphere("head", { diameter: 0.2 });
+    const head = MeshBuilder.CreateSphere("head", {
+      diameter: 0.2,
+    });
     head.parent = this.body;
     head.position.y = 0.4;
     head.isPickable = false;
@@ -145,9 +147,14 @@ export default class Character {
     //   radius: 0.3,
     // });
 
-    const body1 = MeshBuilder.CreateCapsule("body", {
+    // const body1 = MeshBuilder.CreateCapsule("body", {
+    //   height: 1.3,
+    //   radius: 0.05,
+    // });
+    const body1 = MeshBuilder.CreateBox("body", {
       height: 1.3,
-      radius: 0.2,
+      width: 0.2,
+      depth: 0.05,
     });
 
     const body2 = MeshBuilder.CreateBox("box", {
@@ -164,7 +171,7 @@ export default class Character {
     this.body.metadata = { isTool: false };
     InnerMesh.metadata = { isTool: false };
     InnerMesh.position.y = -0.35;
-    InnerMesh.isVisible = false;
+    // InnerMesh.isVisible = false;
     this.body.position.y = 20;
     this.body.position.z = -7;
   }
