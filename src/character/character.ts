@@ -27,9 +27,8 @@ export default class Character {
   constructor(private scene: Scene, private engine: Engine) {
     this.camera = this.createController(this.scene, this.engine);
     this.setBody(this.camera, this.scene);
+    this.createHand();
     this.head = this.createHead();
-    this.hand = this.createHand();
-    console.log(this.hand);
 
     this.characterOpportunities = new playerController(
       this.camera,
@@ -105,28 +104,29 @@ export default class Character {
     return gunSight;
   }
 
-  private createHand(): AbstractMesh {
-    let hand = new AbstractMesh("hand");
+  private createHand(): void {
+    this.hand = new AbstractMesh("hand");
     SceneLoader.ImportMeshAsync("", "../assets/models/", "arm.glb").then(
       (meshes) => {
-        const importMeshes = meshes;
-        hand = meshes.meshes[1];
-        console.log(meshes.meshes[1]);
+        const hand = meshes.meshes[1];
         meshes.meshes.map((mesh) => {
           mesh.metadata = { isTool: false };
           mesh.isPickable = false;
         });
-        hand.position.set(0.15, -0.139, 0.358);
-        hand.rotate(Axis.X, -Math.PI / 7.8, Space.WORLD);
-        hand.rotate(Axis.Y, Math.PI / 2.16, Space.WORLD);
 
-        hand.parent = this.head;
+        this.hand.position.set(0.15, -0.139, 0.358);
+        this.hand.rotate(Axis.X, -Math.PI / 7.8, Space.WORLD);
+        this.hand.rotate(Axis.Y, Math.PI / 2.16, Space.WORLD);
 
-        hand.scaling.z = -1;
+        this.hand.parent = this.head;
+        hand.position = Vector3.Zero();
+
+        hand.parent = this.hand;
+        this.hand.scaling.z = -1;
       }
     );
-    console.log(hand);
-    return hand;
+    console.log(this.hand);
+    // return hand;
   }
 
   private createHead(): Mesh {

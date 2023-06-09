@@ -227,7 +227,7 @@ export default class playerController extends characterStatus {
   private drop(hand: AbstractMesh, event: KeyboardInfo): void {
     if (event.type === 2 && event.event.code === "KeyE" && this.pickedMesh) {
       console.log(this.pickedMesh);
-      this.head.removeChild(this.pickedMesh);
+      hand.removeChild(this.pickedMesh);
       this.pickedMesh.physicsImpostor = new PhysicsImpostor(
         this.pickedMesh,
         PhysicsImpostor.BoxImpostor,
@@ -258,7 +258,11 @@ export default class playerController extends characterStatus {
 
       function predicate(mesh: AbstractMesh): boolean {
         // console.log(mesh);
-        return mesh.metadata.isTool && mesh.isPickable;
+        return (
+          mesh.metadata.isTool &&
+          mesh.isPickable &&
+          mesh instanceof AbstractMesh
+        );
       }
       const origin = head.getAbsolutePosition();
       let forward = new Vector3(0, 0, 1);
@@ -275,21 +279,20 @@ export default class playerController extends characterStatus {
 
       // const rayHelper = new RayHelper(ray);
       // rayHelper.show(scene);S
-
+      console.log(hand);
       if (hit.pickedMesh) {
         pickedMesh = hit.pickedMesh.parent;
         pickedMesh.physicsImpostor.dispose();
-        head.addChild(pickedMesh);
-        pickedMesh.position = hand
-          .getAbsolutePosition()
-          .addInPlace(new Vector3(0.15, -0.15, 0.28));
-        pickedMesh.rotation = new Vector3(0, 1.7, 0.8);
+        pickedMesh.parent = hand;
+        pickedMesh.position = Vector3.Zero();
+        // hand.addChild(pickedMesh);
+        // pickedMesh.position = hand.position;
+        // pickedMesh.position = hand.getAbsolutePosition();
         return pickedMesh;
       }
     }
     if (event.type === 2 && event.event.code === "KeyE" && !this.pickedMesh) {
       this.pickedMesh = setPick();
-      console.log(this.pickedMesh);
     }
   }
 }
