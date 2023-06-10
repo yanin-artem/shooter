@@ -12,6 +12,8 @@ import {
   PhysicsImpostor,
   Engine,
   RayHelper,
+  Quaternion,
+  Space,
 } from "@babylonjs/core";
 
 import characterStatus from "./characterStatus";
@@ -20,6 +22,7 @@ import ControllEvents from "./characterControls";
 export default class playerController extends characterStatus {
   private pickedMesh: any;
   private pickedDetail: any;
+  private rayToDetail: any;
 
   private isRunning = false;
 
@@ -41,6 +44,7 @@ export default class playerController extends characterStatus {
   constructor(
     private camera: UniversalCamera,
     private hand: AbstractMesh,
+    private closedHand: AbstractMesh,
     private body: AbstractMesh,
     private scene: Scene,
     private engine: Engine,
@@ -53,17 +57,24 @@ export default class playerController extends characterStatus {
     this.setMovementEvents();
 
     const observer = this.scene.onKeyboardObservable.add((event) => {
-      this.drop(this.hand, event);
-      this.setPick(
-        this.camera,
-        this.head,
-        this.scene,
-        this.hand,
-        this.pickedMesh,
-        event
-      );
-      this.doToolAction(event);
-      this.dropDetail(event);
+      if (event.type === 2) {
+        console.log(this.rayToDetail);
+        this.dropDetail(event);
+        this.doToolAction(event);
+        this.drop(this.hand, event);
+
+        this.setPick(
+          this.camera,
+          this.head,
+          this.scene,
+          this.hand,
+          this.closedHand,
+          this.pickedMesh,
+          event,
+          this.rayToDetail
+        );
+      }
+      this.toggleHand(event);
     });
   }
   private setMovementEvents(): void {
@@ -100,7 +111,7 @@ export default class playerController extends characterStatus {
     this.handleMouse();
   }
   //вращение тела от движения мыши
-  //константы вместо чисел
+  //TODO:константы вместо чисел
   private handleMouse() {
     // this.body.billboardMode = 2;
     this.scene.onPointerObservable.add((evt) => {
@@ -233,14 +244,16 @@ export default class playerController extends characterStatus {
       event.type === 2 &&
       event.event.code === "KeyE" &&
       this.pickedMesh &&
-      !this.pickedDetail
+      !this.pickedDetail &&
+      !this.rayToDetail
     ) {
-      hand.removeChild(this.pickedMesh);
+      this.closedHand.removeChild(this.pickedMesh);
       this.pickedMesh.physicsImpostor = new PhysicsImpostor(
         this.pickedMesh,
         PhysicsImpostor.BoxImpostor,
         { mass: 0.1 }
       );
+
       this.pickedMesh = null;
     } else return;
   }
@@ -250,32 +263,25 @@ export default class playerController extends characterStatus {
     head: Mesh,
     scene: Scene,
     hand: AbstractMesh,
+    closedHand: AbstractMesh,
     pickedMesh: any,
-    event: KeyboardInfo
+    event: KeyboardInfo,
+    rayToDetail: boolean
   ): void {
     function setPick() {
-      function vecToLocal(
-        vector: Vector3,
-        mesh: Mesh,
-        camera: UniversalCamera
-      ): Vector3 {
+      // rayToDetail = false;
+      function vecToLocal(vector: Vector3): Vector3 {
         const m = head.getWorldMatrix();
         const v = Vector3.TransformCoordinates(vector, m);
         return v;
       }
 
       function predicate(mesh: AbstractMesh): boolean {
-        // console.log(mesh);
-        return (
-          mesh.metadata.isTool &&
-          mesh.isPickable &&
-          mesh instanceof AbstractMesh
-        );
+        return mesh.metadata.isTool && mesh.isPickable;
       }
       const origin = head.getAbsolutePosition();
       let forward = new Vector3(0, 0, 1);
-      forward = vecToLocal(forward, head, camera);
-
+      forward = vecToLocal(forward);
       let direction = forward.subtract(origin);
       direction = Vector3.Normalize(direction);
 
@@ -286,10 +292,22 @@ export default class playerController extends characterStatus {
       const hit = scene.pickWithRay(ray, predicate);
 
       if (hit.pickedMesh) {
-        pickedMesh = hit.pickedMesh.parent;
+        pickedMesh = hit.pickedMesh.parent || hit.pickedMesh;
+        // pickedMesh.rotation.set(0, 0, 0);
         pickedMesh.physicsImpostor.dispose();
-        pickedMesh.parent = hand;
-        pickedMesh.position = Vector3.Zero();
+
+        closedHand.addChild(pickedMesh);
+        // pickedMesh.rotate(Axis.Y, Math.PI, Space.LOCAL);
+
+        // pickedMesh.rotationQuaternion = Quaternion.FromEulerAngles(
+        //   0.0006097567345314843,
+        //   0.00035494871206856324,
+        //   -0.00039326042950118054
+        // );
+        // console.log(pickedMesh.rotationQuaternion.toEulerAngles());
+        pickedMesh.position.set(-0.11, 0.073, 0.028);
+        pickedMesh.rotationQuaternion = null;
+        pickedMesh.rotation.set(0, 0, 0);
         return pickedMesh;
       }
     }
@@ -299,9 +317,10 @@ export default class playerController extends characterStatus {
   }
   private doToolAction(event: KeyboardInfo) {
     if (
-      this.pickedMesh?.metadata.toolIndex === 0 &&
+      this.pickedMesh?.metadata.toolIndex === 1 &&
       event.type === 2 &&
-      event.event.code === "KeyF"
+      event.event.code === "KeyE" &&
+      !this.pickedDetail
     ) {
       function vecToLocal(vector: Vector3, mesh: Mesh): Vector3 {
         const m = mesh.getWorldMatrix();
@@ -309,8 +328,8 @@ export default class playerController extends characterStatus {
         return v;
       }
       function predicate(mesh: AbstractMesh): boolean {
-        // console.log(mesh);
-        return mesh.isPickable;
+        console.log(mesh.name);
+        return mesh.isPickable && mesh.metadata.isConditioner;
       }
       const origin = this.head.getAbsolutePosition();
       let forward = new Vector3(0, 0, 1);
@@ -322,13 +341,14 @@ export default class playerController extends characterStatus {
       const length = 2;
 
       const ray = new Ray(origin, direction, length);
-
+      // this.rayToDetail = true;
       const hit = this.scene.pickWithRay(ray, predicate);
       if (hit.pickedMesh) {
         this.pickedDetail = hit.pickedMesh;
         this.pickedMesh.getChildMeshes()[0].isVisible = false;
-        this.hand.addChild(this.pickedDetail);
+        this.closedHand.addChild(this.pickedDetail);
         this.pickedDetail.position = Vector3.Forward();
+        this.pickedDetail?.physicsImpostor.dispose();
       }
     }
   }
@@ -339,14 +359,30 @@ export default class playerController extends characterStatus {
       this.pickedMesh &&
       this.pickedDetail
     ) {
-      this.hand.removeChild(this.pickedDetail);
+      this.closedHand.removeChild(this.pickedDetail);
       this.pickedDetail.physicsImpostor = new PhysicsImpostor(
         this.pickedDetail,
         PhysicsImpostor.BoxImpostor,
         { mass: 0.1 }
       );
+      this.pickedDetail.metadata.isTool = true;
+      this.pickedDetail.metadata.isDetail = false;
+
       this.pickedDetail = null;
       this.pickedMesh.getChildMeshes()[0].isVisible = true;
+    }
+  }
+  private toggleHand(event: KeyboardInfo): void {
+    if (
+      event.type === 2 &&
+      event.event.code === "KeyE" &&
+      this.closedHand.getChildMeshes()[1] != null
+    ) {
+      this.hand.getChildMeshes()[0].isVisible = false;
+      this.closedHand.getChildMeshes()[0].isVisible = true;
+    } else if (this.closedHand.getChildMeshes()[1] == null) {
+      this.hand.getChildMeshes()[0].isVisible = true;
+      this.closedHand.getChildMeshes()[0].isVisible = false;
     }
   }
 }

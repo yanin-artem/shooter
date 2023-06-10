@@ -21,6 +21,7 @@ export default class Character {
   protected gunSight: Mesh;
   body: AbstractMesh;
   hand: AbstractMesh;
+  closedHand: AbstractMesh;
   head: Mesh;
   characterOpportunities: playerController;
 
@@ -28,11 +29,14 @@ export default class Character {
     this.camera = this.createController(this.scene, this.engine);
     this.setBody(this.camera, this.scene);
     this.createHand();
+    this.createClosedHand();
+
     this.head = this.createHead();
 
     this.characterOpportunities = new playerController(
       this.camera,
       this.hand,
+      this.closedHand,
       this.body,
       this.scene,
       this.engine,
@@ -124,6 +128,35 @@ export default class Character {
 
         hand.parent = this.hand;
         this.hand.scaling.z = -1;
+      }
+    );
+  }
+
+  private createClosedHand(): void {
+    this.closedHand = new AbstractMesh("closedHand");
+    SceneLoader.ImportMeshAsync("", "../assets/models/", "closedArm.glb").then(
+      (meshes) => {
+        const hand = meshes.meshes[1];
+        meshes.meshes.map((mesh) => {
+          mesh.metadata = { isTool: false };
+          mesh.isPickable = false;
+        });
+
+        this.closedHand.position.set(0.15, -0.139, 0.358);
+        this.closedHand.rotation.set(
+          Math.PI / 3.33,
+          Math.PI / 2,
+          Math.PI / 6.66
+        );
+        // this.hand.rotate(Axis.X, -Math.PI / 7.8, Space.WORLD);
+        // this.hand.rotate(Axis.Y, Math.PI / 2.16, Space.WORLD);
+
+        this.closedHand.parent = this.head;
+        hand.position = Vector3.Zero();
+
+        hand.parent = this.closedHand;
+        this.closedHand.scaling.z = -1;
+        this.closedHand.getChildMeshes()[0].isVisible = false;
       }
     );
   }

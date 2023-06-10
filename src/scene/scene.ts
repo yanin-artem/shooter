@@ -93,7 +93,7 @@ export default class MainScene {
     );
 
     ground.checkCollisions = true;
-    ground.position.y = 3.858;
+    ground.position.y = 3.861;
     ground.isVisible = false;
 
     const pickableItems = [];
@@ -148,6 +148,7 @@ export default class MainScene {
         { mass: 0 }
       );
       mesh.checkCollisions = true;
+      // console.log(mesh)
     });
 
     const instrumentsBoxMeshes = await SceneLoader.ImportMeshAsync(
@@ -200,9 +201,10 @@ export default class MainScene {
     screwdriver[0].physicsImpostor = new PhysicsImpostor(
       screwdriver[0],
       PhysicsImpostor.BoxImpostor,
-      { mass: 0.1 }
+      { mass: 0.01 }
     );
     screwdriver[0].checkCollisions = true;
+    screwdriver[1].position.set(0, 0, 0);
     pickableItems.push(screwdriver);
 
     const scissorsMeshes = await SceneLoader.ImportMeshAsync(
@@ -225,16 +227,25 @@ export default class MainScene {
 
     // console.log(home);
     this.scene.meshes.map((mesh) => {
-      mesh.metadata = { isTool: false };
+      mesh.metadata = { isTool: false, isConditioner: false };
     });
 
-    this.scene.transformNodes.map((mesh) => {
-      mesh.metadata = { isTool: false };
-    });
+    // this.scene.transformNodes.map((mesh) => {
+    //   mesh.metadata = { isTool: false };
+    // });
 
     pickableItems.map((mesh, index) => {
-      mesh[0].metadata = { isTool: true, toolIndex: index };
-      mesh[1].metadata = { isTool: true };
+      // mesh[0].metadata = { isTool: true, toolIndex: index };
+      // mesh[1].metadata = { isTool: true };
+      mesh[0].metadata.isTool = true;
+      mesh[0].metadata.toolIndex = index;
+      mesh[1].metadata.isTool = true;
+
+      // mesh[0].ro
+    });
+
+    conditioner.map((mesh) => {
+      mesh.metadata.isConditioner = true;
     });
 
     this.setShadow();
