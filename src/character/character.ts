@@ -34,7 +34,6 @@ export default class Character {
     this.head = this.createHead();
 
     this.characterOpportunities = new playerController(
-      this.camera,
       this.hand,
       this.closedHand,
       this.body,

@@ -1,46 +1,19 @@
 import {
-  Vector3,
   UniversalCamera,
   Scene,
-  Ray,
-  TransformNode,
-  KeyboardInfo,
   Mesh,
   AbstractMesh,
-  Axis,
-  Matrix,
-  PhysicsImpostor,
   Engine,
-  RayHelper,
-  Quaternion,
-  Space,
 } from "@babylonjs/core";
 
-import characterStatus from "./characterStatus";
-import ControllEvents from "./characterControls";
+import Movement from "./movement";
 import Pick from "./pick";
 
-export default class playerController extends characterStatus {
-  private isRunning = false;
-
-  private mouseX = 0;
-  private mouseY = 0;
-  private mouseSensitivity = 200;
-
-  private speedVector: Vector3;
-  private controls: ControllEvents;
+export default class playerController {
   private pick: Pick;
-  //координата высоты на которую должен запрыгнуть персонаж
-  private jumpDestination: number;
-  //если игрок продолжает двигаться вверх
-  private isJumping = false;
-  //момент прыжка должен исполняться один раз
-  private isStartJump = false;
-
-  private deltaTime: number;
+  private movement: Movement;
 
   constructor(
-    private camera: UniversalCamera,
     private hand: AbstractMesh,
     private closedHand: AbstractMesh,
     private body: AbstractMesh,
@@ -48,181 +21,11 @@ export default class playerController extends characterStatus {
     private engine: Engine,
     private head: Mesh
   ) {
-    super();
-    this.controls = new ControllEvents();
-    this.pick = new Pick(
-      this.camera,
-      this.hand,
-      this.closedHand,
-      this.body,
-      this.scene,
-      this.engine,
-      this.head
-    );
+    this.movement = new Movement(this.body, this.scene, this.engine, this.head);
+    this.pick = new Pick(this.hand, this.closedHand, this.scene, this.head);
   }
   setController(): void {
-    this.setMovementEvents();
+    this.movement.setMovementEvents();
     this.pick.createPickEvents();
-  }
-  private setMovementEvents(): void {
-    this.speedVector = Vector3.Zero();
-    let accelerationDir = Vector3.Zero();
-    const observer = this.scene.onKeyboardObservable.add((event) => {
-      this.controls.handleControlEvents(event);
-      accelerationDir = Vector3.Zero();
-      if (this.controls.run) {
-        this.isRunning = true;
-      } else this.isRunning = false;
-
-      if (this.controls.forward) {
-        accelerationDir.addInPlace(Vector3.Forward());
-      }
-      if (this.controls.back) {
-        accelerationDir.addInPlace(Vector3.Backward());
-      }
-      if (this.controls.right) {
-        accelerationDir.addInPlace(Vector3.Right());
-      }
-      if (this.controls.left) {
-        accelerationDir.addInPlace(Vector3.Left());
-      }
-
-      if (this.controls.jump && this.isGround()) {
-        this.isStartJump = true;
-      }
-    });
-    this.scene.registerBeforeRender(() => {
-      this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
-      this.handleMovement(accelerationDir);
-    });
-    this.handleMouse();
-  }
-  //вращение тела от движения мыши
-  //TODO:константы вместо чисел
-  private handleMouse() {
-    // this.body.billboardMode = 2;
-    this.scene.onPointerObservable.add((evt) => {
-      if (this.engine.isPointerLock) {
-        const mouseYCheck =
-          this.mouseY + evt.event.movementX / this.mouseSensitivity;
-        if (mouseYCheck >= 1.25) {
-          this.mouseY = 1.25;
-        } else if (mouseYCheck <= -1.25) {
-          this.mouseY = -1.25;
-        } else this.mouseY += evt.event.movementY / this.mouseSensitivity;
-        this.mouseX += evt.event.movementX / this.mouseSensitivity;
-        this.head.rotation.set(this.mouseY, this.mouseX, 0);
-        // console.log(this.body.rotation);
-      }
-    });
-  }
-
-  private handleMovement(accelerationDir: Vector3): void {
-    this.handleStartJumping();
-    const addingAcceleration = this.calcAddingAcceleration(
-      accelerationDir,
-      this.getAcceleration()
-    );
-
-    const resultVector = this.getResultSpeedVector(addingAcceleration);
-
-    this.body.moveWithCollisions(resultVector);
-  }
-
-  private getAcceleration(): number {
-    return this.isRunning ? this.runAcceleration : this.walkAcceleration;
-  }
-  private getMaxSpeed(): number {
-    return this.isRunning ? this.runMaxSpeed : this.walkMaxSpeed;
-  }
-  private calcAddingAcceleration(
-    accelerationDir: Vector3,
-    acceleration: number
-  ): Vector3 {
-    accelerationDir.scaleInPlace(acceleration);
-    accelerationDir.y = this.getYAcceleration();
-    return accelerationDir.normalize();
-  }
-
-  getYAcceleration(): number {
-    if (!this.isGround()) {
-      return -this.gravity * this.deltaTime;
-    }
-    return 0;
-  }
-
-  private handleStartJumping() {
-    if (!this.isGround()) {
-      this.isStartJump = false;
-    }
-    if (this.isStartJump) {
-      this.jumpDestination = this.jumpHeight + this.body.position.y;
-      this.isJumping = true;
-      this.isStartJump = false;
-    }
-    if (this.isJumping && this.body.position.y >= this.jumpDestination) {
-      this.isJumping = false;
-    }
-  }
-
-  private handleJumping(speedVector: Vector3): Vector3 {
-    if (this.isJumping) {
-      const percentDest =
-        1 - (this.jumpDestination - this.body.position.y) / this.jumpHeight;
-      let jumpSpeedSlowdown = 0;
-      if (percentDest > 0.8) {
-        jumpSpeedSlowdown = this.jumpSpeed * 0.8;
-      } else if (percentDest > 0.4) {
-        jumpSpeedSlowdown = this.jumpSpeed * percentDest;
-      }
-      speedVector.y = this.jumpSpeed - jumpSpeedSlowdown;
-    }
-    return speedVector;
-  }
-
-  private getResultSpeedVector(addingAcceleration: Vector3): Vector3 {
-    const resultVector = Vector3.Zero();
-    this.speedVector.addInPlace(addingAcceleration.scale(this.deltaTime));
-
-    this.correctMaxSpeed();
-
-    if (addingAcceleration.equals(Vector3.Zero())) this.doBrake();
-
-    this.speedVector = this.handleJumping(this.speedVector);
-    const m = Matrix.RotationAxis(Axis.Y, this.head.rotation.y);
-    Vector3.TransformCoordinatesToRef(this.speedVector, m, resultVector);
-    return resultVector;
-  }
-
-  private doBrake() {
-    if (this.speedVector.lengthSquared() > 0.00001)
-      this.speedVector.subtractInPlace(this.speedVector.scale(this.slowdownK));
-    else this.speedVector = Vector3.Zero();
-  }
-
-  private correctMaxSpeed(): void {
-    const maxSpeed = this.getMaxSpeed();
-    let speedVectorWithoutGravity = new Vector3(
-      this.speedVector.x,
-      0,
-      this.speedVector.z
-    );
-
-    if (speedVectorWithoutGravity.lengthSquared() > Math.pow(maxSpeed, 2)) {
-      speedVectorWithoutGravity = speedVectorWithoutGravity
-        .normalize()
-        .scale(maxSpeed);
-
-      this.speedVector = new Vector3(
-        speedVectorWithoutGravity.x,
-        this.speedVector.y,
-        speedVectorWithoutGravity.z
-      );
-    }
-  }
-
-  isGround(): boolean {
-    const ray = new Ray(this.body.position, Vector3.Down(), 0.85 + 0.2);
-    return this.scene.pickWithRay(ray).hit;
   }
 }

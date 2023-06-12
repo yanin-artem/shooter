@@ -1,76 +1,71 @@
 import {
   Vector3,
-  UniversalCamera,
   Scene,
   Ray,
-  TransformNode,
   KeyboardInfo,
   Mesh,
   AbstractMesh,
-  Axis,
-  Matrix,
   PhysicsImpostor,
-  Engine,
-  RayHelper,
-  Quaternion,
-  Space,
   PointerInfo,
 } from "@babylonjs/core";
 
+import ControllEvents from "./characterControls";
+
 export default class Pick {
-  private pickedMesh: any;
+  private pickedTool: any;
   private pickedDetail: any;
   private detailScaleK = 3;
+  private controls: ControllEvents;
+
   constructor(
-    private camera: UniversalCamera,
     private hand: AbstractMesh,
     private closedHand: AbstractMesh,
-    private body: AbstractMesh,
     private scene: Scene,
-    private engine: Engine,
     private head: Mesh
-  ) {}
+  ) {
+    this.controls = new ControllEvents();
+  }
 
   createPickEvents(): void {
     this.scene.onKeyboardObservable.add((event) => {
-      this.drop(this.hand, event);
-      this.dropDetail(event);
+      this.controls.handleControlEvents(event);
+      if (event.type === 2) {
+        this.dropTool(event);
+        this.dropDetail(event);
+        this.setPick(event);
+        this.toggleHand(event);
+      }
 
-      this.setPick(event);
-
-      this.toggleHand(event);
+      console.log(this.controls.pick);
     });
-
     this.scene.onPointerObservable.add((event) => {
+      this.controls.handleControlEvents(event);
       this.doToolAction(event);
     });
   }
-  private drop(hand: AbstractMesh, event: KeyboardInfo): void {
-    if (
-      event.type === 2 &&
-      event.event.code === "KeyE" &&
-      this.pickedMesh &&
-      !this.pickedDetail
-    ) {
-      this.closedHand.removeChild(this.pickedMesh);
-      this.pickedMesh.physicsImpostor = new PhysicsImpostor(
-        this.pickedMesh,
+
+  //функция броска инструмента
+  private dropTool(event: KeyboardInfo): void {
+    if (event.event.code === "KeyE" && this.pickedTool && !this.pickedDetail) {
+      this.closedHand.removeChild(this.pickedTool);
+      this.pickedTool.physicsImpostor = new PhysicsImpostor(
+        this.pickedTool,
         PhysicsImpostor.BoxImpostor,
         { mass: 0.1 }
       );
-      this.pickedMesh.checkCollisions = true;
-      this.pickedMesh = null;
+      this.pickedTool.checkCollisions = true;
+      this.pickedTool = null;
     } else return;
   }
 
+  //функция подбора любого лежащего предмета
   private setPick(event: KeyboardInfo): void {
-    if (event.type === 2 && event.event.code === "KeyE" && !this.pickedMesh) {
+    if (event.event.code === "KeyE" && !this.pickedTool) {
       function predicate(mesh: AbstractMesh): boolean {
         return (
-          (mesh.metadata.isDetail &&
-            !mesh.metadata.isConditioner &&
-            mesh.isPickable) ||
-          (mesh.metadata.isTool && mesh.isPickable)
+          ((mesh.metadata.isDetail && !mesh.metadata.isConditioner) ||
+            mesh.metadata.isTool) &&
+          mesh.isPickable
         );
       }
       const hit = this.castRay(predicate);
@@ -83,14 +78,13 @@ export default class Pick {
       }
     }
   }
-
+  //функция разбора кондиционера отверткой
   private doToolAction(event: PointerInfo) {
     if (
-      this.pickedMesh?.metadata.toolIndex === 1 &&
-      event.type === 2 &&
-      event.event.button === 0 &&
+      this.pickedTool?.metadata.toolIndex === 1 &&
+      this.controls.takeApart &&
       !this.pickedDetail &&
-      this.pickedMesh
+      this.pickedTool
     ) {
       function predicate(mesh: AbstractMesh): boolean {
         return mesh.isPickable && mesh.metadata.isConditioner;
@@ -102,9 +96,9 @@ export default class Pick {
       }
     }
   }
-
+  //бросок детали
   private dropDetail(event: KeyboardInfo) {
-    if (event.type === 2 && event.event.code === "KeyE" && this.pickedDetail) {
+    if (event.event.code === "KeyE" && this.pickedDetail) {
       this.closedHand.removeChild(this.pickedDetail);
       this.pickedDetail.physicsImpostor = new PhysicsImpostor(
         this.pickedDetail,
@@ -113,16 +107,14 @@ export default class Pick {
       );
       this.pickedDetail.metadata.isConditioner = false;
       this.pickedDetail.scaling.scaleInPlace(this.detailScaleK);
-      console.log(this.pickedDetail);
       this.pickedDetail.checkCollisions = true;
       this.pickedDetail = null;
-      if (this.pickedMesh) this.pickedMesh.getChildMeshes()[0].isVisible = true;
+      if (this.pickedTool) this.pickedTool.getChildMeshes()[0].isVisible = true;
     }
   }
-
+  // функция смены моделей рук (сжатая или свободная)
   private toggleHand(event: KeyboardInfo): void {
     if (
-      event.type === 2 &&
       event.event.code === "KeyE" &&
       this.closedHand.getChildMeshes()[1] != null
     ) {
@@ -134,6 +126,7 @@ export default class Pick {
     }
   }
 
+  //функция рэйкастинга в направлении просмотра
   private castRay(predicate) {
     function vecToLocal(vector: Vector3): Vector3 {
       const m = this.head.getWorldMatrix();
@@ -150,10 +143,11 @@ export default class Pick {
     return this.scene.pickWithRay(ray, predicate);
   }
 
+  //функция позиционирования детали в руке
   private positionPickedDetail(pickedMesh: AbstractMesh) {
     this.pickedDetail = pickedMesh;
-    if (this.pickedMesh) {
-      this.pickedMesh.getChildMeshes()[0].isVisible = false;
+    if (this.pickedTool) {
+      this.pickedTool.getChildMeshes()[0].isVisible = false;
     }
     this.closedHand.addChild(this.pickedDetail);
     this.pickedDetail.position.set(-0.11, 0.073, 0.028);
@@ -161,12 +155,13 @@ export default class Pick {
     this.pickedDetail?.physicsImpostor.dispose();
   }
 
+  //функция позиционирования инструмента в руке
   private positionPickedTool(pickedMesh: AbstractMesh) {
-    this.pickedMesh = pickedMesh.parent || pickedMesh;
-    this.pickedMesh.physicsImpostor.dispose();
-    this.closedHand.addChild(this.pickedMesh);
-    this.pickedMesh.position.set(-0.11, 0.073, 0.028);
-    this.pickedMesh.rotationQuaternion = null;
-    this.pickedMesh.rotation.set(0, 0, 0);
+    this.pickedTool = pickedMesh.parent || pickedMesh;
+    this.pickedTool.physicsImpostor.dispose();
+    this.closedHand.addChild(this.pickedTool);
+    this.pickedTool.position.set(-0.11, 0.073, 0.028);
+    this.pickedTool.rotationQuaternion = null;
+    this.pickedTool.rotation.set(0, 0, 0);
   }
 }
