@@ -246,6 +246,9 @@ export default class MainScene {
 
     conditioner.map((mesh) => {
       mesh.metadata.isConditioner = true;
+      mesh.name === "Корпус"
+        ? (mesh.metadata.isDetail = false)
+        : (mesh.metadata.isDetail = true);
     });
 
     this.setShadow();

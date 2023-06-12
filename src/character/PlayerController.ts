@@ -18,12 +18,9 @@ import {
 
 import characterStatus from "./characterStatus";
 import ControllEvents from "./characterControls";
+import Pick from "./pick";
 
 export default class playerController extends characterStatus {
-  private pickedMesh: any;
-  private pickedDetail: any;
-  private rayToDetail: any;
-
   private isRunning = false;
 
   private mouseX = 0;
@@ -32,6 +29,7 @@ export default class playerController extends characterStatus {
 
   private speedVector: Vector3;
   private controls: ControllEvents;
+  private pick: Pick;
   //координата высоты на которую должен запрыгнуть персонаж
   private jumpDestination: number;
   //если игрок продолжает двигаться вверх
@@ -52,30 +50,19 @@ export default class playerController extends characterStatus {
   ) {
     super();
     this.controls = new ControllEvents();
+    this.pick = new Pick(
+      this.camera,
+      this.hand,
+      this.closedHand,
+      this.body,
+      this.scene,
+      this.engine,
+      this.head
+    );
   }
   setController(): void {
     this.setMovementEvents();
-
-    const observer = this.scene.onKeyboardObservable.add((event) => {
-      if (event.type === 2) {
-        console.log(this.rayToDetail);
-        this.dropDetail(event);
-        this.doToolAction(event);
-        this.drop(this.hand, event);
-
-        this.setPick(
-          this.camera,
-          this.head,
-          this.scene,
-          this.hand,
-          this.closedHand,
-          this.pickedMesh,
-          event,
-          this.rayToDetail
-        );
-      }
-      this.toggleHand(event);
-    });
+    this.pick.createPickEvents();
   }
   private setMovementEvents(): void {
     this.speedVector = Vector3.Zero();
@@ -237,152 +224,5 @@ export default class playerController extends characterStatus {
   isGround(): boolean {
     const ray = new Ray(this.body.position, Vector3.Down(), 0.85 + 0.2);
     return this.scene.pickWithRay(ray).hit;
-  }
-
-  private drop(hand: AbstractMesh, event: KeyboardInfo): void {
-    if (
-      event.type === 2 &&
-      event.event.code === "KeyE" &&
-      this.pickedMesh &&
-      !this.pickedDetail &&
-      !this.rayToDetail
-    ) {
-      this.closedHand.removeChild(this.pickedMesh);
-      this.pickedMesh.physicsImpostor = new PhysicsImpostor(
-        this.pickedMesh,
-        PhysicsImpostor.BoxImpostor,
-        { mass: 0.1 }
-      );
-
-      this.pickedMesh = null;
-    } else return;
-  }
-
-  private setPick(
-    camera: UniversalCamera,
-    head: Mesh,
-    scene: Scene,
-    hand: AbstractMesh,
-    closedHand: AbstractMesh,
-    pickedMesh: any,
-    event: KeyboardInfo,
-    rayToDetail: boolean
-  ): void {
-    function setPick() {
-      // rayToDetail = false;
-      function vecToLocal(vector: Vector3): Vector3 {
-        const m = head.getWorldMatrix();
-        const v = Vector3.TransformCoordinates(vector, m);
-        return v;
-      }
-
-      function predicate(mesh: AbstractMesh): boolean {
-        return mesh.metadata.isTool && mesh.isPickable;
-      }
-      const origin = head.getAbsolutePosition();
-      let forward = new Vector3(0, 0, 1);
-      forward = vecToLocal(forward);
-      let direction = forward.subtract(origin);
-      direction = Vector3.Normalize(direction);
-
-      const length = 2;
-
-      const ray = new Ray(origin, direction, length);
-
-      const hit = scene.pickWithRay(ray, predicate);
-
-      if (hit.pickedMesh) {
-        pickedMesh = hit.pickedMesh.parent || hit.pickedMesh;
-        // pickedMesh.rotation.set(0, 0, 0);
-        pickedMesh.physicsImpostor.dispose();
-
-        closedHand.addChild(pickedMesh);
-        // pickedMesh.rotate(Axis.Y, Math.PI, Space.LOCAL);
-
-        // pickedMesh.rotationQuaternion = Quaternion.FromEulerAngles(
-        //   0.0006097567345314843,
-        //   0.00035494871206856324,
-        //   -0.00039326042950118054
-        // );
-        // console.log(pickedMesh.rotationQuaternion.toEulerAngles());
-        pickedMesh.position.set(-0.11, 0.073, 0.028);
-        pickedMesh.rotationQuaternion = null;
-        pickedMesh.rotation.set(0, 0, 0);
-        return pickedMesh;
-      }
-    }
-    if (event.type === 2 && event.event.code === "KeyE" && !this.pickedMesh) {
-      this.pickedMesh = setPick();
-    }
-  }
-  private doToolAction(event: KeyboardInfo) {
-    if (
-      this.pickedMesh?.metadata.toolIndex === 1 &&
-      event.type === 2 &&
-      event.event.code === "KeyE" &&
-      !this.pickedDetail
-    ) {
-      function vecToLocal(vector: Vector3, mesh: Mesh): Vector3 {
-        const m = mesh.getWorldMatrix();
-        const v = Vector3.TransformCoordinates(vector, m);
-        return v;
-      }
-      function predicate(mesh: AbstractMesh): boolean {
-        console.log(mesh.name);
-        return mesh.isPickable && mesh.metadata.isConditioner;
-      }
-      const origin = this.head.getAbsolutePosition();
-      let forward = new Vector3(0, 0, 1);
-      forward = vecToLocal(forward, this.head);
-
-      let direction = forward.subtract(origin);
-      direction = Vector3.Normalize(direction);
-
-      const length = 2;
-
-      const ray = new Ray(origin, direction, length);
-      // this.rayToDetail = true;
-      const hit = this.scene.pickWithRay(ray, predicate);
-      if (hit.pickedMesh) {
-        this.pickedDetail = hit.pickedMesh;
-        this.pickedMesh.getChildMeshes()[0].isVisible = false;
-        this.closedHand.addChild(this.pickedDetail);
-        this.pickedDetail.position = Vector3.Forward();
-        this.pickedDetail?.physicsImpostor.dispose();
-      }
-    }
-  }
-  private dropDetail(event: KeyboardInfo) {
-    if (
-      event.type === 2 &&
-      event.event.code === "KeyE" &&
-      this.pickedMesh &&
-      this.pickedDetail
-    ) {
-      this.closedHand.removeChild(this.pickedDetail);
-      this.pickedDetail.physicsImpostor = new PhysicsImpostor(
-        this.pickedDetail,
-        PhysicsImpostor.BoxImpostor,
-        { mass: 0.1 }
-      );
-      this.pickedDetail.metadata.isTool = true;
-      this.pickedDetail.metadata.isDetail = false;
-
-      this.pickedDetail = null;
-      this.pickedMesh.getChildMeshes()[0].isVisible = true;
-    }
-  }
-  private toggleHand(event: KeyboardInfo): void {
-    if (
-      event.type === 2 &&
-      event.event.code === "KeyE" &&
-      this.closedHand.getChildMeshes()[1] != null
-    ) {
-      this.hand.getChildMeshes()[0].isVisible = false;
-      this.closedHand.getChildMeshes()[0].isVisible = true;
-    } else if (this.closedHand.getChildMeshes()[1] == null) {
-      this.hand.getChildMeshes()[0].isVisible = true;
-      this.closedHand.getChildMeshes()[0].isVisible = false;
-    }
   }
 }
