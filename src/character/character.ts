@@ -204,6 +204,6 @@ export default class Character {
     InnerMesh.position.y = -0.35;
     // InnerMesh.isVisible = false;
     this.body.position.y = 20;
-    this.body.position.z = -7;
+    // this.body.position.z = -7;
   }
 }

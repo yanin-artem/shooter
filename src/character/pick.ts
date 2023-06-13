@@ -35,8 +35,6 @@ export default class Pick {
         this.setPick(event);
         this.toggleHand(event);
       }
-
-      console.log(this.controls.pick);
     });
     this.scene.onPointerObservable.add((event) => {
       this.controls.handleControlEvents(event);
@@ -50,10 +48,10 @@ export default class Pick {
       this.closedHand.removeChild(this.pickedTool);
       this.pickedTool.physicsImpostor = new PhysicsImpostor(
         this.pickedTool,
-        PhysicsImpostor.BoxImpostor,
+        PhysicsImpostor.MeshImpostor,
         { mass: 0.1 }
       );
-      this.pickedTool.checkCollisions = true;
+      console.log(this.pickedTool);
       this.pickedTool = null;
     } else return;
   }
@@ -107,9 +105,8 @@ export default class Pick {
       );
       this.pickedDetail.metadata.isConditioner = false;
       this.pickedDetail.scaling.scaleInPlace(this.detailScaleK);
-      this.pickedDetail.checkCollisions = true;
       this.pickedDetail = null;
-      if (this.pickedTool) this.pickedTool.getChildMeshes()[0].isVisible = true;
+      if (this.pickedTool) this.pickedTool.isVisible = true;
     }
   }
   // функция смены моделей рук (сжатая или свободная)
@@ -138,7 +135,7 @@ export default class Pick {
     forward = vecToLocal.call(this, forward);
     let direction = forward.subtract(origin);
     direction = Vector3.Normalize(direction);
-    const length = 2;
+    const length = 3;
     const ray = new Ray(origin, direction, length);
     return this.scene.pickWithRay(ray, predicate);
   }
@@ -147,7 +144,7 @@ export default class Pick {
   private positionPickedDetail(pickedMesh: AbstractMesh) {
     this.pickedDetail = pickedMesh;
     if (this.pickedTool) {
-      this.pickedTool.getChildMeshes()[0].isVisible = false;
+      this.pickedTool.isVisible = false;
     }
     this.closedHand.addChild(this.pickedDetail);
     this.pickedDetail.position.set(-0.11, 0.073, 0.028);

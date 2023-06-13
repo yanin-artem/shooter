@@ -16,10 +16,13 @@ export default class Movement extends characterStatus {
   private isRunning = false;
   private controls: ControllEvents;
 
-  private mouseMaxY = 1.25;
+  private mouseMaxY = 1.08;
+  private mouseMinY = -1.25;
+
   private mouseX = 0;
   private mouseY = 0;
-  private mouseSensitivity = 200;
+  private mouseSensitivity = 400;
+  private mouseYCheck = 0;
 
   private speedVector: Vector3;
   //координата высоты на которую должен запрыгнуть персонаж
@@ -80,14 +83,14 @@ export default class Movement extends characterStatus {
   private handleMouse() {
     this.scene.onPointerObservable.add((evt) => {
       if (this.engine.isPointerLock) {
-        const mouseYCheck =
-          this.mouseY + evt.event.movementX / this.mouseSensitivity;
-        if (mouseYCheck >= this.mouseMaxY) {
-          this.mouseY = this.mouseMaxY;
-        } else if (mouseYCheck <= -this.mouseMaxY) {
-          this.mouseY = -this.mouseMaxY;
-        } else this.mouseY += evt.event.movementY / this.mouseSensitivity;
         this.mouseX += evt.event.movementX / this.mouseSensitivity;
+        this.mouseYCheck += evt.event.movementY / this.mouseSensitivity;
+        if (
+          this.mouseYCheck <= this.mouseMaxY &&
+          this.mouseYCheck >= this.mouseMinY
+        ) {
+          this.mouseY = this.mouseYCheck;
+        } else this.mouseYCheck = this.mouseY;
         this.head.rotation.set(this.mouseY, this.mouseX, 0);
       }
     });
