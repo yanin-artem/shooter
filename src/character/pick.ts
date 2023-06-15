@@ -7,6 +7,7 @@ import {
   AbstractMesh,
   PhysicsImpostor,
   PointerInfo,
+  Engine,
 } from "@babylonjs/core";
 
 import ControllEvents from "./characterControls";
@@ -23,25 +24,26 @@ export default class Pick {
     private hand: AbstractMesh,
     private closedHand: AbstractMesh,
     private scene: Scene,
+    private engine: Engine,
     private head: Mesh
   ) {
     this.controls = new ControllEvents();
-    this.inventory = new Inventory();
+    this.inventory = new Inventory(this.scene, this.engine);
   }
 
   createPickEvents(): void {
     this.scene.onKeyboardObservable.add((event) => {
       this.controls.handleControlEvents(event);
-      this.dropTool(event);
-      this.dropDetail(event);
-      this.setPick(event);
+      this.dropTool();
+      this.dropDetail();
+      this.setPick();
       this.addIntoInventory();
-      this.doToolAction(event);
+      this.doToolAction();
     });
   }
 
   //функция броска инструмента
-  private dropTool(event: KeyboardInfo): void {
+  private dropTool(): void {
     if (this.controls.drop && this.pickedTool && !this.pickedDetail) {
       this.closedHand.removeChild(this.pickedTool);
       this.pickedTool.physicsImpostor = new PhysicsImpostor(
@@ -50,7 +52,7 @@ export default class Pick {
         { mass: 0.1 }
       );
       console.log(this.pickedTool);
-      this.inventory.deleteFromInventar(this.pickedTool.metadata.id);
+      this.inventory.deleteFromInventory(this.pickedTool.metadata.id);
       console.log(this.inventory);
       this.pickedTool = null;
       this.toggleHand();
@@ -58,7 +60,7 @@ export default class Pick {
   }
 
   //функция подбора любого лежащего предмета
-  private setPick(event: KeyboardInfo): void {
+  private setPick(): void {
     if (this.controls.pickInHand && !this.pickedTool) {
       function predicate(mesh: AbstractMesh): boolean {
         return (
@@ -72,7 +74,7 @@ export default class Pick {
         hit.pickedMesh.checkCollisions = false;
         if (hit.pickedMesh.metadata.isTool === true) {
           this.positionPickedTool(hit.pickedMesh);
-          this.inventory.addIntoInventarWithHand(this.pickedTool);
+          this.inventory.addIntoInventoryWithHand(this.pickedTool);
         }
         if (hit.pickedMesh.metadata.isDetail === true)
           this.positionPickedDetail(hit.pickedMesh);
@@ -82,7 +84,7 @@ export default class Pick {
     }
   }
   //функция разбора кондиционера отверткой
-  private doToolAction(event: KeyboardInfo) {
+  private doToolAction() {
     if (
       this.pickedTool?.metadata.toolIndex === 1 &&
       this.controls.takeApart &&
@@ -101,7 +103,7 @@ export default class Pick {
     }
   }
   //бросок детали
-  private dropDetail(event: KeyboardInfo) {
+  private dropDetail() {
     if (this.controls.drop && this.pickedDetail) {
       this.closedHand.removeChild(this.pickedDetail);
       this.pickedDetail.physicsImpostor = new PhysicsImpostor(
@@ -177,7 +179,7 @@ export default class Pick {
       if (hit.pickedMesh) {
         // this.positionPickedTool(hit.pickedMesh);
         const item = (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
-        this.inventory.addIntoInventar(item);
+        this.inventory.addIntoInventory(item);
         // this.pickedTool = null;
       }
     }

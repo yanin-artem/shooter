@@ -422,7 +422,7 @@ export default class MainScene {
         this.engine.exitPointerlock;
         this.scene.activeCameras = [];
         this.scene.activeCameras.push(secondCamera);
-      } else if (evt.type === 2 && evt.event.code === "KeyI") {
+      } else if (evt.type === 2 && evt.event.code === "KeyO") {
         if (!this.engine.isPointerLock) this.engine.enterPointerlock();
         secondCamera.detachControl();
         this.camera.attachControl();

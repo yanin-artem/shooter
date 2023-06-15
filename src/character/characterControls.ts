@@ -9,6 +9,7 @@ export default class ControllEvents {
   public pickInInventar = false;
   public drop = false;
   public takeApart = false;
+  public showInventar = false;
 
   public handleControlEvents(event) {
     if (event.event.code === "KeyW") this.forward = event.type === 1;
@@ -21,5 +22,7 @@ export default class ControllEvents {
     if (event.event.code === "KeyG") this.pickInInventar = event.type === 1;
     if (event.event.code === "KeyT") this.drop = event.type === 1;
     if (event.event.code === "KeyF") this.takeApart = event.type === 1;
+    if (event.event.code === "KeyI" && event.type === 1)
+      this.showInventar = !this.showInventar;
   }
 }

@@ -22,7 +22,13 @@ export default class playerController {
     private head: Mesh
   ) {
     this.movement = new Movement(this.body, this.scene, this.engine, this.head);
-    this.pick = new Pick(this.hand, this.closedHand, this.scene, this.head);
+    this.pick = new Pick(
+      this.hand,
+      this.closedHand,
+      this.scene,
+      this.engine,
+      this.head
+    );
   }
   setController(): void {
     this.movement.setMovementEvents();
