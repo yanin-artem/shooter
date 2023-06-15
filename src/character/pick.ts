@@ -10,14 +10,14 @@ import {
 } from "@babylonjs/core";
 
 import ControllEvents from "./characterControls";
-import Inventar from "./inventar";
+import Inventory from "./inventory";
 
 export default class Pick {
   private pickedTool: AbstractMesh;
   private pickedDetail: AbstractMesh;
   private detailScaleK = 3;
   private controls: ControllEvents;
-  private inventar: Inventar;
+  private inventory: Inventory;
 
   constructor(
     private hand: AbstractMesh,
@@ -26,7 +26,7 @@ export default class Pick {
     private head: Mesh
   ) {
     this.controls = new ControllEvents();
-    this.inventar = new Inventar();
+    this.inventory = new Inventory();
   }
 
   createPickEvents(): void {
@@ -35,11 +35,9 @@ export default class Pick {
       this.dropTool(event);
       this.dropDetail(event);
       this.setPick(event);
+      this.addIntoInventory();
       this.doToolAction(event);
     });
-    // this.scene.onPointerObservable.add((event) => {
-    //   this.controls.handleControlEvents(event);
-    // });
   }
 
   //функция броска инструмента
@@ -52,8 +50,8 @@ export default class Pick {
         { mass: 0.1 }
       );
       console.log(this.pickedTool);
-      // this.inventar.deleteFromInventar(this.pickedTool.metadata.id);
-      console.log(this.inventar);
+      this.inventory.deleteFromInventar(this.pickedTool.metadata.id);
+      console.log(this.inventory);
       this.pickedTool = null;
       this.toggleHand();
     } else return;
@@ -61,7 +59,7 @@ export default class Pick {
 
   //функция подбора любого лежащего предмета
   private setPick(event: KeyboardInfo): void {
-    if (this.controls.pick && !this.pickedTool) {
+    if (this.controls.pickInHand && !this.pickedTool) {
       function predicate(mesh: AbstractMesh): boolean {
         return (
           ((mesh.metadata.isDetail && !mesh.metadata.isConditioner) ||
@@ -72,11 +70,13 @@ export default class Pick {
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
         hit.pickedMesh.checkCollisions = false;
-        if (hit.pickedMesh.metadata.isTool === true)
+        if (hit.pickedMesh.metadata.isTool === true) {
           this.positionPickedTool(hit.pickedMesh);
+          this.inventory.addIntoInventarWithHand(this.pickedTool);
+        }
         if (hit.pickedMesh.metadata.isDetail === true)
-          // this.inventar.addIntoInventar(hit.pickedMesh);
           this.positionPickedDetail(hit.pickedMesh);
+
         this.toggleHand();
       }
     }
@@ -164,5 +164,22 @@ export default class Pick {
     this.pickedTool.position.set(-0.11, 0.073, 0.028);
     this.pickedTool.rotationQuaternion = null;
     this.pickedTool.rotation.set(0, 0, 0);
+  }
+
+  private addIntoInventory() {
+    if (this.controls.pickInInventar) {
+      function predicate(mesh: AbstractMesh): boolean {
+        return (
+          !mesh.metadata.isDetail && mesh.metadata.isTool && mesh.isPickable
+        );
+      }
+      const hit = this.castRay(predicate);
+      if (hit.pickedMesh) {
+        // this.positionPickedTool(hit.pickedMesh);
+        const item = (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
+        this.inventory.addIntoInventar(item);
+        // this.pickedTool = null;
+      }
+    }
   }
 }
