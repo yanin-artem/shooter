@@ -6,7 +6,7 @@ export default class ControllEvents {
   public run = false;
   public jump = false;
   public pick = false;
-  public drop = true;
+  public drop = false;
   public takeApart = false;
 
   public handleControlEvents(event) {
@@ -16,8 +16,8 @@ export default class ControllEvents {
     if (event.event.code === "KeyA") this.left = event.type === 1;
     if (event.event.code === "ShiftLeft") this.run = event.type === 1;
     if (event.event.code === "Space") this.jump = event.type === 1;
-    // if (event.event.code === "KeyE") this.pick = true;
-    // if (event.event.code === "KeyE" && event.type === 1) this.drop = true;
-    if (event.event.button === 0) this.takeApart = event.type === 1;
+    if (event.event.code === "KeyG") this.pick = event.type === 1;
+    if (event.event.code === "KeyT") this.drop = event.type === 1;
+    if (event.event.code === "KeyF") this.takeApart = event.type === 1;
   }
 }

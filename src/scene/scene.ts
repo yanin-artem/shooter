@@ -449,7 +449,7 @@ export default class MainScene {
     const skyboxMaterial = new HDRCubeTexture(
       "../assets/skyboxes/sunset_jhbcentral_4k.hdr",
       this.scene,
-      2000
+      1000
     );
 
     // this.scene.environmentTexture = skyboxMaterial;
