@@ -22,22 +22,26 @@ export default class Inventory {
       this.id++;
     }
     item.setEnabled(false);
-    this.inventory.push(item);
-    this.addInventoryButton(this.row, this.col, item.name);
-    if (this.col < 6) {
-      this.col++;
-    } else if (this.row < 8) {
-      this.col = 0;
-      this.row++;
-    }
+    this.calcInventory(item);
+    console.log(this.inventory);
+
+    // this.addInventoryButton(this.row, this.col, item.name);
+    // if (this.col < 6) {
+    //   this.col++;
+    // } else if (this.row < 8) {
+    //   this.col = 0;
+    //   this.row++;
+    // }
   }
 
   public deleteFromInventory(id: Number) {
     const index = this.inventory.findIndex((e) => e.metadata.id === id);
 
     this.inventory[index].setEnabled(true);
-    this.inventory.splice(index, 1);
-    this.deleteInventoryButton(this.row, this.col);
+    this.inventory[index] = undefined;
+    this.deleteInventoryButton(index);
+    // this.calcInventoryGrid();S
+    console.log(this.inventory);
   }
 
   public addIntoInventoryWithHand(item: AbstractMesh) {
@@ -45,14 +49,15 @@ export default class Inventory {
       item.metadata.id = this.id;
       this.id++;
     }
-    this.inventory.push(item);
-    this.addInventoryButton(this.row, this.col, item.name);
-    if (this.col < 6) {
-      this.col++;
-    } else if (this.row < 8) {
-      this.col = 0;
-      this.row++;
-    }
+    this.calcInventory(item);
+    console.log(this.inventory);
+    // this.addInventoryButton(this.row, this.col, item.name);
+    // if (this.col < 6) {
+    //   this.col++;
+    // } else if (this.row < 8) {
+    //   this.col = 0;
+    //   this.row++;
+    // }
   }
 
   private createGrid() {
@@ -64,10 +69,10 @@ export default class Inventory {
     this.inventoryGrid.width = "80%";
     this.inventoryGrid.height = "80%";
     for (let i = 0; i <= rows; i++) {
-      this.inventoryGrid.addRowDefinition(0.125);
+      this.inventoryGrid.addRowDefinition(1 / rows);
     }
     for (let i = 0; i <= columns; i++) {
-      this.inventoryGrid.addColumnDefinition(0.166);
+      this.inventoryGrid.addColumnDefinition(1 / columns);
     }
     this.inventoryGrid.isVisible = false;
 
@@ -79,14 +84,28 @@ export default class Inventory {
 
   private addInventoryButton(row: number, col: number, name: string) {
     const button1 = GUI.Button.CreateSimpleButton(`but${row},${col}`, name);
-    this.inventoryGrid.addControl(button1, row, col);
+    const container = this.inventoryGrid.addControl(button1, row, col);
+    console.log(container);
     button1.color = "white";
     button1.background = "green";
+    console.log(button1);
   }
 
-  private deleteInventoryButton(row: number, col: number) {
-    const button = this.inventoryGrid.getChildByName(`but${row},${col - 1}`);
-    this.inventoryGrid.removeControl(button);
+  private deleteInventoryButton(id: number) {
+    let row = 0;
+    let col = 0;
+    for (let i = 0; i < id; i++) {
+      if (col < 6) {
+        col++;
+      } else if (row < 8) {
+        col = 0;
+        row++;
+      }
+    }
+    const button = this.inventoryGrid.getChildByName(`but${row},${col}`);
+    console.log(button);
+    const container = this.inventoryGrid.removeControl(button);
+    console.log(container);
   }
 
   private showInventory() {
@@ -98,6 +117,33 @@ export default class Inventory {
       } else {
         this.engine.enterPointerlock();
         this.inventoryGrid.isVisible = false;
+      }
+    });
+  }
+  private calcInventory(item: AbstractMesh) {
+    this.calcInventoryMass(item);
+    this.calcInventoryGrid();
+  }
+  private calcInventoryMass(item: AbstractMesh) {
+    const index = this.inventory.findIndex((item) => item === undefined);
+    if (index === -1) {
+      this.inventory.push(item);
+    } else {
+      this.inventory[index] = item;
+    }
+  }
+
+  private calcInventoryGrid() {
+    this.inventoryGrid.clearControls();
+    let row = 0;
+    let col = 0;
+    this.inventory.forEach((item, index) => {
+      this.addInventoryButton(row, col, item?.name);
+      if (col < 6) {
+        col++;
+      } else if (row < 8) {
+        col = 0;
+        row++;
       }
     });
   }

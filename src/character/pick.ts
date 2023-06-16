@@ -51,9 +51,7 @@ export default class Pick {
         PhysicsImpostor.MeshImpostor,
         { mass: 0.1 }
       );
-      console.log(this.pickedTool);
       this.inventory.deleteFromInventory(this.pickedTool.metadata.id);
-      console.log(this.inventory);
       this.pickedTool = null;
       this.toggleHand();
     } else return;
