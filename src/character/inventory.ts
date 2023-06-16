@@ -7,43 +7,33 @@ export default class Inventory {
   private id = 0;
   private controls: ControllEvents;
   private inventoryGrid: GUI.Grid;
-  //TODO: переделать и все с этим связанное!!!
-  private row = 0;
-  private col = 0;
   constructor(private scene: Scene, private engine: Engine) {
     this.inventory = [];
     this.controls = new ControllEvents();
     this.createGrid();
     this.showInventory();
   }
+  //функция добавления предмета сразу в инвентарь
   public addIntoInventory(item: AbstractMesh) {
     if (!Object.keys(item.metadata).includes("id")) {
       item.metadata.id = this.id;
       this.id++;
     }
     item.setEnabled(false);
+    //пробегаюсь ищу пустое место вставляю
     this.calcInventory(item);
     console.log(this.inventory);
-
-    // this.addInventoryButton(this.row, this.col, item.name);
-    // if (this.col < 6) {
-    //   this.col++;
-    // } else if (this.row < 8) {
-    //   this.col = 0;
-    //   this.row++;
-    // }
   }
-
+  //функция удаления предмета из инвентаря
   public deleteFromInventory(id: Number) {
     const index = this.inventory.findIndex((e) => e.metadata.id === id);
 
     this.inventory[index].setEnabled(true);
     this.inventory[index] = undefined;
     this.deleteInventoryButton(index);
-    // this.calcInventoryGrid();S
     console.log(this.inventory);
   }
-
+  //функция добавления предмета в руку и в инвентарь
   public addIntoInventoryWithHand(item: AbstractMesh) {
     if (!Object.keys(item.metadata).includes("id")) {
       item.metadata.id = this.id;
@@ -51,15 +41,8 @@ export default class Inventory {
     }
     this.calcInventory(item);
     console.log(this.inventory);
-    // this.addInventoryButton(this.row, this.col, item.name);
-    // if (this.col < 6) {
-    //   this.col++;
-    // } else if (this.row < 8) {
-    //   this.col = 0;
-    //   this.row++;
-    // }
   }
-
+  //функция создания GUI сетки инвентаря
   private createGrid() {
     const rows = 8;
     const columns = 6;
@@ -81,7 +64,7 @@ export default class Inventory {
     // displayGrid.height = "80%";
     // this.inventoryGrid.addControl(displayGrid);
   }
-
+  //функция добавления ячейки инвентаря
   private addInventoryButton(row: number, col: number, name: string) {
     const button1 = GUI.Button.CreateSimpleButton(`but${row},${col}`, name);
     const container = this.inventoryGrid.addControl(button1, row, col);
@@ -90,7 +73,7 @@ export default class Inventory {
     button1.background = "green";
     console.log(button1);
   }
-
+  //функция удаления ячейки инвентаря
   private deleteInventoryButton(id: number) {
     let row = 0;
     let col = 0;
@@ -107,7 +90,7 @@ export default class Inventory {
     const container = this.inventoryGrid.removeControl(button);
     console.log(container);
   }
-
+  //функция показать/убрать инвентарь
   private showInventory() {
     this.scene.onKeyboardObservable.add((event) => {
       this.controls.handleControlEvents(event);
@@ -120,10 +103,13 @@ export default class Inventory {
       }
     });
   }
+  //функция расчета инвентаря из двух частей - расчет массива и расчет сетки инвентаря
   private calcInventory(item: AbstractMesh) {
+    ///изменить название
     this.calcInventoryMass(item);
     this.calcInventoryGrid();
   }
+  //функция расчет массива инвентаря
   private calcInventoryMass(item: AbstractMesh) {
     const index = this.inventory.findIndex((item) => item === undefined);
     if (index === -1) {
@@ -132,7 +118,7 @@ export default class Inventory {
       this.inventory[index] = item;
     }
   }
-
+  //функция расчета сетки инвентаря
   private calcInventoryGrid() {
     this.inventoryGrid.clearControls();
     let row = 0;

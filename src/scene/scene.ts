@@ -19,6 +19,7 @@ import {
   Texture,
   HDRCubeTexture,
   AbstractMesh,
+  VideoTexture,
 } from "@babylonjs/core";
 import * as CANNON from "cannon";
 
@@ -47,7 +48,7 @@ export default class MainScene {
     this.fps = document.getElementById("fps");
 
     this.createSkyBox();
-
+    this.createVideoMonitor();
     this.engine.runRenderLoop(() => {
       this.fps.innerHTML = this.engine.getFps().toFixed() + " fps";
       this.scene.render();
@@ -454,5 +455,29 @@ export default class MainScene {
 
     // this.scene.environmentTexture = skyboxMaterial;
     this.scene.createDefaultSkybox(skyboxMaterial, true);
+  }
+
+  private createVideoMonitor(): void {
+    var planeOpts = {
+      height: 3.4762,
+      width: 5.3967,
+      sideOrientation: Mesh.DOUBLESIDE,
+    };
+    var ANote0Video = MeshBuilder.CreatePlane("plane", planeOpts, this.scene);
+    var vidPos = new Vector3(0, 7.126, 7.969);
+    ANote0Video.position = vidPos;
+    var ANote0VideoMat = new StandardMaterial("m", this.scene);
+    var ANote0VideoVidTex = new VideoTexture(
+      "vidtex",
+      "../assets/videos/Rick Astley - Never Gonna Give You Up (Official Music Video).mp4",
+      this.scene
+    );
+    ANote0VideoMat.diffuseTexture = ANote0VideoVidTex;
+    ANote0VideoMat.roughness = 1;
+    ANote0VideoMat.emissiveColor = Color3.White();
+    ANote0Video.material = ANote0VideoMat;
+    ANote0VideoVidTex.video.play();
+    ANote0VideoVidTex.video.autoplay = true;
+    ANote0VideoVidTex.video.muted = true;
   }
 }

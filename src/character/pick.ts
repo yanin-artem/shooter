@@ -43,6 +43,7 @@ export default class Pick {
   }
 
   //функция броска инструмента
+  //не toll  а item
   private dropTool(): void {
     if (this.controls.drop && this.pickedTool && !this.pickedDetail) {
       this.closedHand.removeChild(this.pickedTool);
@@ -72,6 +73,7 @@ export default class Pick {
         hit.pickedMesh.checkCollisions = false;
         if (hit.pickedMesh.metadata.isTool === true) {
           this.positionPickedTool(hit.pickedMesh);
+          //addIntoInventoryandintoHand
           this.inventory.addIntoInventoryWithHand(this.pickedTool);
         }
         if (hit.pickedMesh.metadata.isDetail === true)
