@@ -13,7 +13,7 @@ import {
 import ControllEvents from "./characterControls";
 import Inventory from "./inventory";
 
-export default class Pick {
+export default class HandActions {
   private pickedItem: AbstractMesh;
   private pickedDetail: AbstractMesh;
   private detailScaleK = 3;
@@ -65,7 +65,7 @@ export default class Pick {
         this.pickedItem.metadata.id
       );
       // this.pickedItem = null;
-      Pick.toggleHand(this.closedHand, this.hand);
+      HandActions.toggleHand(this.closedHand, this.hand);
     } else return;
   }
 
@@ -89,7 +89,7 @@ export default class Pick {
         if (hit.pickedMesh.metadata.isDetail === true)
           this.positionPickedDetail(hit.pickedMesh);
 
-        Pick.toggleHand(this.closedHand, this.hand);
+        HandActions.toggleHand(this.closedHand, this.hand);
       }
     }
   }
@@ -108,7 +108,7 @@ export default class Pick {
       if (hit.pickedMesh && hit.pickedMesh.metadata.isDetail) {
         hit.pickedMesh.checkCollisions = false;
         this.positionPickedDetail(hit.pickedMesh);
-        Pick.toggleHand(this.closedHand, this.hand);
+        HandActions.toggleHand(this.closedHand, this.hand);
       }
     }
   }
@@ -125,7 +125,7 @@ export default class Pick {
       this.pickedDetail.scaling.scaleInPlace(this.detailScaleK);
       this.pickedDetail = null;
       if (this.pickedItem) this.pickedItem.isVisible = true;
-      Pick.toggleHand(this.closedHand, this.hand);
+      HandActions.toggleHand(this.closedHand, this.hand);
     }
   }
   // функция смены моделей рук (сжатая или свободная)
@@ -188,6 +188,10 @@ export default class Pick {
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
         const item = (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
+        item.checkCollisions = false;
+        item.physicsImpostor.dispose();
+        this.hand.addChild(item);
+        item.position = Vector3.Zero();
         this.inventory.addInInventory(item);
       }
     }

@@ -7,7 +7,7 @@ import {
 } from "@babylonjs/core";
 
 import Movement from "./movement";
-import Pick from "./pick";
+import Pick from "./handActions";
 
 export default class playerController {
   private pick: Pick;

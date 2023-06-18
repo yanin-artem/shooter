@@ -1,7 +1,7 @@
 import { AbstractMesh, Engine, Scene, PhysicsImpostor } from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "./characterControls";
-import Pick from "./pick";
+import HandActions from "./handActions";
 
 export default class Inventory {
   public inventory: Array<AbstractMesh>;
@@ -65,8 +65,9 @@ export default class Inventory {
         PhysicsImpostor.MeshImpostor,
         { mass: 0.1 }
       );
+      this.hand.removeChild(meshArray[index]);
       meshArray[index] = undefined;
-      Pick.toggleHand(this.closedHand, this.hand);
+      HandActions.toggleHand(this.closedHand, this.hand);
       this.deleteCell(index, cellsArray);
     } else return;
   }
