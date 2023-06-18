@@ -14,7 +14,7 @@ export default class Inventory {
     this.showInventory();
   }
   //функция добавления предмета сразу в инвентарь
-  public addIntoInventory(item: AbstractMesh) {
+  public addInInventory(item: AbstractMesh) {
     if (!Object.keys(item.metadata).includes("id")) {
       item.metadata.id = this.id;
       this.id++;
@@ -34,7 +34,7 @@ export default class Inventory {
     console.log(this.inventory);
   }
   //функция добавления предмета в руку и в инвентарь
-  public addIntoInventoryWithHand(item: AbstractMesh) {
+  public addInInventoryAndInHand(item: AbstractMesh) {
     if (!Object.keys(item.metadata).includes("id")) {
       item.metadata.id = this.id;
       this.id++;

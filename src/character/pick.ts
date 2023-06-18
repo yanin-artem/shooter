@@ -14,7 +14,7 @@ import ControllEvents from "./characterControls";
 import Inventory from "./inventory";
 
 export default class Pick {
-  private pickedTool: AbstractMesh;
+  private pickedItem: AbstractMesh;
   private pickedDetail: AbstractMesh;
   private detailScaleK = 3;
   private controls: ControllEvents;
@@ -34,47 +34,46 @@ export default class Pick {
   createPickEvents(): void {
     this.scene.onKeyboardObservable.add((event) => {
       this.controls.handleControlEvents(event);
-      this.dropTool();
+      this.dropItem();
       this.dropDetail();
       this.setPick();
       this.addIntoInventory();
-      this.doToolAction();
+      this.doItemAction();
     });
   }
 
   //функция броска инструмента
   //не toll  а item
-  private dropTool(): void {
-    if (this.controls.drop && this.pickedTool && !this.pickedDetail) {
-      this.closedHand.removeChild(this.pickedTool);
-      this.pickedTool.physicsImpostor = new PhysicsImpostor(
-        this.pickedTool,
+  private dropItem(): void {
+    if (this.controls.drop && this.pickedItem && !this.pickedDetail) {
+      this.closedHand.removeChild(this.pickedItem);
+      this.pickedItem.physicsImpostor = new PhysicsImpostor(
+        this.pickedItem,
         PhysicsImpostor.MeshImpostor,
         { mass: 0.1 }
       );
-      this.inventory.deleteFromInventory(this.pickedTool.metadata.id);
-      this.pickedTool = null;
+      this.inventory.deleteFromInventory(this.pickedItem.metadata.id);
+      this.pickedItem = null;
       this.toggleHand();
     } else return;
   }
 
   //функция подбора любого лежащего предмета
   private setPick(): void {
-    if (this.controls.pickInHand && !this.pickedTool) {
+    if (this.controls.pickInHand && !this.pickedItem) {
       function predicate(mesh: AbstractMesh): boolean {
         return (
           ((mesh.metadata.isDetail && !mesh.metadata.isConditioner) ||
-            mesh.metadata.isTool) &&
+            mesh.metadata.isItem) &&
           mesh.isPickable
         );
       }
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
         hit.pickedMesh.checkCollisions = false;
-        if (hit.pickedMesh.metadata.isTool === true) {
-          this.positionPickedTool(hit.pickedMesh);
-          //addIntoInventoryandintoHand
-          this.inventory.addIntoInventoryWithHand(this.pickedTool);
+        if (hit.pickedMesh.metadata.isItem === true) {
+          this.positionPickedItem(hit.pickedMesh);
+          this.inventory.addInInventoryAndInHand(this.pickedItem);
         }
         if (hit.pickedMesh.metadata.isDetail === true)
           this.positionPickedDetail(hit.pickedMesh);
@@ -84,12 +83,12 @@ export default class Pick {
     }
   }
   //функция разбора кондиционера отверткой
-  private doToolAction() {
+  private doItemAction() {
     if (
-      this.pickedTool?.metadata.toolIndex === 1 &&
+      this.pickedItem?.metadata.ItemIndex === 1 &&
       this.controls.takeApart &&
       !this.pickedDetail &&
-      this.pickedTool
+      this.pickedItem
     ) {
       function predicate(mesh: AbstractMesh): boolean {
         return mesh.isPickable && mesh.metadata.isConditioner;
@@ -114,7 +113,7 @@ export default class Pick {
       this.pickedDetail.metadata.isConditioner = false;
       this.pickedDetail.scaling.scaleInPlace(this.detailScaleK);
       this.pickedDetail = null;
-      if (this.pickedTool) this.pickedTool.isVisible = true;
+      if (this.pickedItem) this.pickedItem.isVisible = true;
       this.toggleHand();
     }
   }
@@ -149,8 +148,8 @@ export default class Pick {
   //функция позиционирования детали в руке
   private positionPickedDetail(pickedMesh: AbstractMesh) {
     this.pickedDetail = pickedMesh;
-    if (this.pickedTool) {
-      this.pickedTool.isVisible = false;
+    if (this.pickedItem) {
+      this.pickedItem.isVisible = false;
     }
     this.closedHand.addChild(this.pickedDetail);
     this.pickedDetail.position.set(-0.11, 0.073, 0.028);
@@ -159,28 +158,26 @@ export default class Pick {
   }
 
   //функция позиционирования инструмента в руке
-  private positionPickedTool(pickedMesh: AbstractMesh) {
-    this.pickedTool = (pickedMesh.parent as AbstractMesh) || pickedMesh;
-    this.pickedTool.physicsImpostor.dispose();
-    this.closedHand.addChild(this.pickedTool);
-    this.pickedTool.position.set(-0.11, 0.073, 0.028);
-    this.pickedTool.rotationQuaternion = null;
-    this.pickedTool.rotation.set(0, 0, 0);
+  private positionPickedItem(pickedMesh: AbstractMesh) {
+    this.pickedItem = (pickedMesh.parent as AbstractMesh) || pickedMesh;
+    this.pickedItem.physicsImpostor.dispose();
+    this.closedHand.addChild(this.pickedItem);
+    this.pickedItem.position.set(-0.11, 0.073, 0.028);
+    this.pickedItem.rotationQuaternion = null;
+    this.pickedItem.rotation.set(0, 0, 0);
   }
 
   private addIntoInventory() {
     if (this.controls.pickInInventar) {
       function predicate(mesh: AbstractMesh): boolean {
         return (
-          !mesh.metadata.isDetail && mesh.metadata.isTool && mesh.isPickable
+          !mesh.metadata.isDetail && mesh.metadata.isItem && mesh.isPickable
         );
       }
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
-        // this.positionPickedTool(hit.pickedMesh);
         const item = (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
-        this.inventory.addIntoInventory(item);
-        // this.pickedTool = null;
+        this.inventory.addInInventory(item);
       }
     }
   }

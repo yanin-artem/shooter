@@ -380,14 +380,14 @@ export default class MainScene {
     pickableItems.push(scissors);
 
     this.scene.meshes.map((mesh) => {
-      mesh.metadata = { isTool: false, isConditioner: false };
+      mesh.metadata = { isItem: false, isConditioner: false };
     });
 
     pickableItems.map((mesh, index) => {
-      mesh[1].metadata.isTool = true;
-      mesh[1].metadata.toolIndex = index;
-      mesh[1].getChildMeshes()[0].metadata.isTool = true;
-      mesh[1].getChildMeshes()[0].metadata.toolIndex = index;
+      mesh[1].metadata.isItem = true;
+      mesh[1].metadata.ItemIndex = index;
+      mesh[1].getChildMeshes()[0].metadata.isItem = true;
+      mesh[1].getChildMeshes()[0].metadata.ItemIndex = index;
     });
 
     conditioner.map((mesh) => {
@@ -476,8 +476,8 @@ export default class MainScene {
     ANote0VideoMat.roughness = 1;
     ANote0VideoMat.emissiveColor = Color3.White();
     ANote0Video.material = ANote0VideoMat;
-    ANote0VideoVidTex.video.play();
     ANote0VideoVidTex.video.autoplay = true;
     ANote0VideoVidTex.video.muted = true;
+    ANote0VideoVidTex.video.play();
   }
 }
