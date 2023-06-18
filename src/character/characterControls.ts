@@ -1,3 +1,5 @@
+import { KeyboardInfo } from "@babylonjs/core";
+
 export default class ControllEvents {
   public forward = false;
   public right = false;
@@ -10,8 +12,9 @@ export default class ControllEvents {
   public drop = false;
   public takeApart = false;
   public showInventar = false;
+  public number: number;
 
-  public handleControlEvents(event) {
+  public handleControlEvents(event: KeyboardInfo) {
     if (event.event.code === "KeyW") this.forward = event.type === 1;
     if (event.event.code === "KeyS") this.back = event.type === 1;
     if (event.event.code === "KeyD") this.right = event.type === 1;
@@ -24,5 +27,12 @@ export default class ControllEvents {
     if (event.event.code === "KeyF") this.takeApart = event.type === 1;
     if (event.event.code === "KeyI" && event.type === 1)
       this.showInventar = !this.showInventar;
+    if (
+      event.event.inputIndex >= 49 &&
+      event.event.inputIndex <= 56 &&
+      event.type === 1
+    ) {
+      this.number = +event.event.key;
+    } else this.number = 0;
   }
 }

@@ -71,7 +71,7 @@ export default class HandActions {
 
   //функция подбора любого лежащего предмета
   private setPick(): void {
-    if (this.controls.pickInHand && !this.closedHand.getChildMeshes()[1]) {
+    if (this.controls.pickInHand) {
       function predicate(mesh: AbstractMesh): boolean {
         return (
           ((mesh.metadata.isDetail && !mesh.metadata.isConditioner) ||

@@ -1,4 +1,10 @@
-import { AbstractMesh, Engine, Scene, PhysicsImpostor } from "@babylonjs/core";
+import {
+  AbstractMesh,
+  Engine,
+  Scene,
+  PhysicsImpostor,
+  KeyboardInfo,
+} from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "./characterControls";
 import HandActions from "./handActions";
@@ -14,6 +20,7 @@ export default class Inventory {
   private inventoryCells: Array<GUI.Button>;
   private quickAccessCells: Array<GUI.Button>;
   private dropButton: GUI.Button;
+  private selectedItem: AbstractMesh;
 
   constructor(
     private scene: Scene,
@@ -30,7 +37,7 @@ export default class Inventory {
     this.advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
     this.createInventoryGrid();
     this.createQuickAccessGrid();
-    this.showInventory();
+    this.inventoryEvents();
   }
   //функция добавления предмета сразу в инвентарь
   public addInInventory(item: AbstractMesh) {
@@ -77,6 +84,10 @@ export default class Inventory {
       item.metadata.id = this.id;
       this.id++;
     }
+    if (this.quickAccess.length > 0) {
+      this.quickAccess.forEach((item) => item?.setEnabled(false));
+    }
+    this.selectedItem = item;
     this.calcQuickAccess(item);
   }
   //функция создания GUI сетки инвентаря
@@ -169,17 +180,14 @@ export default class Inventory {
   }
   //функция показать/убрать инвентарь
   private showInventory() {
-    this.scene.onKeyboardObservable.add((event) => {
-      this.controls.handleControlEvents(event);
-      if (this.controls.showInventar) {
-        this.engine.exitPointerlock();
-        this.inventoryGrid.isVisible = true;
-      } else {
-        this.engine.enterPointerlock();
-        this.inventoryGrid.isVisible = false;
-        this.disableDropButton();
-      }
-    });
+    if (this.controls.showInventar) {
+      this.engine.exitPointerlock();
+      this.inventoryGrid.isVisible = true;
+    } else {
+      this.engine.enterPointerlock();
+      this.inventoryGrid.isVisible = false;
+      this.disableDropButton();
+    }
   }
   //функция расчета инвентаря из двух частей - расчет массива и расчет сетки инвентаря
   private calcInventory(item: AbstractMesh) {
@@ -206,14 +214,6 @@ export default class Inventory {
       (item) => item.textBlock.text === ""
     );
     if (emptyCellIndex != -1) {
-      // this.inventoryCells[emptyCellIndex].onPointerClickObservable.add(() =>
-      //   this.showDropButton(
-      //     this.inventoryCells[emptyCellIndex],
-      //     this.inventoryGrid,
-      //     this.inventory,
-      //     this.inventoryCells
-      //   )
-      // );
       this.inventoryCells[emptyCellIndex].textBlock.text = item.name;
       this.inventoryCells[emptyCellIndex].metadata = { id: item.metadata.id };
     } else return;
@@ -223,14 +223,6 @@ export default class Inventory {
       (item) => item.textBlock.text === ""
     );
     if (emptyCellIndex != -1) {
-      // this.quickAccessCells[emptyCellIndex].onPointerClickObservable.add(() =>
-      //   this.showDropButton(
-      //     this.quickAccessCells[emptyCellIndex],
-      //     this.quickAccessGrid,
-      //     this.quickAccess,
-      //     this.quickAccessCells
-      //   )
-      // );
       this.quickAccessCells[emptyCellIndex].textBlock.text = item.name;
       this.quickAccessCells[emptyCellIndex].metadata = { id: item.metadata.id };
     } else {
@@ -271,6 +263,21 @@ export default class Inventory {
       this.inventoryGrid.removeControl(this.dropButton);
     } else if (this.quickAccessGrid.getChildByName(this.dropButton.name)) {
       this.quickAccessGrid.removeControl(this.dropButton);
+    }
+  }
+  private inventoryEvents() {
+    this.scene.onKeyboardObservable.add((event) => {
+      this.controls.handleControlEvents(event);
+
+      this.showInventory();
+      this.changeItemInQuickAccess();
+    });
+  }
+  private changeItemInQuickAccess() {
+    if (this.controls.number) {
+      this.selectedItem?.setEnabled(false);
+      this.selectedItem = this.quickAccess[this.controls.number - 1];
+      this.selectedItem?.setEnabled(true);
     }
   }
 }
