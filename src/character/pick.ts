@@ -52,7 +52,7 @@ export default class Pick {
         PhysicsImpostor.MeshImpostor,
         { mass: 0.1 }
       );
-      this.inventory.deleteFromInventory(this.pickedItem.metadata.id);
+      this.inventory.deleteFromQuickAccess(this.pickedItem.metadata.id);
       this.pickedItem = null;
       this.toggleHand();
     } else return;

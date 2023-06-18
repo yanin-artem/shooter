@@ -1,16 +1,27 @@
-import { AbstractMesh, Engine, Mesh, Scene } from "@babylonjs/core";
+import { AbstractMesh, Engine, Scene } from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "./characterControls";
 
 export default class Inventory {
   public inventory: Array<AbstractMesh>;
+  public quickAccess: Array<AbstractMesh>;
   private id = 0;
   private controls: ControllEvents;
   private inventoryGrid: GUI.Grid;
+  private quickAccessGrid: GUI.Grid;
+  private advancedTexture: GUI.AdvancedDynamicTexture;
+  private inventoryCells: Array<GUI.Button>;
+  private quickAccessCells: Array<GUI.Button>;
+
   constructor(private scene: Scene, private engine: Engine) {
     this.inventory = [];
+    this.quickAccess = [];
+    this.inventoryCells = [];
+    this.quickAccessCells = [];
     this.controls = new ControllEvents();
-    this.createGrid();
+    this.advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    this.createInventoryGrid();
+    this.createQuickAccessGrid();
     this.showInventory();
   }
   //функция добавления предмета сразу в инвентарь
@@ -20,18 +31,15 @@ export default class Inventory {
       this.id++;
     }
     item.setEnabled(false);
-    //пробегаюсь ищу пустое место вставляю
+    //TODO:пробегаюсь ищу пустое место вставляю
     this.calcInventory(item);
-    console.log(this.inventory);
   }
   //функция удаления предмета из инвентаря
-  public deleteFromInventory(id: Number) {
-    const index = this.inventory.findIndex((e) => e.metadata.id === id);
-
-    this.inventory[index].setEnabled(true);
-    this.inventory[index] = undefined;
-    this.deleteInventoryButton(index);
-    console.log(this.inventory);
+  public deleteFromQuickAccess(id: Number) {
+    const index = this.quickAccess.findIndex((e) => e.metadata.id === id);
+    this.quickAccess[index].setEnabled(true);
+    this.quickAccess[index] = undefined;
+    this.deleteCell(index, this.quickAccessCells);
   }
   //функция добавления предмета в руку и в инвентарь
   public addInInventoryAndInHand(item: AbstractMesh) {
@@ -39,56 +47,77 @@ export default class Inventory {
       item.metadata.id = this.id;
       this.id++;
     }
-    this.calcInventory(item);
-    console.log(this.inventory);
+    this.calcQuickAccess(item);
   }
   //функция создания GUI сетки инвентаря
-  private createGrid() {
-    const rows = 8;
-    const columns = 6;
-    const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+  private createInventoryGrid(): void {
+    const rows = 6;
+    const columns = 8;
     this.inventoryGrid = new GUI.Grid();
-    advancedTexture.addControl(this.inventoryGrid);
-    this.inventoryGrid.width = "80%";
-    this.inventoryGrid.height = "80%";
-    for (let i = 0; i <= rows; i++) {
+    this.advancedTexture.addControl(this.inventoryGrid);
+    this.inventoryGrid.width = "90%";
+    this.inventoryGrid.height = "60%";
+    this.inventoryGrid.top = "-10%";
+    for (let i = 0; i < rows; i++) {
       this.inventoryGrid.addRowDefinition(1 / rows);
     }
-    for (let i = 0; i <= columns; i++) {
+    for (let i = 0; i < columns; i++) {
       this.inventoryGrid.addColumnDefinition(1 / columns);
     }
     this.inventoryGrid.isVisible = false;
 
-    // const displayGrid = new GUI.DisplayGrid();
-    // displayGrid.width = "80%";
-    // displayGrid.height = "80%";
-    // this.inventoryGrid.addControl(displayGrid);
+    this.createInventoryCells();
   }
-  //функция добавления ячейки инвентаря
-  private addInventoryButton(row: number, col: number, name: string) {
-    const button1 = GUI.Button.CreateSimpleButton(`but${row},${col}`, name);
-    const container = this.inventoryGrid.addControl(button1, row, col);
-    console.log(container);
-    button1.color = "white";
-    button1.background = "green";
-    console.log(button1);
-  }
-  //функция удаления ячейки инвентаря
-  private deleteInventoryButton(id: number) {
-    let row = 0;
-    let col = 0;
-    for (let i = 0; i < id; i++) {
-      if (col < 6) {
-        col++;
-      } else if (row < 8) {
-        col = 0;
-        row++;
+  private createInventoryCells(): void {
+    for (let row = 0; row < 6; row++) {
+      for (let col = 0; col < 8; col++) {
+        const cell = GUI.Button.CreateSimpleButton(
+          `but${row},${col}`,
+          undefined
+        );
+        cell.color = "white";
+        cell.background = "green";
+        this.inventoryGrid.addControl(cell, row, col);
+        this.inventoryCells.push(cell);
       }
     }
-    const button = this.inventoryGrid.getChildByName(`but${row},${col}`);
-    console.log(button);
-    const container = this.inventoryGrid.removeControl(button);
-    console.log(container);
+  }
+  private createQuickAccessGrid() {
+    const rows = 1;
+    const columns = 8;
+    this.quickAccessGrid = new GUI.Grid();
+    this.advancedTexture.addControl(this.quickAccessGrid);
+    this.quickAccessGrid.width = "90%";
+    this.quickAccessGrid.height = "10%";
+    this.quickAccessGrid.top = "35%";
+    for (let i = 0; i < rows; i++) {
+      this.quickAccessGrid.addRowDefinition(1 / rows);
+    }
+    for (let i = 0; i < columns; i++) {
+      this.quickAccessGrid.addColumnDefinition(1 / columns);
+    }
+
+    this.createQuickAccessCells();
+  }
+
+  private createQuickAccessCells() {
+    for (let row = 0; row < 1; row++) {
+      for (let col = 0; col < 8; col++) {
+        const cell = GUI.Button.CreateSimpleButton(
+          `but${row},${col}`,
+          undefined
+        );
+        cell.color = "white";
+        cell.background = "gray";
+        this.quickAccessGrid.addControl(cell, row, col);
+        this.quickAccessCells.push(cell);
+      }
+    }
+  }
+
+  //функция удаления ячейки инвентаря
+  private deleteCell(index: number, array: Array<GUI.Button>) {
+    array[index].textBlock.text = "";
   }
   //функция показать/убрать инвентарь
   private showInventory() {
@@ -105,32 +134,42 @@ export default class Inventory {
   }
   //функция расчета инвентаря из двух частей - расчет массива и расчет сетки инвентаря
   private calcInventory(item: AbstractMesh) {
-    ///изменить название
-    this.calcInventoryMass(item);
-    this.calcInventoryGrid();
+    this.calcArray(item, this.inventory);
+    this.calcInventoryGrid(item);
   }
+  private calcQuickAccess(item: AbstractMesh) {
+    this.calcArray(item, this.quickAccess);
+    this.calcQuickAccessGrid(item);
+  }
+
   //функция расчет массива инвентаря
-  private calcInventoryMass(item: AbstractMesh) {
-    const index = this.inventory.findIndex((item) => item === undefined);
+  private calcArray(item: AbstractMesh, array: Array<AbstractMesh>) {
+    const index = array.findIndex((item) => item === undefined);
     if (index === -1) {
-      this.inventory.push(item);
+      array.push(item);
     } else {
-      this.inventory[index] = item;
+      array[index] = item;
     }
   }
   //функция расчета сетки инвентаря
-  private calcInventoryGrid() {
-    this.inventoryGrid.clearControls();
-    let row = 0;
-    let col = 0;
-    this.inventory.forEach((item, index) => {
-      this.addInventoryButton(row, col, item?.name);
-      if (col < 6) {
-        col++;
-      } else if (row < 8) {
-        col = 0;
-        row++;
-      }
-    });
+  private calcInventoryGrid(item: AbstractMesh) {
+    const emptyCellIndex = this.inventoryCells.findIndex(
+      (item) => item.textBlock.text === ""
+    );
+    if (emptyCellIndex != -1) {
+      this.inventoryCells[emptyCellIndex].textBlock.text = item.name;
+      this.inventoryCells[emptyCellIndex].metadata = { id: item.metadata.id };
+    } else return;
+  }
+  private calcQuickAccessGrid(item: AbstractMesh) {
+    const emptyCellIndex = this.quickAccessCells.findIndex(
+      (item) => item.textBlock.text === ""
+    );
+    if (emptyCellIndex != -1) {
+      this.quickAccessCells[emptyCellIndex].textBlock.text = item.name;
+      this.quickAccessCells[emptyCellIndex].metadata = { id: item.metadata.id };
+    } else {
+      this.calcInventoryGrid(item);
+    }
   }
 }
