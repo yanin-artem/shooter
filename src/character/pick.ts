@@ -21,14 +21,19 @@ export default class Pick {
   private inventory: Inventory;
 
   constructor(
-    private hand: AbstractMesh,
-    private closedHand: AbstractMesh,
+    public hand: AbstractMesh,
+    public closedHand: AbstractMesh,
     private scene: Scene,
     private engine: Engine,
     private head: Mesh
   ) {
     this.controls = new ControllEvents();
-    this.inventory = new Inventory(this.scene, this.engine);
+    this.inventory = new Inventory(
+      this.scene,
+      this.engine,
+      this.closedHand,
+      this.hand
+    );
   }
 
   createPickEvents(): void {
@@ -45,22 +50,28 @@ export default class Pick {
   //функция броска инструмента
   //не toll  а item
   private dropItem(): void {
-    if (this.controls.drop && this.pickedItem && !this.pickedDetail) {
+    if (
+      this.controls.drop &&
+      this.closedHand.getChildMeshes()[1] &&
+      !this.pickedDetail
+    ) {
       this.closedHand.removeChild(this.pickedItem);
       this.pickedItem.physicsImpostor = new PhysicsImpostor(
         this.pickedItem,
         PhysicsImpostor.MeshImpostor,
         { mass: 0.1 }
       );
-      this.inventory.deleteFromQuickAccess(this.pickedItem.metadata.id);
-      this.pickedItem = null;
-      this.toggleHand();
+      this.inventory.deleteFromQuickAccessAndFromHand(
+        this.pickedItem.metadata.id
+      );
+      // this.pickedItem = null;
+      Pick.toggleHand(this.closedHand, this.hand);
     } else return;
   }
 
   //функция подбора любого лежащего предмета
   private setPick(): void {
-    if (this.controls.pickInHand && !this.pickedItem) {
+    if (this.controls.pickInHand && !this.closedHand.getChildMeshes()[1]) {
       function predicate(mesh: AbstractMesh): boolean {
         return (
           ((mesh.metadata.isDetail && !mesh.metadata.isConditioner) ||
@@ -78,7 +89,7 @@ export default class Pick {
         if (hit.pickedMesh.metadata.isDetail === true)
           this.positionPickedDetail(hit.pickedMesh);
 
-        this.toggleHand();
+        Pick.toggleHand(this.closedHand, this.hand);
       }
     }
   }
@@ -97,7 +108,7 @@ export default class Pick {
       if (hit.pickedMesh && hit.pickedMesh.metadata.isDetail) {
         hit.pickedMesh.checkCollisions = false;
         this.positionPickedDetail(hit.pickedMesh);
-        this.toggleHand();
+        Pick.toggleHand(this.closedHand, this.hand);
       }
     }
   }
@@ -114,17 +125,17 @@ export default class Pick {
       this.pickedDetail.scaling.scaleInPlace(this.detailScaleK);
       this.pickedDetail = null;
       if (this.pickedItem) this.pickedItem.isVisible = true;
-      this.toggleHand();
+      Pick.toggleHand(this.closedHand, this.hand);
     }
   }
   // функция смены моделей рук (сжатая или свободная)
-  private toggleHand(): void {
-    if (this.closedHand.getChildMeshes()[1] != null) {
-      this.hand.getChildMeshes()[0].isVisible = false;
-      this.closedHand.getChildMeshes()[0].isVisible = true;
-    } else if (this.closedHand.getChildMeshes()[1] == null) {
-      this.hand.getChildMeshes()[0].isVisible = true;
-      this.closedHand.getChildMeshes()[0].isVisible = false;
+  public static toggleHand(closedHand: AbstractMesh, hand: AbstractMesh): void {
+    if (closedHand.getChildMeshes()[1] != null) {
+      hand.getChildMeshes()[0].isVisible = false;
+      closedHand.getChildMeshes()[0].isVisible = true;
+    } else if (closedHand.getChildMeshes()[1] == null) {
+      hand.getChildMeshes()[0].isVisible = true;
+      closedHand.getChildMeshes()[0].isVisible = false;
     }
   }
 

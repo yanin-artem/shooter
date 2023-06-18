@@ -1,6 +1,7 @@
-import { AbstractMesh, Engine, Scene } from "@babylonjs/core";
+import { AbstractMesh, Engine, Scene, PhysicsImpostor } from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "./characterControls";
+import Pick from "./pick";
 
 export default class Inventory {
   public inventory: Array<AbstractMesh>;
@@ -12,13 +13,20 @@ export default class Inventory {
   private advancedTexture: GUI.AdvancedDynamicTexture;
   private inventoryCells: Array<GUI.Button>;
   private quickAccessCells: Array<GUI.Button>;
+  private dropButton: GUI.Button;
 
-  constructor(private scene: Scene, private engine: Engine) {
+  constructor(
+    private scene: Scene,
+    private engine: Engine,
+    private closedHand: AbstractMesh,
+    private hand: AbstractMesh
+  ) {
     this.inventory = [];
     this.quickAccess = [];
     this.inventoryCells = [];
     this.quickAccessCells = [];
     this.controls = new ControllEvents();
+    this.createDropButton();
     this.advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
     this.createInventoryGrid();
     this.createQuickAccessGrid();
@@ -31,15 +39,36 @@ export default class Inventory {
       this.id++;
     }
     item.setEnabled(false);
-    //TODO:пробегаюсь ищу пустое место вставляю
     this.calcInventory(item);
   }
   //функция удаления предмета из инвентаря
-  public deleteFromQuickAccess(id: Number) {
+  public deleteFromQuickAccessAndFromHand(id: Number) {
     const index = this.quickAccess.findIndex((e) => e.metadata.id === id);
-    this.quickAccess[index].setEnabled(true);
-    this.quickAccess[index] = undefined;
-    this.deleteCell(index, this.quickAccessCells);
+    if (index != -1) {
+      this.quickAccess[index].setEnabled(true);
+      this.quickAccess[index] = undefined;
+      this.deleteCell(index, this.quickAccessCells);
+    } else return;
+  }
+
+  private deleteItem(
+    id: Number,
+    meshArray: Array<AbstractMesh>,
+    cellsArray: Array<GUI.Button>
+  ) {
+    const index = meshArray.findIndex((e) => e?.metadata.id === id);
+    if (index != -1) {
+      meshArray[index].setEnabled(true);
+      this.closedHand.removeChild(meshArray[index]);
+      meshArray[index].physicsImpostor = new PhysicsImpostor(
+        meshArray[index],
+        PhysicsImpostor.MeshImpostor,
+        { mass: 0.1 }
+      );
+      meshArray[index] = undefined;
+      Pick.toggleHand(this.closedHand, this.hand);
+      this.deleteCell(index, cellsArray);
+    } else return;
   }
   //функция добавления предмета в руку и в инвентарь
   public addInInventoryAndInHand(item: AbstractMesh) {
@@ -77,8 +106,17 @@ export default class Inventory {
         );
         cell.color = "white";
         cell.background = "green";
+        cell.isPointerBlocker = true;
         this.inventoryGrid.addControl(cell, row, col);
         this.inventoryCells.push(cell);
+        cell.onPointerClickObservable.add(() => {
+          this.showDropButton(
+            cell,
+            this.inventoryGrid,
+            this.inventory,
+            this.inventoryCells
+          );
+        });
       }
     }
   }
@@ -109,6 +147,15 @@ export default class Inventory {
         );
         cell.color = "white";
         cell.background = "gray";
+        cell.isPointerBlocker = true;
+        cell.onPointerClickObservable.add(() =>
+          this.showDropButton(
+            cell,
+            this.quickAccessGrid,
+            this.quickAccess,
+            this.quickAccessCells
+          )
+        );
         this.quickAccessGrid.addControl(cell, row, col);
         this.quickAccessCells.push(cell);
       }
@@ -129,6 +176,7 @@ export default class Inventory {
       } else {
         this.engine.enterPointerlock();
         this.inventoryGrid.isVisible = false;
+        this.disableDropButton();
       }
     });
   }
@@ -157,6 +205,14 @@ export default class Inventory {
       (item) => item.textBlock.text === ""
     );
     if (emptyCellIndex != -1) {
+      // this.inventoryCells[emptyCellIndex].onPointerClickObservable.add(() =>
+      //   this.showDropButton(
+      //     this.inventoryCells[emptyCellIndex],
+      //     this.inventoryGrid,
+      //     this.inventory,
+      //     this.inventoryCells
+      //   )
+      // );
       this.inventoryCells[emptyCellIndex].textBlock.text = item.name;
       this.inventoryCells[emptyCellIndex].metadata = { id: item.metadata.id };
     } else return;
@@ -166,10 +222,54 @@ export default class Inventory {
       (item) => item.textBlock.text === ""
     );
     if (emptyCellIndex != -1) {
+      // this.quickAccessCells[emptyCellIndex].onPointerClickObservable.add(() =>
+      //   this.showDropButton(
+      //     this.quickAccessCells[emptyCellIndex],
+      //     this.quickAccessGrid,
+      //     this.quickAccess,
+      //     this.quickAccessCells
+      //   )
+      // );
       this.quickAccessCells[emptyCellIndex].textBlock.text = item.name;
       this.quickAccessCells[emptyCellIndex].metadata = { id: item.metadata.id };
     } else {
       this.calcInventoryGrid(item);
+    }
+  }
+
+  private createDropButton() {
+    this.dropButton = GUI.Button.CreateSimpleButton("drop", "выбросить");
+    this.dropButton.color = "white";
+    this.dropButton.background = "black";
+    this.dropButton.height = "40%";
+  }
+
+  private showDropButton(
+    cell: GUI.Button,
+    grid: GUI.Grid,
+    meshArray: Array<AbstractMesh>,
+    cellsArray: Array<GUI.Button>
+  ) {
+    this.disableDropButton();
+    if (cell.metadata?.id != undefined) {
+      this.dropButton.onPointerClickObservable.clear();
+      const cellCoordinates = grid.getChildCellInfo(cell).split(":");
+      grid.addControl(
+        this.dropButton,
+        +cellCoordinates[0],
+        +cellCoordinates[1]
+      );
+      this.dropButton.onPointerClickObservable.addOnce(() => {
+        this.deleteItem(cell.metadata.id, meshArray, cellsArray);
+      });
+    } else return;
+  }
+
+  private disableDropButton() {
+    if (this.inventoryGrid.getChildByName(this.dropButton.name)) {
+      this.inventoryGrid.removeControl(this.dropButton);
+    } else if (this.quickAccessGrid.getChildByName(this.dropButton.name)) {
+      this.quickAccessGrid.removeControl(this.dropButton);
     }
   }
 }
