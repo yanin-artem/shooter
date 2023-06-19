@@ -59,12 +59,17 @@ export default class HandActions {
       this.pickedItem.physicsImpostor = new PhysicsImpostor(
         this.pickedItem,
         PhysicsImpostor.MeshImpostor,
-        { mass: 0.1 }
+        { mass: 0.1, friction: 0.9 }
       );
+      const direction = this.getVisionDirection();
+      this.pickedItem.applyImpulse(
+        direction.scaleInPlace(0.2),
+        this.pickedItem.position
+      );
+      this.pickedItem.rotation = Vector3.Zero();
       this.inventory.deleteFromQuickAccessAndFromHand(
         this.pickedItem.metadata.id
       );
-      // this.pickedItem = null;
       HandActions.toggleHand(this.closedHand, this.hand);
     } else return;
   }
@@ -141,6 +146,14 @@ export default class HandActions {
 
   //функция рэйкастинга в направлении просмотра
   private castRay(predicate) {
+    const direction = this.getVisionDirection();
+    const length = 3;
+    const origin = this.head.getAbsolutePosition();
+    const ray = new Ray(origin, direction, length);
+    return this.scene.pickWithRay(ray, predicate);
+  }
+
+  private getVisionDirection(): Vector3 {
     function vecToLocal(vector: Vector3): Vector3 {
       const m = this.head.getWorldMatrix();
       const v = Vector3.TransformCoordinates(vector, m);
@@ -151,9 +164,8 @@ export default class HandActions {
     forward = vecToLocal.call(this, forward);
     let direction = forward.subtract(origin);
     direction = Vector3.Normalize(direction);
-    const length = 3;
-    const ray = new Ray(origin, direction, length);
-    return this.scene.pickWithRay(ray, predicate);
+
+    return direction;
   }
 
   //функция позиционирования детали в руке

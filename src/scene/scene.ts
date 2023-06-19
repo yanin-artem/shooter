@@ -20,7 +20,9 @@ import {
   HDRCubeTexture,
   AbstractMesh,
   VideoTexture,
+  AmmoJSPlugin,
 } from "@babylonjs/core";
+// import Ammo from "ammojs-typed";
 import * as CANNON from "cannon";
 
 import { Inspector } from "@babylonjs/inspector";
@@ -73,18 +75,35 @@ export default class MainScene {
     scene.gravity = new Vector3(0, gravity / framesPerSecond, 0);
     scene.collisionsEnabled = true;
 
-    scene.enablePhysics(
-      new Vector3(0, -9.81, 0),
-      new CannonJSPlugin(true, 10, CANNON)
-    );
-
     // // scene.useRightHandedSystem = true;
     // const physicsEngine = scene.getPhysicsEngine();
     // physicsEngine.setSubTimeStep(100);
     return scene;
   }
 
+  async enablePhysic(): Promise<void> {
+    // const ammo = await Ammo();
+    this.scene.enablePhysics(
+      new Vector3(0, -9.81, 0),
+      new CannonJSPlugin(true, 10, CANNON)
+    );
+  }
+
   async CreateMeshes(): Promise<void> {
+    this.enablePhysic();
+
+    // const ground = MeshBuilder.CreateBox(
+    //   "ground",
+    //   { width: 40, height: 1, depth: 40 },
+    //   this.scene
+    // );
+
+    // ground.physicsImpostor = new PhysicsImpostor(
+    //   ground,
+    //   PhysicsImpostor.BoxImpostor,
+    //   { mass: 0 }
+    // );
+
     const ground = MeshBuilder.CreateGround(
       "ground",
       { width: 40, height: 40 },
