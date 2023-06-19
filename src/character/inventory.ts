@@ -20,7 +20,6 @@ export default class Inventory {
   private inventoryCells: Array<GUI.Button>;
   private quickAccessCells: Array<GUI.Button>;
   private dropButton: GUI.Button;
-  private selectedItem: AbstractMesh;
 
   constructor(
     private scene: Scene,
@@ -50,7 +49,7 @@ export default class Inventory {
   }
   //функция удаления предмета из инвентаря
   public deleteFromQuickAccessAndFromHand(id: Number) {
-    const index = this.quickAccess.findIndex((e) => e.metadata.id === id);
+    const index = this.quickAccess.findIndex((e) => e?.metadata.id === id);
     if (index != -1) {
       this.quickAccess[index].setEnabled(true);
       this.quickAccess[index] = undefined;
@@ -74,7 +73,12 @@ export default class Inventory {
       );
       this.hand.removeChild(meshArray[index]);
       meshArray[index] = undefined;
-      HandActions.toggleHand(this.closedHand, this.hand);
+      HandActions.toggleHand(
+        this.closedHand,
+        this.hand,
+        this.quickAccess,
+        meshArray[index]
+      );
       this.deleteCell(index, cellsArray);
     } else return;
   }
@@ -87,7 +91,6 @@ export default class Inventory {
     if (this.quickAccess.length > 0) {
       this.quickAccess.forEach((item) => item?.setEnabled(false));
     }
-    this.selectedItem = item;
     this.calcQuickAccess(item);
   }
   //функция создания GUI сетки инвентаря
@@ -270,14 +273,6 @@ export default class Inventory {
       this.controls.handleControlEvents(event);
 
       this.showInventory();
-      this.changeItemInQuickAccess();
     });
-  }
-  private changeItemInQuickAccess() {
-    if (this.controls.number) {
-      this.selectedItem?.setEnabled(false);
-      this.selectedItem = this.quickAccess[this.controls.number - 1];
-      this.selectedItem?.setEnabled(true);
-    }
   }
 }

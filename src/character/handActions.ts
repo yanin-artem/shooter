@@ -44,17 +44,14 @@ export default class HandActions {
       this.setPick();
       this.addIntoInventory();
       this.doItemAction();
+      this.changeItemInHand();
     });
   }
 
   //функция броска инструмента
   //не toll  а item
   private dropItem(): void {
-    if (
-      this.controls.drop &&
-      this.closedHand.getChildMeshes()[1] &&
-      !this.pickedDetail
-    ) {
+    if (this.controls.drop && this.pickedItem && !this.pickedDetail) {
       this.closedHand.removeChild(this.pickedItem);
       this.pickedItem.physicsImpostor = new PhysicsImpostor(
         this.pickedItem,
@@ -63,14 +60,20 @@ export default class HandActions {
       );
       const direction = this.getVisionDirection();
       this.pickedItem.applyImpulse(
-        direction.scaleInPlace(0.2),
+        direction.scaleInPlace(0.5),
         this.pickedItem.position
       );
       this.pickedItem.rotation = Vector3.Zero();
       this.inventory.deleteFromQuickAccessAndFromHand(
         this.pickedItem.metadata.id
       );
-      HandActions.toggleHand(this.closedHand, this.hand);
+      this.pickedItem = null;
+      HandActions.toggleHand(
+        this.closedHand,
+        this.hand,
+        this.inventory.quickAccess,
+        this.pickedItem
+      );
     } else return;
   }
 
@@ -94,7 +97,12 @@ export default class HandActions {
         if (hit.pickedMesh.metadata.isDetail === true)
           this.positionPickedDetail(hit.pickedMesh);
 
-        HandActions.toggleHand(this.closedHand, this.hand);
+        HandActions.toggleHand(
+          this.closedHand,
+          this.hand,
+          this.inventory.quickAccess,
+          this.pickedItem
+        );
       }
     }
   }
@@ -113,7 +121,12 @@ export default class HandActions {
       if (hit.pickedMesh && hit.pickedMesh.metadata.isDetail) {
         hit.pickedMesh.checkCollisions = false;
         this.positionPickedDetail(hit.pickedMesh);
-        HandActions.toggleHand(this.closedHand, this.hand);
+        HandActions.toggleHand(
+          this.closedHand,
+          this.hand,
+          this.inventory.quickAccess,
+          this.pickedItem
+        );
       }
     }
   }
@@ -130,15 +143,25 @@ export default class HandActions {
       this.pickedDetail.scaling.scaleInPlace(this.detailScaleK);
       this.pickedDetail = null;
       if (this.pickedItem) this.pickedItem.isVisible = true;
-      HandActions.toggleHand(this.closedHand, this.hand);
+      HandActions.toggleHand(
+        this.closedHand,
+        this.hand,
+        this.inventory.quickAccess,
+        this.pickedItem
+      );
     }
   }
   // функция смены моделей рук (сжатая или свободная)
-  public static toggleHand(closedHand: AbstractMesh, hand: AbstractMesh): void {
-    if (closedHand.getChildMeshes()[1] != null) {
+  public static toggleHand(
+    closedHand: AbstractMesh,
+    hand: AbstractMesh,
+    quickAccess: Array<AbstractMesh>,
+    item: AbstractMesh
+  ): void {
+    if (item) {
       hand.getChildMeshes()[0].isVisible = false;
       closedHand.getChildMeshes()[0].isVisible = true;
-    } else if (closedHand.getChildMeshes()[1] == null) {
+    } else {
       hand.getChildMeshes()[0].isVisible = true;
       closedHand.getChildMeshes()[0].isVisible = false;
     }
@@ -206,6 +229,19 @@ export default class HandActions {
         item.position = Vector3.Zero();
         this.inventory.addInInventory(item);
       }
+    }
+  }
+  private changeItemInHand() {
+    if (this.controls.number) {
+      this.pickedItem?.setEnabled(false);
+      this.pickedItem = this.inventory.quickAccess[this.controls.number - 1];
+      this.pickedItem?.setEnabled(true);
+      HandActions.toggleHand(
+        this.closedHand,
+        this.hand,
+        this.inventory.quickAccess,
+        this.pickedItem
+      );
     }
   }
 }
