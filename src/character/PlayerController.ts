@@ -19,7 +19,8 @@ export default class playerController {
     private body: AbstractMesh,
     private scene: Scene,
     private engine: Engine,
-    private head: Mesh
+    private head: Mesh,
+    private pickArea: Mesh
   ) {
     this.movement = new Movement(this.body, this.scene, this.engine, this.head);
     this.pick = new Pick(
@@ -27,7 +28,8 @@ export default class playerController {
       this.closedHand,
       this.scene,
       this.engine,
-      this.head
+      this.head,
+      this.pickArea
     );
   }
   setController(): void {

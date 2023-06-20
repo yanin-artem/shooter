@@ -13,6 +13,7 @@ export default class ControllEvents {
   public takeApart = false;
   public showInventar = false;
   public number: number;
+  public manyPick = false;
 
   public handleControlEvents(event: KeyboardInfo) {
     if (event.event.code === "KeyW") this.forward = event.type === 1;
@@ -34,5 +35,7 @@ export default class ControllEvents {
     ) {
       this.number = +event.event.key;
     } else this.number = 0;
+    if (event.event.shiftKey && event.event.code === "KeyG")
+      this.manyPick = event.type === 1;
   }
 }

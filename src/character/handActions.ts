@@ -8,10 +8,14 @@ import {
   PhysicsImpostor,
   PointerInfo,
   Engine,
+  ExecuteCodeAction,
+  ActionManager,
+  MeshBuilder,
 } from "@babylonjs/core";
 
 import ControllEvents from "./characterControls";
 import Inventory from "./inventory";
+import MainScene from "../scene/scene";
 
 export default class HandActions {
   private pickedItem: AbstractMesh;
@@ -25,9 +29,11 @@ export default class HandActions {
     public closedHand: AbstractMesh,
     private scene: Scene,
     private engine: Engine,
-    private head: Mesh
+    private head: Mesh,
+    private pickArea: Mesh
   ) {
     this.controls = new ControllEvents();
+
     this.inventory = new Inventory(
       this.scene,
       this.engine,
@@ -45,6 +51,7 @@ export default class HandActions {
       this.addIntoInventory();
       this.doItemAction();
       this.changeItemInHand();
+      this.pickManyFromArea();
     });
   }
 
@@ -223,10 +230,6 @@ export default class HandActions {
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
         const item = (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
-        item.checkCollisions = false;
-        item.physicsImpostor.dispose();
-        this.hand.addChild(item);
-        item.position = Vector3.Zero();
         this.inventory.addInInventory(item);
       }
     }
@@ -242,6 +245,19 @@ export default class HandActions {
         this.inventory.quickAccess,
         this.pickedItem
       );
+    }
+  }
+
+  private pickManyFromArea() {
+    if (this.controls.manyPick) {
+      MainScene.pickableItems.forEach((item) => {
+        if (
+          item.intersectsMesh(this.pickArea) &&
+          !item.physicsImpostor.isDisposed
+        ) {
+          this.inventory.addInInventory(item);
+        }
+      });
     }
   }
 }

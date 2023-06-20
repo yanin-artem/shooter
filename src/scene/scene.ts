@@ -21,6 +21,7 @@ import {
   AbstractMesh,
   VideoTexture,
   AmmoJSPlugin,
+  ActionManager,
 } from "@babylonjs/core";
 // import Ammo from "ammojs-typed";
 import * as CANNON from "cannon";
@@ -36,6 +37,7 @@ export default class MainScene {
   camera: UniversalCamera;
   fps: HTMLElement;
   light: DirectionalLight;
+  public static pickableItems: Array<AbstractMesh>;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.engine = new Engine(this.canvas, true, { stencil: true });
@@ -120,7 +122,7 @@ export default class MainScene {
     ground.position.y = 4.359;
     ground.isVisible = false;
 
-    const pickableItems = [];
+    MainScene.pickableItems = [];
 
     const homeMeshes = await SceneLoader.ImportMeshAsync(
       "",
@@ -345,7 +347,8 @@ export default class MainScene {
       PhysicsImpostor.MeshImpostor,
       { mass: 0.1 }
     );
-    pickableItems.push(pliers);
+    MainScene.pickableItems.push(pliers[1]);
+    console.log(pliers);
 
     const screwdriverMeshes = await SceneLoader.ImportMeshAsync(
       "",
@@ -373,7 +376,7 @@ export default class MainScene {
       { mass: 0.01 }
     );
 
-    pickableItems.push(screwdriver);
+    MainScene.pickableItems.push(screwdriver[1]);
 
     const scissorsMeshes = await SceneLoader.ImportMeshAsync(
       "",
@@ -396,17 +399,17 @@ export default class MainScene {
       PhysicsImpostor.MeshImpostor,
       { mass: 0.1 }
     );
-    pickableItems.push(scissors);
+    MainScene.pickableItems.push(scissors[1]);
 
     this.scene.meshes.map((mesh) => {
       mesh.metadata = { isItem: false, isConditioner: false };
     });
 
-    pickableItems.map((mesh, index) => {
-      mesh[1].metadata.isItem = true;
-      mesh[1].metadata.ItemIndex = index;
-      mesh[1].getChildMeshes()[0].metadata.isItem = true;
-      mesh[1].getChildMeshes()[0].metadata.ItemIndex = index;
+    MainScene.pickableItems.map((mesh, index) => {
+      mesh.metadata.isItem = true;
+      mesh.metadata.ItemIndex = index;
+      mesh.getChildMeshes()[0].metadata.isItem = true;
+      mesh.getChildMeshes()[0].metadata.ItemIndex = index;
     });
 
     conditioner.map((mesh) => {

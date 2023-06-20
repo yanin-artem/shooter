@@ -12,6 +12,7 @@ import {
   AbstractMesh,
   Axis,
   Space,
+  ActionManager,
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
 import playerController from "./PlayerController";
@@ -23,6 +24,7 @@ export default class Character {
   hand: AbstractMesh;
   closedHand: AbstractMesh;
   head: Mesh;
+  pickArea: Mesh;
   characterOpportunities: playerController;
 
   constructor(private scene: Scene, private engine: Engine) {
@@ -30,7 +32,7 @@ export default class Character {
     this.setBody(this.camera, this.scene);
     this.createHand();
     this.createClosedHand();
-
+    this.pickArea = this.createPickArea();
     this.head = this.createHead();
 
     this.characterOpportunities = new playerController(
@@ -39,7 +41,8 @@ export default class Character {
       this.body,
       this.scene,
       this.engine,
-      this.head
+      this.head,
+      this.pickArea
     );
     this.characterOpportunities.setController();
   }
@@ -170,6 +173,16 @@ export default class Character {
     head.metadata = { isTool: false };
     this.camera.parent = head;
     return head;
+  }
+
+  private createPickArea(): Mesh {
+    const sphere = MeshBuilder.CreateSphere("pickArea", { diameter: 3 });
+    this.body.addChild(sphere);
+    sphere.position = Vector3.Zero();
+    sphere.isVisible = false;
+    // sphere.setEnabled(false);
+    sphere.isPickable = false;
+    return sphere;
   }
 
   private setBody(camera: UniversalCamera, scene: Scene) {

@@ -4,6 +4,7 @@ import {
   Scene,
   PhysicsImpostor,
   KeyboardInfo,
+  Vector3,
 } from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "./characterControls";
@@ -44,6 +45,10 @@ export default class Inventory {
       item.metadata.id = this.id;
       this.id++;
     }
+    item.checkCollisions = false;
+    item.physicsImpostor.dispose();
+    this.closedHand.addChild(item);
+    item.position = Vector3.Zero();
     item.setEnabled(false);
     this.calcInventory(item);
   }
