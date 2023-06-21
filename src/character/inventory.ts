@@ -5,6 +5,8 @@ import {
   PhysicsImpostor,
   KeyboardInfo,
   Vector3,
+  Vector2,
+  PointerEventTypes,
 } from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "./characterControls";
@@ -21,6 +23,8 @@ export default class Inventory {
   private inventoryCells: Array<GUI.Button>;
   private quickAccessCells: Array<GUI.Button>;
   private dropButton: GUI.Button;
+  private draggingItem: GUI.Button;
+  private cursorPos: Vector2;
 
   constructor(
     private scene: Scene,
@@ -28,6 +32,7 @@ export default class Inventory {
     private closedHand: AbstractMesh,
     private hand: AbstractMesh
   ) {
+    this.cursorPos = Vector2.Zero();
     this.inventory = [];
     this.quickAccess = [];
     this.inventoryCells = [];
@@ -38,6 +43,7 @@ export default class Inventory {
     this.createInventoryGrid();
     this.createQuickAccessGrid();
     this.inventoryEvents();
+    this.hadleDragging();
   }
   //функция добавления предмета сразу в инвентарь
   public addInInventory(item: AbstractMesh) {
@@ -114,7 +120,8 @@ export default class Inventory {
       this.inventoryGrid.addColumnDefinition(1 / columns);
     }
     this.inventoryGrid.isVisible = false;
-
+    this.inventoryGrid.clipChildren = false;
+    this.inventoryGrid.clipContent = false;
     this.createInventoryCells();
   }
   private createInventoryCells(): void {
@@ -129,17 +136,64 @@ export default class Inventory {
         cell.isPointerBlocker = true;
         this.inventoryGrid.addControl(cell, row, col);
         this.inventoryCells.push(cell);
-        cell.onPointerClickObservable.add(() => {
-          this.showDropButton(
-            cell,
-            this.inventoryGrid,
-            this.inventory,
-            this.inventoryCells
-          );
+        cell.onPointerClickObservable.add((event) => {
+          if (event.buttonIndex === 2) {
+            this.showDropButton(
+              cell,
+              this.inventoryGrid,
+              this.inventory,
+              this.inventoryCells
+            );
+          }
+          if (event.buttonIndex === 0) {
+            this.dragItem(cell);
+          }
         });
       }
     }
   }
+
+  private dragItem(cell: GUI.Button) {
+    const width = cell.widthInPixels;
+    const height = cell.heightInPixels;
+    this.draggingItem = cell;
+    this.draggingItem.zIndex = 1;
+    cell.widthInPixels = width;
+    cell.heightInPixels = height;
+    this.cursorPos.x = this.scene.pointerX;
+    this.cursorPos.y = this.scene.pointerY;
+    cell.leftInPixels = this.cursorPos.x - this.inventoryGrid.centerX;
+    cell.topInPixels = this.cursorPos.y - this.inventoryGrid.centerY;
+    cell.isPointerBlocker = false;
+  }
+
+  private hadleDragging() {
+    this.scene.onPointerObservable.add((event) => {
+      if (event.type === PointerEventTypes.POINTERUP) {
+        if (this.draggingItem) {
+          this.draggingItem.isPointerBlocker = true;
+          this.draggingItem.zIndex = 0;
+          this.draggingItem = null;
+        }
+      } else if (
+        event.type === PointerEventTypes.POINTERMOVE &&
+        this.draggingItem
+      ) {
+        const deltaX = this.scene.pointerX - this.cursorPos.x;
+        const deltaY = this.scene.pointerY - this.cursorPos.y;
+        this.draggingItem.topInPixels += deltaY;
+        this.draggingItem.leftInPixels += deltaX;
+        this.cursorPos.x = this.scene.pointerX;
+        this.cursorPos.y = this.scene.pointerY;
+        console.log(this.cursorPos.x, this.cursorPos.y);
+        console.log(
+          this.draggingItem.leftInPixels,
+          this.draggingItem.topInPixels
+        );
+      }
+    });
+  }
+
   private createQuickAccessGrid() {
     const rows = 1;
     const columns = 8;
