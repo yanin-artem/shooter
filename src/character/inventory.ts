@@ -29,6 +29,9 @@ export default class Inventory {
   private textBlock: GUI.Rectangle;
   private title: GUI.TextBlock;
   private description: GUI.TextBlock;
+  private rightSliderButton: GUI.Button;
+  private leftSliderButton: GUI.Button;
+  private inventoryWrapper: GUI.Rectangle;
 
   constructor(
     private scene: Scene,
@@ -50,6 +53,7 @@ export default class Inventory {
     this.inventoryEvents();
     this.hadleDragging();
     this.createTextBlock();
+    this.createSliderButtons();
   }
   //функция добавления предмета сразу в инвентарь
   public addInInventory(item: AbstractMesh) {
@@ -113,26 +117,31 @@ export default class Inventory {
   //функция создания GUI сетки инвентаря
   private createInventoryGrid(): void {
     const rows = 6;
-    const columns = 8;
+    const columns = 16;
     this.inventoryGrid = new GUI.Grid();
-    this.advancedTexture.addControl(this.inventoryGrid);
-    this.inventoryGrid.width = "90%";
-    this.inventoryGrid.height = "60%";
-    this.inventoryGrid.top = "-10%";
+    this.inventoryWrapper = new GUI.Rectangle("inventoryWrapper");
+    this.advancedTexture.addControl(this.inventoryWrapper);
+    this.inventoryWrapper.addControl(this.inventoryGrid);
+    this.inventoryWrapper.thickness = 0;
+    this.inventoryWrapper.width = "90%";
+    this.inventoryWrapper.height = "60%";
+    this.inventoryWrapper.top = "-10%";
+    this.inventoryGrid.width = "200%";
+    this.inventoryGrid.left = "50%";
     for (let i = 0; i < rows; i++) {
       this.inventoryGrid.addRowDefinition(1 / rows);
     }
     for (let i = 0; i < columns; i++) {
       this.inventoryGrid.addColumnDefinition(1 / columns);
     }
-    this.inventoryGrid.isVisible = false;
+    this.inventoryWrapper.isVisible = false;
     this.inventoryGrid.clipChildren = false;
     this.inventoryGrid.clipContent = false;
     this.createInventoryCells();
   }
   private createInventoryCells(): void {
     for (let row = 0; row < 6; row++) {
-      for (let col = 0; col < 8; col++) {
+      for (let col = 0; col < 16; col++) {
         const cell = GUI.Button.CreateSimpleButton(
           `but${row},${col}`,
           undefined
@@ -311,11 +320,13 @@ export default class Inventory {
   private showInventory() {
     if (this.controls.showInventar) {
       this.engine.exitPointerlock();
-      this.inventoryGrid.isVisible = true;
+      this.inventoryWrapper.isVisible = true;
+      this.showSliderButtons();
     } else {
       this.engine.enterPointerlock();
-      this.inventoryGrid.isVisible = false;
+      this.inventoryWrapper.isVisible = false;
       this.disableDropButton();
+      this.hideSliderButtons();
     }
   }
   //функция расчета инвентаря из двух частей - расчет массива и расчет сетки инвентаря
@@ -421,5 +432,38 @@ export default class Inventory {
     this.textBlock.adaptHeightToChildren = true;
     this.textBlock.adaptWidthToChildren = true;
     this.advancedTexture.addControl(this.textBlock);
+  }
+  private createSliderButtons() {
+    this.leftSliderButton = new GUI.Button("leftSliderButton");
+    this.rightSliderButton = new GUI.Button("rightSliderButton");
+    this.advancedTexture.addControl(this.leftSliderButton);
+    this.advancedTexture.addControl(this.rightSliderButton);
+    this.leftSliderButton.width = "5%";
+    this.leftSliderButton.height = "5%";
+    this.rightSliderButton.width = "5%";
+    this.rightSliderButton.height = "5%";
+    this.leftSliderButton.background = "black";
+    this.rightSliderButton.background = "black";
+    this.leftSliderButton.left = "-50%";
+    this.rightSliderButton.left = "50%";
+    this.rightSliderButton.onPointerClickObservable.add((event) => {
+      this.slideInventar(-50);
+    });
+    this.leftSliderButton.onPointerClickObservable.add((event) => {
+      this.slideInventar(50);
+    });
+    this.hideSliderButtons();
+  }
+
+  private slideInventar(value: number) {
+    this.inventoryGrid.left = `${value}%`;
+  }
+  private hideSliderButtons() {
+    this.leftSliderButton.isVisible = false;
+    this.rightSliderButton.isVisible = false;
+  }
+  private showSliderButtons() {
+    this.leftSliderButton.isVisible = true;
+    this.rightSliderButton.isVisible = true;
   }
 }
