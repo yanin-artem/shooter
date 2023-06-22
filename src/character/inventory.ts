@@ -25,6 +25,10 @@ export default class Inventory {
   private dropButton: GUI.Button;
   private draggingItem: GUI.Button;
   private cursorPos: Vector2;
+  private cellPos: Vector2;
+  private textBlock: GUI.Rectangle;
+  private title: GUI.TextBlock;
+  private description: GUI.TextBlock;
 
   constructor(
     private scene: Scene,
@@ -33,6 +37,7 @@ export default class Inventory {
     private hand: AbstractMesh
   ) {
     this.cursorPos = Vector2.Zero();
+    this.cellPos = Vector2.Zero();
     this.inventory = [];
     this.quickAccess = [];
     this.inventoryCells = [];
@@ -44,6 +49,7 @@ export default class Inventory {
     this.createQuickAccessGrid();
     this.inventoryEvents();
     this.hadleDragging();
+    this.createTextBlock();
   }
   //функция добавления предмета сразу в инвентарь
   public addInInventory(item: AbstractMesh) {
@@ -133,7 +139,6 @@ export default class Inventory {
         );
         cell.color = "white";
         cell.background = "green";
-        cell.isPointerBlocker = true;
         this.inventoryGrid.addControl(cell, row, col);
         this.inventoryCells.push(cell);
         cell.onPointerClickObservable.add((event) => {
@@ -149,22 +154,74 @@ export default class Inventory {
             this.dragItem(cell);
           }
         });
+        cell.onPointerEnterObservable.add((event) => {
+          if (!this.draggingItem) {
+            this.showItemInfo(
+              cell,
+              this.inventoryGrid,
+              this.inventoryCells,
+              this.inventory
+            );
+          }
+        });
+
+        cell.onPointerOutObservable.add((event) => {
+          this.disableTextBlock();
+        });
       }
     }
   }
 
+  private showItemInfo(
+    cell: GUI.Button,
+    grid: GUI.Grid,
+    cellsArray: Array<GUI.Button>,
+    meshArray: Array<AbstractMesh>
+  ) {
+    if (cell.textBlock.text != "") {
+      const index = cellsArray.findIndex(
+        (item) => item.uniqueId === cell.uniqueId
+      );
+      this.title.text = cell.textBlock.text;
+      this.description.text = "Описание предмета";
+
+      this.textBlock.leftInPixels =
+        cell.transformedMeasure.left -
+        grid.centerX +
+        this.textBlock.widthInPixels;
+      this.textBlock.topInPixels =
+        cell.transformedMeasure.top - this.inventoryGrid.centerY;
+
+      this.title.paddingBottomInPixels = 10;
+      this.description.paddingTopInPixels = this.title.heightInPixels;
+      this.textBlock.isVisible = true;
+    } else return;
+  }
+
   private dragItem(cell: GUI.Button) {
-    const width = cell.widthInPixels;
-    const height = cell.heightInPixels;
-    this.draggingItem = cell;
-    this.draggingItem.zIndex = 1;
-    cell.widthInPixels = width;
-    cell.heightInPixels = height;
-    this.cursorPos.x = this.scene.pointerX;
-    this.cursorPos.y = this.scene.pointerY;
-    cell.leftInPixels = this.cursorPos.x - this.inventoryGrid.centerX;
-    cell.topInPixels = this.cursorPos.y - this.inventoryGrid.centerY;
-    cell.isPointerBlocker = false;
+    if (this.draggingItem != cell) {
+      const width = cell.widthInPixels;
+      const height = cell.heightInPixels;
+      this.draggingItem = cell;
+      this.draggingItem.zIndex = 1;
+      cell.widthInPixels = width;
+      cell.heightInPixels = height;
+      this.cursorPos.x = this.scene.pointerX;
+      this.cursorPos.y = this.scene.pointerY;
+      this.cellPos.x =
+        cell.transformedMeasure.left -
+        this.inventoryGrid.centerX +
+        cell.transformedMeasure.width / 2;
+      this.cellPos.y =
+        cell.transformedMeasure.top -
+        this.inventoryGrid.centerY +
+        cell.transformedMeasure.height / 2;
+      cell.leftInPixels = this.cursorPos.x - this.inventoryGrid.centerX;
+      cell.topInPixels = this.cursorPos.y - this.inventoryGrid.centerY;
+
+      this.draggingItem.isPointerBlocker = false;
+    } else {
+    }
   }
 
   private hadleDragging() {
@@ -172,6 +229,8 @@ export default class Inventory {
       if (event.type === PointerEventTypes.POINTERUP) {
         if (this.draggingItem) {
           this.draggingItem.isPointerBlocker = true;
+          this.draggingItem.leftInPixels = this.cellPos.x;
+          this.draggingItem.topInPixels = this.cellPos.y;
           this.draggingItem.zIndex = 0;
           this.draggingItem = null;
         }
@@ -185,11 +244,6 @@ export default class Inventory {
         this.draggingItem.leftInPixels += deltaX;
         this.cursorPos.x = this.scene.pointerX;
         this.cursorPos.y = this.scene.pointerY;
-        console.log(this.cursorPos.x, this.cursorPos.y);
-        console.log(
-          this.draggingItem.leftInPixels,
-          this.draggingItem.topInPixels
-        );
       }
     });
   }
@@ -230,6 +284,19 @@ export default class Inventory {
             this.quickAccessCells
           )
         );
+        cell.onPointerEnterObservable.add((event) => {
+          if (!this.draggingItem) {
+            this.showItemInfo(
+              cell,
+              this.quickAccessGrid,
+              this.quickAccessCells,
+              this.quickAccess
+            );
+          }
+        });
+        cell.onPointerOutObservable.add((event) => {
+          this.disableTextBlock();
+        });
         this.quickAccessGrid.addControl(cell, row, col);
         this.quickAccessCells.push(cell);
       }
@@ -327,11 +394,32 @@ export default class Inventory {
       this.quickAccessGrid.removeControl(this.dropButton);
     }
   }
+  private disableTextBlock() {
+    this.textBlock.isVisible = false;
+  }
   private inventoryEvents() {
     this.scene.onKeyboardObservable.add((event) => {
       this.controls.handleControlEvents(event);
 
       this.showInventory();
     });
+  }
+  private createTextBlock() {
+    this.textBlock = new GUI.Rectangle("textBlock");
+    this.title = new GUI.TextBlock("title", undefined);
+    this.title.resizeToFit = true;
+    this.description = new GUI.TextBlock("description", undefined);
+    this.description.resizeToFit = true;
+    this.description.paddingTopInPixels = this.title.heightInPixels;
+    this.textBlock.addControl(this.title);
+    this.textBlock.addControl(this.description);
+    this.textBlock.isVisible = false;
+    this.textBlock.zIndex = 2;
+    this.textBlock.background = "white";
+    this.textBlock.clipChildren = false;
+    this.textBlock.clipContent = false;
+    this.textBlock.adaptHeightToChildren = true;
+    this.textBlock.adaptWidthToChildren = true;
+    this.advancedTexture.addControl(this.textBlock);
   }
 }

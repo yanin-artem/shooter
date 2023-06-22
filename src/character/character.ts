@@ -55,7 +55,7 @@ export default class Character {
     );
 
     scene.onPointerDown = () => {
-      if (!engine.isPointerLock) engine.enterPointerlock();
+      // if (!engine.isPointerLock) engine.enterPointerlock();
     };
 
     camera.minZ = 0;
