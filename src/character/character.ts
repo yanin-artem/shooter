@@ -15,6 +15,8 @@ import {
   ActionManager,
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
+import * as GUI from "@babylonjs/gui";
+
 import playerController from "./PlayerController";
 
 export default class Character {
@@ -102,7 +104,6 @@ export default class Character {
     gunSight.material = mat;
     gunSight.isPickable = false;
     gunSight.metadata = { isTool: false };
-
     return gunSight;
   }
 
@@ -146,8 +147,6 @@ export default class Character {
           Math.PI / 2,
           Math.PI / 6.66
         );
-        // this.hand.rotate(Axis.X, -Math.PI / 7.8, Space.WORLD);
-        // this.hand.rotate(Axis.Y, Math.PI / 2.16, Space.WORLD);
 
         this.closedHand.parent = this.head;
         hand.position = Vector3.Zero();
@@ -182,15 +181,6 @@ export default class Character {
   }
 
   private setBody(camera: UniversalCamera, scene: Scene) {
-    // this.body = MeshBuilder.CreateCapsule("body", {
-    //   height: 1.7,
-    //   radius: 0.3,
-    // });
-
-    // const body1 = MeshBuilder.CreateCapsule("body", {
-    //   height: 1.3,
-    //   radius: 0.05,
-    // });
     const body1 = MeshBuilder.CreateBox("body", {
       height: 1.3,
       width: 0.2,

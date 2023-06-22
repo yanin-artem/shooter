@@ -10,8 +10,9 @@ import {
 } from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "./characterControls";
-import HandActions from "./handActions";
 import Root from "../scene/root";
+import HandActions from "./handActions";
+import InventoryInteractions from "./inventoryInteractions";
 
 export default class Inventory {
   public inventory: Array<AbstractMesh>;
@@ -23,16 +24,15 @@ export default class Inventory {
   private advancedTexture: GUI.AdvancedDynamicTexture;
   private inventoryCells: Array<GUI.Button>;
   private quickAccessCells: Array<GUI.Button>;
-  private dropButton: GUI.Button;
   private draggingItem: GUI.Button;
-  private cursorPos: Vector2;
-  private cellPos: Vector2;
-  private textBlock: GUI.Rectangle;
-  private title: GUI.TextBlock;
-  private description: GUI.TextBlock;
   private rightSliderButton: GUI.Button;
   private leftSliderButton: GUI.Button;
   private inventoryWrapper: GUI.Rectangle;
+  private textBlock: GUI.Rectangle;
+  private title: GUI.TextBlock;
+  private description: GUI.TextBlock;
+  private dropButton: GUI.Button;
+  private interactions: InventoryInteractions;
 
   constructor(
     private scene: Scene,
@@ -40,22 +40,34 @@ export default class Inventory {
     private closedHand: AbstractMesh,
     private hand: AbstractMesh
   ) {
-    this.cursorPos = Vector2.Zero();
-    this.cellPos = Vector2.Zero();
     this.inventory = [];
     this.quickAccess = [];
     this.inventoryCells = [];
     this.quickAccessCells = [];
     this.controls = new ControllEvents();
-    this.createDropButton();
+    this.createInventoryElements();
+    this.inventoryEvents();
+    this.interactions = new InventoryInteractions(
+      this.scene,
+      this.title,
+      this.description,
+      this.textBlock,
+      this.draggingItem,
+      this.inventoryGrid,
+      this.rightSliderButton,
+      this.leftSliderButton
+    );
+  }
+  //метод оболочка для метов создания элементов инвентаря
+  private createInventoryElements() {
     this.advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
     this.createInventoryGrid();
     this.createQuickAccessGrid();
-    this.inventoryEvents();
-    this.hadleDragging();
+    this.createDropButton();
     this.createTextBlock();
     this.createSliderButtons();
   }
+
   //функция добавления предмета сразу в инвентарь
   public addInInventory(item: AbstractMesh) {
     if (!Object.keys(item.metadata).includes("id")) {
@@ -79,31 +91,6 @@ export default class Inventory {
     } else return;
   }
 
-  private deleteItem(
-    id: Number,
-    meshArray: Array<AbstractMesh>,
-    cellsArray: Array<GUI.Button>
-  ) {
-    const index = meshArray.findIndex((e) => e?.metadata.id === id);
-    if (index != -1) {
-      meshArray[index].setEnabled(true);
-      this.closedHand.removeChild(meshArray[index]);
-      meshArray[index].physicsImpostor = new PhysicsImpostor(
-        meshArray[index],
-        PhysicsImpostor.MeshImpostor,
-        { mass: 0.1 }
-      );
-      this.hand.removeChild(meshArray[index]);
-      meshArray[index] = undefined;
-      HandActions.toggleHand(
-        this.closedHand,
-        this.hand,
-        this.quickAccess,
-        meshArray[index]
-      );
-      this.deleteCell(index, cellsArray);
-    } else return;
-  }
   //функция добавления предмета в руку и в инвентарь
   public addInInventoryAndInHand(item: AbstractMesh) {
     if (!Object.keys(item.metadata).includes("id")) {
@@ -140,6 +127,7 @@ export default class Inventory {
     this.inventoryGrid.clipContent = false;
     this.createInventoryCells();
   }
+  //создание ячеек инвентаря
   private createInventoryCells(): void {
     for (let row = 0; row < 6; row++) {
       for (let col = 0; col < 16; col++) {
@@ -161,103 +149,46 @@ export default class Inventory {
             );
           }
           if (event.buttonIndex === 0) {
-            this.dragItem(cell);
+            this.interactions.dragItem(cell);
           }
         });
         cell.onPointerEnterObservable.add((event) => {
           if (!this.draggingItem) {
-            this.showItemInfo(
-              cell,
-              this.inventoryGrid,
-              this.inventoryCells,
-              this.inventory
-            );
+            this.interactions.showItemInfo(cell, this.inventoryGrid);
           }
         });
-
         cell.onPointerOutObservable.add((event) => {
-          this.disableTextBlock();
+          this.interactions.disableTextBlock();
         });
       }
     }
   }
-
-  private showItemInfo(
-    cell: GUI.Button,
-    grid: GUI.Grid,
-    cellsArray: Array<GUI.Button>,
-    meshArray: Array<AbstractMesh>
+  //удаление предмета в интерфейсе инвентаря
+  private deleteItem(
+    id: Number,
+    meshArray: Array<AbstractMesh>,
+    cellsArray: Array<GUI.Button>
   ) {
-    if (cell.textBlock.text != "") {
-      const index = cellsArray.findIndex(
-        (item) => item.uniqueId === cell.uniqueId
+    const index = meshArray.findIndex((e) => e?.metadata.id === id);
+    if (index != -1) {
+      meshArray[index].setEnabled(true);
+      this.closedHand.removeChild(meshArray[index]);
+      meshArray[index].physicsImpostor = new PhysicsImpostor(
+        meshArray[index],
+        PhysicsImpostor.MeshImpostor,
+        { mass: 0.1 }
       );
-      this.title.text = cell.textBlock.text;
-      this.description.text = "Описание предмета";
-
-      this.textBlock.leftInPixels =
-        cell.transformedMeasure.left -
-        grid.centerX +
-        this.textBlock.widthInPixels;
-      this.textBlock.topInPixels =
-        cell.transformedMeasure.top - this.inventoryGrid.centerY;
-
-      this.title.paddingBottomInPixels = 10;
-      this.description.paddingTopInPixels = this.title.heightInPixels;
-      this.textBlock.isVisible = true;
+      meshArray[index] = undefined;
+      HandActions.toggleHand(
+        this.closedHand,
+        this.hand,
+        this.quickAccess,
+        meshArray[index]
+      );
+      this.deleteCell(index, cellsArray);
     } else return;
   }
-
-  private dragItem(cell: GUI.Button) {
-    if (this.draggingItem != cell) {
-      const width = cell.widthInPixels;
-      const height = cell.heightInPixels;
-      this.draggingItem = cell;
-      this.draggingItem.zIndex = 1;
-      cell.widthInPixels = width;
-      cell.heightInPixels = height;
-      this.cursorPos.x = this.scene.pointerX;
-      this.cursorPos.y = this.scene.pointerY;
-      this.cellPos.x =
-        cell.transformedMeasure.left -
-        this.inventoryGrid.centerX +
-        cell.transformedMeasure.width / 2;
-      this.cellPos.y =
-        cell.transformedMeasure.top -
-        this.inventoryGrid.centerY +
-        cell.transformedMeasure.height / 2;
-      cell.leftInPixels = this.cursorPos.x - this.inventoryGrid.centerX;
-      cell.topInPixels = this.cursorPos.y - this.inventoryGrid.centerY;
-
-      this.draggingItem.isPointerBlocker = false;
-    } else {
-    }
-  }
-
-  private hadleDragging() {
-    this.scene.onPointerObservable.add((event) => {
-      if (event.type === PointerEventTypes.POINTERUP) {
-        if (this.draggingItem) {
-          this.draggingItem.isPointerBlocker = true;
-          this.draggingItem.leftInPixels = this.cellPos.x;
-          this.draggingItem.topInPixels = this.cellPos.y;
-          this.draggingItem.zIndex = 0;
-          this.draggingItem = null;
-        }
-      } else if (
-        event.type === PointerEventTypes.POINTERMOVE &&
-        this.draggingItem
-      ) {
-        const deltaX = this.scene.pointerX - this.cursorPos.x;
-        const deltaY = this.scene.pointerY - this.cursorPos.y;
-        this.draggingItem.topInPixels += deltaY;
-        this.draggingItem.leftInPixels += deltaX;
-        this.cursorPos.x = this.scene.pointerX;
-        this.cursorPos.y = this.scene.pointerY;
-      }
-    });
-  }
-
+  //создание сетки панели быстрого доступа
   private createQuickAccessGrid() {
     const rows = 1;
     const columns = 8;
@@ -275,7 +206,7 @@ export default class Inventory {
 
     this.createQuickAccessCells();
   }
-
+  //создание ячеек панели быстрого доступа
   private createQuickAccessCells() {
     for (let row = 0; row < 1; row++) {
       for (let col = 0; col < 8; col++) {
@@ -296,16 +227,11 @@ export default class Inventory {
         );
         cell.onPointerEnterObservable.add((event) => {
           if (!this.draggingItem) {
-            this.showItemInfo(
-              cell,
-              this.quickAccessGrid,
-              this.quickAccessCells,
-              this.quickAccess
-            );
+            this.interactions.showItemInfo(cell, this.quickAccessGrid);
           }
         });
         cell.onPointerOutObservable.add((event) => {
-          this.disableTextBlock();
+          this.interactions.disableTextBlock();
         });
         this.quickAccessGrid.addControl(cell, row, col);
         this.quickAccessCells.push(cell);
@@ -323,13 +249,13 @@ export default class Inventory {
       this.engine.exitPointerlock();
       Root.usePointerLock = false;
       this.inventoryWrapper.isVisible = true;
-      this.showSliderButtons();
+      this.interactions.showSliderButtons();
     } else {
       this.engine.enterPointerlock();
       Root.usePointerLock = true;
       this.inventoryWrapper.isVisible = false;
       this.disableDropButton();
-      this.hideSliderButtons();
+      this.interactions.hideSliderButtons();
     }
   }
   //функция расчета инвентаря из двух частей - расчет массива и расчет сетки инвентаря
@@ -373,6 +299,55 @@ export default class Inventory {
     }
   }
 
+  private inventoryEvents() {
+    this.scene.onKeyboardObservable.add((event) => {
+      this.controls.handleControlEvents(event);
+
+      this.showInventory();
+    });
+  }
+
+  private createTextBlock() {
+    this.textBlock = new GUI.Rectangle("textBlock");
+    this.title = new GUI.TextBlock("title", undefined);
+    this.title.resizeToFit = true;
+    this.description = new GUI.TextBlock("description", undefined);
+    this.description.resizeToFit = true;
+    this.description.paddingTopInPixels = this.title.heightInPixels;
+    this.textBlock.addControl(this.title);
+    this.textBlock.addControl(this.description);
+    this.textBlock.isVisible = false;
+    this.textBlock.zIndex = 2;
+    this.textBlock.background = "white";
+    this.textBlock.clipChildren = false;
+    this.textBlock.clipContent = false;
+    this.textBlock.adaptHeightToChildren = true;
+    this.textBlock.adaptWidthToChildren = true;
+    this.advancedTexture.addControl(this.textBlock);
+  }
+  private createSliderButtons() {
+    this.leftSliderButton = new GUI.Button("leftSliderButton");
+    this.rightSliderButton = new GUI.Button("rightSliderButton");
+    this.advancedTexture.addControl(this.leftSliderButton);
+    this.advancedTexture.addControl(this.rightSliderButton);
+    this.leftSliderButton.width = "5%";
+    this.leftSliderButton.height = "5%";
+    this.rightSliderButton.width = "5%";
+    this.rightSliderButton.height = "5%";
+    this.leftSliderButton.background = "black";
+    this.rightSliderButton.background = "black";
+    this.leftSliderButton.left = "-50%";
+    this.rightSliderButton.left = "50%";
+    this.rightSliderButton.onPointerClickObservable.add((event) => {
+      this.interactions.slideInventar(-50);
+    });
+    this.leftSliderButton.onPointerClickObservable.add((event) => {
+      this.interactions.slideInventar(50);
+    });
+    this.leftSliderButton.isVisible = false;
+    this.rightSliderButton.isVisible = false;
+  }
+
   private createDropButton() {
     this.dropButton = GUI.Button.CreateSimpleButton("drop", "выбросить");
     this.dropButton.color = "white";
@@ -407,66 +382,5 @@ export default class Inventory {
     } else if (this.quickAccessGrid.getChildByName(this.dropButton.name)) {
       this.quickAccessGrid.removeControl(this.dropButton);
     }
-  }
-  private disableTextBlock() {
-    this.textBlock.isVisible = false;
-  }
-  private inventoryEvents() {
-    this.scene.onKeyboardObservable.add((event) => {
-      this.controls.handleControlEvents(event);
-
-      this.showInventory();
-    });
-  }
-  private createTextBlock() {
-    this.textBlock = new GUI.Rectangle("textBlock");
-    this.title = new GUI.TextBlock("title", undefined);
-    this.title.resizeToFit = true;
-    this.description = new GUI.TextBlock("description", undefined);
-    this.description.resizeToFit = true;
-    this.description.paddingTopInPixels = this.title.heightInPixels;
-    this.textBlock.addControl(this.title);
-    this.textBlock.addControl(this.description);
-    this.textBlock.isVisible = false;
-    this.textBlock.zIndex = 2;
-    this.textBlock.background = "white";
-    this.textBlock.clipChildren = false;
-    this.textBlock.clipContent = false;
-    this.textBlock.adaptHeightToChildren = true;
-    this.textBlock.adaptWidthToChildren = true;
-    this.advancedTexture.addControl(this.textBlock);
-  }
-  private createSliderButtons() {
-    this.leftSliderButton = new GUI.Button("leftSliderButton");
-    this.rightSliderButton = new GUI.Button("rightSliderButton");
-    this.advancedTexture.addControl(this.leftSliderButton);
-    this.advancedTexture.addControl(this.rightSliderButton);
-    this.leftSliderButton.width = "5%";
-    this.leftSliderButton.height = "5%";
-    this.rightSliderButton.width = "5%";
-    this.rightSliderButton.height = "5%";
-    this.leftSliderButton.background = "black";
-    this.rightSliderButton.background = "black";
-    this.leftSliderButton.left = "-50%";
-    this.rightSliderButton.left = "50%";
-    this.rightSliderButton.onPointerClickObservable.add((event) => {
-      this.slideInventar(-50);
-    });
-    this.leftSliderButton.onPointerClickObservable.add((event) => {
-      this.slideInventar(50);
-    });
-    this.hideSliderButtons();
-  }
-
-  private slideInventar(value: number) {
-    this.inventoryGrid.left = `${value}%`;
-  }
-  private hideSliderButtons() {
-    this.leftSliderButton.isVisible = false;
-    this.rightSliderButton.isVisible = false;
-  }
-  private showSliderButtons() {
-    this.leftSliderButton.isVisible = true;
-    this.rightSliderButton.isVisible = true;
   }
 }
