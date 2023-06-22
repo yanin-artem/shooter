@@ -11,6 +11,7 @@ import {
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "./characterControls";
 import HandActions from "./handActions";
+import Root from "../scene/root";
 
 export default class Inventory {
   public inventory: Array<AbstractMesh>;
@@ -320,10 +321,12 @@ export default class Inventory {
   private showInventory() {
     if (this.controls.showInventar) {
       this.engine.exitPointerlock();
+      Root.usePointerLock = false;
       this.inventoryWrapper.isVisible = true;
       this.showSliderButtons();
     } else {
       this.engine.enterPointerlock();
+      Root.usePointerLock = true;
       this.inventoryWrapper.isVisible = false;
       this.disableDropButton();
       this.hideSliderButtons();

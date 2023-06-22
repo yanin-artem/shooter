@@ -26,6 +26,8 @@ import {
 // import Ammo from "ammojs-typed";
 import * as CANNON from "cannon";
 
+import Root from "./root";
+
 import { Inspector } from "@babylonjs/inspector";
 
 import Character from "../character/character";
@@ -53,6 +55,7 @@ export default class MainScene {
 
     this.createSkyBox();
     // this.createVideoMonitor();
+    new Root(this.scene, this.engine);
     this.engine.runRenderLoop(() => {
       this.fps.innerHTML = this.engine.getFps().toFixed() + " fps";
       this.scene.render();

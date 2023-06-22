@@ -54,10 +54,6 @@ export default class Character {
       this.scene
     );
 
-    scene.onPointerDown = () => {
-      // if (!engine.isPointerLock) engine.enterPointerlock();
-    };
-
     camera.minZ = 0;
     camera.inertia = 0;
     camera.angularSensibility = 600;
