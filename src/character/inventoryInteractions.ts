@@ -28,7 +28,7 @@ export default class InventoryInteractions {
     this.cellPos = Vector2.Zero();
     this.hadleDragging();
   }
-  public showItemInfo(cell: GUI.Button, grid: GUI.Grid) {
+  public showItemInfo(cell: GUI.Button, grid: GUI.Rectangle) {
     if (cell.textBlock.text != "") {
       this.title.text = cell.textBlock.text;
       this.description.text = "Описание предмета";
@@ -37,7 +37,7 @@ export default class InventoryInteractions {
     } else return;
   }
 
-  private itemInfoPosition(cell: GUI.Button, grid: GUI.Grid) {
+  private itemInfoPosition(cell: GUI.Button, grid: GUI.Rectangle) {
     this.textBlock.leftInPixels =
       cell.transformedMeasure.left -
       grid.centerX +

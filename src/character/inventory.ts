@@ -154,7 +154,7 @@ export default class Inventory {
         });
         cell.onPointerEnterObservable.add((event) => {
           if (!this.draggingItem) {
-            this.interactions.showItemInfo(cell, this.inventoryGrid);
+            this.interactions.showItemInfo(cell, this.inventoryWrapper);
           }
         });
         cell.onPointerOutObservable.add((event) => {
@@ -227,7 +227,7 @@ export default class Inventory {
         );
         cell.onPointerEnterObservable.add((event) => {
           if (!this.draggingItem) {
-            this.interactions.showItemInfo(cell, this.quickAccessGrid);
+            this.interactions.showItemInfo(cell, this.inventoryWrapper);
           }
         });
         cell.onPointerOutObservable.add((event) => {
