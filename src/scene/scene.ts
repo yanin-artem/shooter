@@ -54,7 +54,7 @@ export default class MainScene {
     this.fps = document.getElementById("fps");
 
     this.createSkyBox();
-    // this.createVideoMonitor();
+    this.createVideoMonitor();
     new Root(this.scene, this.engine);
     this.engine.runRenderLoop(() => {
       this.fps.innerHTML = this.engine.getFps().toFixed() + " fps";

@@ -52,7 +52,7 @@ export default class InventoryInteractions {
   public disableTextBlock() {
     this.textBlock.isVisible = false;
   }
-
+  //FIXME: спросить про драг н дроп, как получить кнопку под кнопкой создать обьект
   public dragItem(cell: GUI.Button) {
     if (this.draggingItem != cell) {
       const width = cell.widthInPixels;
@@ -65,6 +65,7 @@ export default class InventoryInteractions {
       this.cursorPos.y = this.scene.pointerY;
       this.dragItemPosition(cell);
       this.draggingItem.isPointerBlocker = false;
+      // this.draggingItem.isHitTestVisible = false;
     } else {
     }
   }

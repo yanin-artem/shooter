@@ -247,7 +247,7 @@ export default class HandActions {
       );
     }
   }
-
+  //FIXME: спросить про перебор всех предметов
   private pickManyFromArea() {
     if (this.controls.manyPick) {
       MainScene.pickableItems.forEach((item) => {

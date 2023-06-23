@@ -362,7 +362,7 @@ export default class Inventory {
     cellsArray: Array<GUI.Button>
   ) {
     this.disableDropButton();
-    if (cell.metadata?.id != undefined) {
+    if (cell.textBlock.text != "") {
       this.dropButton.onPointerClickObservable.clear();
       const cellCoordinates = grid.getChildCellInfo(cell).split(":");
       grid.addControl(
