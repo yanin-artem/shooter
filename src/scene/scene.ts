@@ -339,6 +339,7 @@ export default class MainScene {
 
     pliers[1].setParent(null);
     pliers[1].position.set(-6, 5, -5);
+    pliers[1].name = "pliers";
     const pliersHitbox = pliers[1].clone("pliersHitbox", pliers[1]);
     pliersHitbox.position = Vector3.Zero();
     pliersHitbox.scaling.scaleInPlace(2);
@@ -365,6 +366,7 @@ export default class MainScene {
 
     screwdriver[1].setParent(null);
     screwdriver[1].position.set(-5, 5, -6);
+    screwdriver[1].name = "screwdriver";
     const screwdriverHitbox = screwdriver[1].clone(
       "screwdriverHitbox",
       screwdriver[1]
@@ -392,6 +394,7 @@ export default class MainScene {
     scissors[1].position.set(0, 0, 0);
     scissors[1].setParent(null);
     scissors[1].position.set(-6, 5, -6);
+    scissors[1].name = "scissors";
     const scissorsHitbox = scissors[1].clone("scissorsHitbox", scissors[1]);
     scissorsHitbox.position = Vector3.Zero();
     scissorsHitbox.scaling.scaleInPlace(2);

@@ -14,7 +14,7 @@ import {
 } from "@babylonjs/core";
 
 import ControllEvents from "./characterControls";
-import Inventory from "./inventory";
+import InventoryInteractions from "./inventoryInteractions";
 import MainScene from "../scene/scene";
 
 export default class HandActions {
@@ -22,7 +22,7 @@ export default class HandActions {
   private pickedDetail: AbstractMesh;
   private detailScaleK = 3;
   private controls: ControllEvents;
-  private inventory: Inventory;
+  private inventory: InventoryInteractions;
 
   constructor(
     public hand: AbstractMesh,
@@ -34,7 +34,7 @@ export default class HandActions {
   ) {
     this.controls = new ControllEvents();
 
-    this.inventory = new Inventory(
+    this.inventory = new InventoryInteractions(
       this.scene,
       this.engine,
       this.closedHand,
@@ -75,12 +75,7 @@ export default class HandActions {
         this.pickedItem.metadata.id
       );
       this.pickedItem = null;
-      HandActions.toggleHand(
-        this.closedHand,
-        this.hand,
-        this.inventory.quickAccess,
-        this.pickedItem
-      );
+      HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
     } else return;
   }
 
@@ -104,12 +99,7 @@ export default class HandActions {
         if (hit.pickedMesh.metadata.isDetail === true)
           this.positionPickedDetail(hit.pickedMesh);
 
-        HandActions.toggleHand(
-          this.closedHand,
-          this.hand,
-          this.inventory.quickAccess,
-          this.pickedItem
-        );
+        HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
       }
     }
   }
@@ -128,12 +118,7 @@ export default class HandActions {
       if (hit.pickedMesh && hit.pickedMesh.metadata.isDetail) {
         hit.pickedMesh.checkCollisions = false;
         this.positionPickedDetail(hit.pickedMesh);
-        HandActions.toggleHand(
-          this.closedHand,
-          this.hand,
-          this.inventory.quickAccess,
-          this.pickedItem
-        );
+        HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
       }
     }
   }
@@ -150,19 +135,13 @@ export default class HandActions {
       this.pickedDetail.scaling.scaleInPlace(this.detailScaleK);
       this.pickedDetail = null;
       if (this.pickedItem) this.pickedItem.isVisible = true;
-      HandActions.toggleHand(
-        this.closedHand,
-        this.hand,
-        this.inventory.quickAccess,
-        this.pickedItem
-      );
+      HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
     }
   }
   // функция смены моделей рук (сжатая или свободная)
   public static toggleHand(
     closedHand: AbstractMesh,
     hand: AbstractMesh,
-    quickAccess: Array<AbstractMesh>,
     item: AbstractMesh
   ): void {
     if (item) {
@@ -239,12 +218,7 @@ export default class HandActions {
       this.pickedItem?.setEnabled(false);
       this.pickedItem = this.inventory.quickAccess[this.controls.number - 1];
       this.pickedItem?.setEnabled(true);
-      HandActions.toggleHand(
-        this.closedHand,
-        this.hand,
-        this.inventory.quickAccess,
-        this.pickedItem
-      );
+      HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
     }
   }
 

@@ -9,84 +9,90 @@ import {
   Vector2,
   PointerEventTypes,
 } from "@babylonjs/core";
+import { inventoryEntities as entities } from "./inventoryEntities";
+import Inventory from "./inventory";
+import Root from "../scene/root";
 
-export default class InventoryInteractions {
+export default class InventoryInteractions extends Inventory {
   private cursorPos: Vector2;
   private cellPos: Vector2;
+  private dragImpostor: GUI.Button;
+  private isDragItem = false;
 
   constructor(
-    private scene: Scene,
-    private title: GUI.TextBlock,
-    private description: GUI.TextBlock,
-    private textBlock: GUI.Rectangle,
-    private draggingItem: GUI.Button,
-    private inventoryGrid: GUI.Grid,
-    private rightSliderButton: GUI.Button,
-    private leftSliderButton: GUI.Button
+    scene: Scene,
+    engine: Engine,
+    closedHand: AbstractMesh,
+    hand: AbstractMesh
   ) {
+    super(scene, engine, closedHand, hand);
     this.cursorPos = Vector2.Zero();
     this.cellPos = Vector2.Zero();
     this.hadleDragging();
+    this.addEventListeners();
+    this.inventoryEvents();
   }
   public showItemInfo(cell: GUI.Button, grid: GUI.Rectangle) {
     if (cell.textBlock.text != "") {
-      this.title.text = cell.textBlock.text;
-      this.description.text = "Описание предмета";
+      entities.title.text = cell.textBlock.text;
+      entities.description.text = "Описание предмета";
       this.itemInfoPosition(cell, grid);
-      this.textBlock.isVisible = true;
+      entities.textBlock.isVisible = true;
     } else return;
   }
 
   private itemInfoPosition(cell: GUI.Button, grid: GUI.Rectangle) {
-    this.textBlock.leftInPixels =
+    entities.textBlock.leftInPixels =
       cell.transformedMeasure.left -
       grid.centerX +
-      this.textBlock.widthInPixels;
-    this.textBlock.topInPixels =
-      cell.transformedMeasure.top - this.inventoryGrid.centerY;
+      entities.textBlock.widthInPixels;
+    entities.textBlock.topInPixels =
+      cell.transformedMeasure.top - entities.inventoryGrid.centerY;
 
-    this.title.paddingBottomInPixels = 10;
-    this.description.paddingTopInPixels = this.title.heightInPixels;
+    entities.title.paddingBottomInPixels = 10;
+    entities.description.paddingTopInPixels = entities.title.heightInPixels;
   }
 
   public disableTextBlock() {
-    this.textBlock.isVisible = false;
+    entities.textBlock.isVisible = false;
   }
 
   public dragItem(cell: GUI.Button) {
-    if (this.draggingItem != cell) {
+    if (!this.isDragItem) {
       const width = cell.widthInPixels;
       const height = cell.heightInPixels;
-      this.draggingItem = cell;
-      this.draggingItem.zIndex = 1;
-      cell.widthInPixels = width;
-      cell.heightInPixels = height;
+      this.dragImpostor = cell.clone(cell.host) as GUI.Button;
+      entities.advancedTexture.addControl(this.dragImpostor);
+      this.isDragItem = true;
+      this.dragImpostor.widthInPixels = width;
+      this.dragImpostor.heightInPixels = height;
+      this.dragImpostor.isPointerBlocker = false;
+      this.dragImpostor.isHitTestVisible = false;
       this.cursorPos.x = this.scene.pointerX;
       this.cursorPos.y = this.scene.pointerY;
+      cell.image.source = "";
+      cell.textBlock.text = "";
+      cell.metadata.id = null;
       this.dragItemPosition(cell);
-      this.draggingItem.isPointerBlocker = false;
-    } else {
     }
+  }
+
+  private dropDruggingItem(cell: GUI.Button) {
+    cell.image.source = this.dragImpostor.image.source;
+    cell.textBlock.text = this.dragImpostor.textBlock.text;
+    cell.metadata = { id: this.dragImpostor.metadata.id };
+    this.isDragItem = false;
+    entities.advancedTexture.removeControl(this.dragImpostor);
+    this.dragImpostor.dispose();
   }
 
   public hadleDragging() {
     this.scene.onPointerObservable.add((event) => {
-      if (event.type === PointerEventTypes.POINTERUP) {
-        if (this.draggingItem) {
-          this.draggingItem.isPointerBlocker = true;
-          this.draggingItem.leftInPixels = this.cellPos.x;
-          this.draggingItem.topInPixels = this.cellPos.y;
-          this.draggingItem.zIndex = 0;
-          this.draggingItem = null;
-        }
-      } else if (
-        event.type === PointerEventTypes.POINTERMOVE &&
-        this.draggingItem
-      ) {
+      if (event.type === PointerEventTypes.POINTERMOVE && this.isDragItem) {
         const deltaX = this.scene.pointerX - this.cursorPos.x;
         const deltaY = this.scene.pointerY - this.cursorPos.y;
-        this.draggingItem.topInPixels += deltaY;
-        this.draggingItem.leftInPixels += deltaX;
+        this.dragImpostor.topInPixels += deltaY;
+        this.dragImpostor.leftInPixels += deltaX;
         this.cursorPos.x = this.scene.pointerX;
         this.cursorPos.y = this.scene.pointerY;
       }
@@ -94,27 +100,156 @@ export default class InventoryInteractions {
   }
 
   private dragItemPosition(cell: GUI.Button) {
-    this.cellPos.x =
-      cell.transformedMeasure.left -
-      this.inventoryGrid.centerX +
-      cell.transformedMeasure.width / 2;
-    this.cellPos.y =
-      cell.transformedMeasure.top -
-      this.inventoryGrid.centerY +
-      cell.transformedMeasure.height / 2;
-    cell.leftInPixels = this.cursorPos.x - this.inventoryGrid.centerX;
-    cell.topInPixels = this.cursorPos.y - this.inventoryGrid.centerY;
+    this.dragImpostor.leftInPixels =
+      this.cursorPos.x - document.body.clientWidth / 2;
+    this.dragImpostor.topInPixels =
+      this.cursorPos.y -
+      entities.inventoryGrid.heightInPixels +
+      this.dragImpostor.heightInPixels;
   }
 
   public slideInventar(value: number) {
-    this.inventoryGrid.left = `${value}%`;
+    entities.inventoryGrid.left = `${value}%`;
   }
   public hideSliderButtons() {
-    this.leftSliderButton.isVisible = false;
-    this.rightSliderButton.isVisible = false;
+    entities.leftSliderButton.isVisible = false;
+    entities.rightSliderButton.isVisible = false;
   }
   public showSliderButtons() {
-    this.leftSliderButton.isVisible = true;
-    this.rightSliderButton.isVisible = true;
+    entities.leftSliderButton.isVisible = true;
+    entities.rightSliderButton.isVisible = true;
+  }
+
+  private showDropButton(
+    cell: GUI.Button,
+    grid: GUI.Grid,
+    meshArray: Array<AbstractMesh>,
+    cellsArray: Array<GUI.Button>
+  ) {
+    this.disableDropButton();
+    if (cell.textBlock.text != "") {
+      entities.dropButton.onPointerClickObservable.clear();
+      const cellCoordinates = grid.getChildCellInfo(cell).split(":");
+      grid.addControl(
+        entities.dropButton,
+        +cellCoordinates[0],
+        +cellCoordinates[1]
+      );
+      entities.dropButton.onPointerClickObservable.addOnce(() => {
+        this.deleteItem(cell.metadata.id, meshArray, cellsArray);
+      });
+    } else return;
+  }
+
+  private addEventListeners() {
+    entities.inventoryGrid.children.forEach((item: GUI.Button) => {
+      item.onPointerMoveObservable.add((event) => {
+        if (this.isDragItem) {
+          const deltaX = this.scene.pointerX - this.cursorPos.x;
+          const deltaY = this.scene.pointerY - this.cursorPos.y;
+          this.dragImpostor.topInPixels += deltaY;
+          this.dragImpostor.leftInPixels += deltaX;
+          this.cursorPos.x = this.scene.pointerX;
+          this.cursorPos.y = this.scene.pointerY;
+        }
+      });
+      item.onPointerClickObservable.add((event) => {
+        if (event.buttonIndex === 2) {
+          this.showDropButton(
+            item,
+            entities.inventoryGrid,
+            this.inventory,
+            entities.inventoryCells
+          );
+        }
+        if (event.buttonIndex === 0 && this.isDragItem) {
+          this.dropDruggingItem(item);
+        } else if (
+          event.buttonIndex === 0 &&
+          !this.isDragItem &&
+          item.textBlock.text != ""
+        ) {
+          this.dragItem(item);
+        }
+      });
+      item.onPointerEnterObservable.add((event) => {
+        if (!this.isDragItem) {
+          this.showItemInfo(item, entities.inventoryWrapper);
+        }
+      });
+      item.onPointerOutObservable.add((event) => {
+        this.disableTextBlock();
+      });
+    });
+    entities.quickAccessGrid.children.forEach((item: GUI.Button) => {
+      item.onPointerMoveObservable.add((event) => {
+        if (this.isDragItem) {
+          const deltaX = this.scene.pointerX - this.cursorPos.x;
+          const deltaY = this.scene.pointerY - this.cursorPos.y;
+          this.dragImpostor.topInPixels += deltaY;
+          this.dragImpostor.leftInPixels += deltaX;
+          this.cursorPos.x = this.scene.pointerX;
+          this.cursorPos.y = this.scene.pointerY;
+        }
+      });
+      item.onPointerClickObservable.add((event) => {
+        if (event.buttonIndex === 2) {
+          this.showDropButton(
+            item,
+            entities.quickAccessGrid,
+            this.quickAccess,
+            entities.quickAccessCells
+          );
+        }
+        if (event.buttonIndex === 0 && this.isDragItem) {
+          this.dropDruggingItem(item);
+        } else if (
+          event.buttonIndex === 0 &&
+          !this.isDragItem &&
+          item.textBlock.text != ""
+        ) {
+          this.dragItem(item);
+        }
+      });
+      item.onPointerEnterObservable.add((event) => {
+        if (!this.isDragItem) {
+          this.showItemInfo(item, entities.inventoryWrapper);
+        }
+      });
+      item.onPointerOutObservable.add((event) => {
+        this.disableTextBlock();
+      });
+    });
+
+    entities.rightSliderButton.onPointerClickObservable.add((event) => {
+      this.slideInventar(-50);
+    });
+    entities.leftSliderButton.onPointerClickObservable.add((event) => {
+      this.slideInventar(50);
+    });
+  }
+
+  //функция показать/убрать инвентарь
+  protected showInventory() {
+    if (this.controls.showInventar) {
+      this.engine.exitPointerlock();
+      Root.usePointerLock = false;
+      entities.inventoryWrapper.isVisible = true;
+      this.showSliderButtons();
+    } else {
+      this.engine.enterPointerlock();
+      Root.usePointerLock = true;
+      entities.inventoryWrapper.isVisible = false;
+      this.disableDropButton();
+      this.hideSliderButtons();
+    }
+  }
+
+  private inventoryEvents() {
+    this.scene.onKeyboardObservable.add((event) => {
+      this.controls.handleControlEvents(event);
+
+      this.showInventory();
+    });
   }
 }
