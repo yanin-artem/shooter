@@ -1,6 +1,10 @@
 import * as GUI from "@babylonjs/gui";
 
 export class inventoryEntities {
+  public static inventoryRows = 6;
+  public static inventoryColumns = 16;
+  public static quickAccessRows = 1;
+  public static quickAccessColumns = 8;
   public static rightSliderButton: GUI.Button;
   public static leftSliderButton: GUI.Button;
   public static inventoryWrapper: GUI.Rectangle;
@@ -21,8 +25,8 @@ export class inventoryEntities {
   }
   //функция создания GUI сетки инвентаря
   private createInventoryGrid(): GUI.Grid {
-    const rows = 6;
-    const columns = 16;
+    const rows = inventoryEntities.inventoryRows;
+    const columns = inventoryEntities.inventoryColumns;
     const inventoryGrid = new GUI.Grid();
 
     inventoryGrid.width = "200%";
@@ -52,8 +56,10 @@ export class inventoryEntities {
   }
   //создание ячеек инвентаря
   private createInventoryCells(grid: GUI.Grid): void {
-    for (let row = 0; row < 6; row++) {
-      for (let col = 0; col < 16; col++) {
+    const rows = inventoryEntities.inventoryRows;
+    const columns = inventoryEntities.inventoryColumns;
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < columns; col++) {
         const cell = GUI.Button.CreateImageWithCenterTextButton(
           `but${row},${col}`,
           undefined,
@@ -69,8 +75,8 @@ export class inventoryEntities {
 
   //создание сетки панели быстрого доступа
   private createQuickAccessGrid() {
-    const rows = 1;
-    const columns = 8;
+    const rows = inventoryEntities.quickAccessRows;
+    const columns = inventoryEntities.quickAccessColumns;
     const quickAccessGrid = new GUI.Grid();
     inventoryEntities.advancedTexture.addControl(quickAccessGrid);
     quickAccessGrid.width = "90%";
@@ -89,8 +95,10 @@ export class inventoryEntities {
   }
   //создание ячеек панели быстрого доступа
   private createQuickAccessCells(grid: GUI.Grid) {
-    for (let row = 0; row < 1; row++) {
-      for (let col = 0; col < 8; col++) {
+    const rows = inventoryEntities.quickAccessRows;
+    const columns = inventoryEntities.quickAccessColumns;
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < columns; col++) {
         const cell = GUI.Button.CreateImageWithCenterTextButton(
           `but${row},${col}`,
           undefined,

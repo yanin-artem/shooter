@@ -10,7 +10,6 @@ import {
 } from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "./characterControls";
-import InventoryInteractions from "./inventoryInteractions";
 import { inventoryEntities as entities } from "./inventoryEntities";
 import HandActions from "./handActions";
 
@@ -26,11 +25,11 @@ export default class Inventory {
     protected closedHand: AbstractMesh,
     protected hand: AbstractMesh
   ) {
-    this.inventory = [];
-    this.quickAccess = [];
+    new entities();
+    this.inventory = Array(entities.inventoryCells.length).fill(undefined);
+    this.quickAccess = Array(entities.quickAccessCells.length).fill(undefined);
 
     this.controls = new ControllEvents();
-    new entities();
   }
 
   //функция добавления предмета сразу в инвентарь

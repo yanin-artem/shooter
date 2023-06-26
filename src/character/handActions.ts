@@ -50,7 +50,12 @@ export default class HandActions {
       this.setPick();
       this.addIntoInventory();
       this.doItemAction();
-      this.changeItemInHand();
+      if (this.controls.number) {
+        this.changeItemInHand(
+          this.controls.number - 1,
+          this.inventory.quickAccess
+        );
+      }
       this.pickManyFromArea();
     });
   }
@@ -58,7 +63,11 @@ export default class HandActions {
   //функция броска инструмента
   //не toll  а item
   private dropItem(): void {
-    if (this.controls.drop && this.pickedItem && !this.pickedDetail) {
+    if (
+      this.controls.drop &&
+      this.pickedItem?.isEnabled() &&
+      !this.pickedDetail
+    ) {
       this.closedHand.removeChild(this.pickedItem);
       this.pickedItem.physicsImpostor = new PhysicsImpostor(
         this.pickedItem,
@@ -109,7 +118,7 @@ export default class HandActions {
       this.pickedItem?.metadata.ItemIndex === 1 &&
       this.controls.takeApart &&
       !this.pickedDetail &&
-      this.pickedItem
+      this.pickedItem?.isEnabled()
     ) {
       function predicate(mesh: AbstractMesh): boolean {
         return mesh.isPickable && mesh.metadata.isConditioner;
@@ -134,7 +143,7 @@ export default class HandActions {
       this.pickedDetail.metadata.isConditioner = false;
       this.pickedDetail.scaling.scaleInPlace(this.detailScaleK);
       this.pickedDetail = null;
-      if (this.pickedItem) this.pickedItem.isVisible = true;
+      if (this.pickedItem?.isEnabled()) this.pickedItem.isVisible = true;
       HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
     }
   }
@@ -144,7 +153,7 @@ export default class HandActions {
     hand: AbstractMesh,
     item: AbstractMesh
   ): void {
-    if (item) {
+    if (item?.isEnabled()) {
       hand.getChildMeshes()[0].isVisible = false;
       closedHand.getChildMeshes()[0].isVisible = true;
     } else {
@@ -180,7 +189,7 @@ export default class HandActions {
   //функция позиционирования детали в руке
   private positionPickedDetail(pickedMesh: AbstractMesh) {
     this.pickedDetail = pickedMesh;
-    if (this.pickedItem) {
+    if (this.pickedItem?.isEnabled()) {
       this.pickedItem.isVisible = false;
     }
     this.closedHand.addChild(this.pickedDetail);
@@ -213,15 +222,13 @@ export default class HandActions {
       }
     }
   }
-  private changeItemInHand() {
-    if (this.controls.number) {
-      this.pickedItem?.setEnabled(false);
-      this.pickedItem = this.inventory.quickAccess[this.controls.number - 1];
-      this.pickedItem?.setEnabled(true);
-      HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
-    }
+  private changeItemInHand(index: number, quickAccess: Array<AbstractMesh>) {
+    const enabledMesh = quickAccess.find((item) => item?.isEnabled());
+    if (enabledMesh) enabledMesh.setEnabled(false);
+    this.pickedItem = quickAccess[index];
+    this.pickedItem?.setEnabled(true);
+    HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
   }
-  //FIXME: спросить про перебор всех предметов
   private pickManyFromArea() {
     if (this.controls.manyPick) {
       MainScene.pickableItems.forEach((item) => {
