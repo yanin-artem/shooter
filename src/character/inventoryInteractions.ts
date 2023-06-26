@@ -56,7 +56,7 @@ export default class InventoryInteractions extends Inventory {
   public disableTextBlock() {
     entities.textBlock.isVisible = false;
   }
-
+  //FIXME: спросить про драг н дроп, как получить кнопку под кнопкой создать обьект
   public dragItem(cell: GUI.Button) {
     if (!this.isDragItem) {
       const width = cell.widthInPixels;
