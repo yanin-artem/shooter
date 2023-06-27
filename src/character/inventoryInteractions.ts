@@ -251,6 +251,7 @@ export default class InventoryInteractions extends Inventory {
             entities.quickAccessCells
           );
           this.draggingMesh.setEnabled(true);
+          this.positionItem(this.draggingMesh);
           HandActions.toggleHand(this.closedHand, this.hand, this.draggingMesh);
         } else if (
           event.buttonIndex === 0 &&
@@ -300,5 +301,15 @@ export default class InventoryInteractions extends Inventory {
 
       this.showInventory();
     });
+  }
+
+  public correctCurrentItem(): AbstractMesh {
+    return this.quickAccess.find((item) => item?.isEnabled());
+  }
+
+  private positionItem(item: AbstractMesh) {
+    item.position.set(-0.11, 0.073, 0.028);
+    item.rotationQuaternion = null;
+    item.rotation.set(0, 0, 0);
   }
 }
