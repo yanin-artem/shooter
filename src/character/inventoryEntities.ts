@@ -90,7 +90,7 @@ export class inventoryEntities {
     }
 
     this.createQuickAccessCells(quickAccessGrid);
-
+    quickAccessGrid.isVisible = false;
     return quickAccessGrid;
   }
   //создание ячеек панели быстрого доступа

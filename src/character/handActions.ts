@@ -226,6 +226,7 @@ export default class HandActions {
     }
   }
   private changeItemInHand(index: number, quickAccess: Array<AbstractMesh>) {
+    this.inventory.toggleQuickAccessVisibility();
     const enabledMesh = quickAccess.find((item) => item?.isEnabled());
     if (enabledMesh) enabledMesh.setEnabled(false);
     this.pickedItem = quickAccess[index];

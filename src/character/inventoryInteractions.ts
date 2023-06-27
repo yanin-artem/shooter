@@ -22,6 +22,8 @@ export default class InventoryInteractions extends Inventory {
   private draggingCell: GUI.Button;
   private originMeshArray: Array<AbstractMesh>;
   private draggingMeshIndex = 0;
+  private timeout: any;
+  private interval: any;
 
   constructor(
     scene: Scene,
@@ -286,10 +288,12 @@ export default class InventoryInteractions extends Inventory {
       Root.usePointerLock = false;
       entities.inventoryWrapper.isVisible = true;
       this.showSliderButtons();
-    } else {
+      this.showQuickAccess();
+    } else if (!Root.usePointerLock) {
       this.engine.enterPointerlock();
       Root.usePointerLock = true;
       entities.inventoryWrapper.isVisible = false;
+      entities.quickAccessGrid.isVisible = false;
       this.disableDropButton();
       this.hideSliderButtons();
     }
@@ -311,5 +315,32 @@ export default class InventoryInteractions extends Inventory {
     item.position.set(-0.11, 0.073, 0.028);
     item.rotationQuaternion = null;
     item.rotation.set(0, 0, 0);
+  }
+
+  public toggleQuickAccessVisibility() {
+    if (Root.usePointerLock) {
+      entities.quickAccessGrid.isVisible = true;
+      entities.quickAccessGrid.alpha = 1;
+      clearInterval(this.interval);
+      clearTimeout(this.timeout);
+      this.timeout = setTimeout(() => {
+        this.interval = setInterval(() => {
+          entities.quickAccessGrid.alpha -= 0.2;
+          if (entities.quickAccessGrid.alpha <= 0) {
+            clearInterval(this.interval);
+            clearTimeout(this.timeout);
+            entities.quickAccessGrid.isVisible = false;
+            entities.quickAccessGrid.alpha = 1;
+          }
+          console.log(entities.quickAccessGrid.alpha);
+        }, 100);
+      }, 2000);
+    }
+  }
+  private showQuickAccess() {
+    entities.quickAccessGrid.isVisible = true;
+    entities.quickAccessGrid.alpha = 1;
+    clearInterval(this.interval);
+    clearTimeout(this.timeout);
   }
 }
