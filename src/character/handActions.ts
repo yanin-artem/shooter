@@ -14,7 +14,7 @@ import {
 } from "@babylonjs/core";
 
 import ControllEvents from "./characterControls";
-import InventoryInteractions from "./inventoryInteractions";
+import InventoryInteractions from "./inventory/inventoryInteractions";
 import Instruments from "./instruments.ts/instruments";
 
 export default class HandActions {

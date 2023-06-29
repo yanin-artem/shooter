@@ -9,9 +9,9 @@ import {
   PointerEventTypes,
 } from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
-import ControllEvents from "./characterControls";
+import ControllEvents from "../characterControls";
 import { inventoryEntities as entities } from "./inventoryEntities";
-import HandActions from "./handActions";
+import HandActions from "../handActions";
 
 export default class Inventory {
   protected inventory: Array<AbstractMesh>;
@@ -122,15 +122,6 @@ export default class Inventory {
     }
   }
 
-  protected disableDropButton() {
-    if (entities.inventoryGrid.getChildByName(entities.dropButton.name)) {
-      entities.inventoryGrid.removeControl(entities.dropButton);
-    } else if (
-      entities.quickAccessGrid.getChildByName(entities.dropButton.name)
-    ) {
-      entities.quickAccessGrid.removeControl(entities.dropButton);
-    }
-  }
   //удаление предмета в интерфейсе инвентаря
   protected deleteItem(
     id: Number,

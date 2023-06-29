@@ -8,14 +8,9 @@ export class inventoryEntities {
   public static rightSliderButton: GUI.Button;
   public static leftSliderButton: GUI.Button;
   public static inventoryWrapper: GUI.Rectangle;
-  public static textBlock: GUI.Rectangle;
-  public static title: GUI.TextBlock;
-  public static description: GUI.TextBlock;
-  public static dropButton: GUI.Button;
   public static inventoryGrid: GUI.Grid;
   public static quickAccessGrid: GUI.Grid;
   public static advancedTexture: GUI.AdvancedDynamicTexture;
-  public static draggingItem: GUI.Button;
   public static inventoryCells: Array<GUI.Button>;
   public static quickAccessCells: Array<GUI.Button>;
   constructor() {
@@ -112,31 +107,7 @@ export class inventoryEntities {
       }
     }
   }
-  private createTextBlock(): GUI.Rectangle {
-    const textBlock = new GUI.Rectangle("textBlock");
 
-    textBlock.addControl(inventoryEntities.title);
-    textBlock.addControl(inventoryEntities.description);
-    textBlock.isVisible = false;
-    textBlock.zIndex = 2;
-    textBlock.background = "white";
-    textBlock.clipChildren = false;
-    textBlock.clipContent = false;
-    textBlock.adaptHeightToChildren = true;
-    textBlock.adaptWidthToChildren = true;
-    inventoryEntities.advancedTexture.addControl(textBlock);
-    return textBlock;
-  }
-
-  private createTextBlockParts(): void {
-    const title = new GUI.TextBlock("title", undefined);
-    title.resizeToFit = true;
-    const description = new GUI.TextBlock("description", undefined);
-    description.resizeToFit = true;
-    description.paddingTopInPixels = title.heightInPixels;
-    inventoryEntities.title = title;
-    inventoryEntities.description = description;
-  }
   private createSliderButtons(): void {
     const leftSliderButton = new GUI.Button("leftSliderButton");
     const rightSliderButton = new GUI.Button("rightSliderButton");
@@ -156,14 +127,6 @@ export class inventoryEntities {
     inventoryEntities.rightSliderButton = rightSliderButton;
   }
 
-  private createDropButton(): GUI.Button {
-    const dropButton = GUI.Button.CreateSimpleButton("drop", "выбросить");
-    dropButton.color = "white";
-    dropButton.background = "black";
-    dropButton.height = "40%";
-    return dropButton;
-  }
-
   //метод оболочка для метов создания элементов инвентаря
   private createInventoryElements() {
     inventoryEntities.advancedTexture =
@@ -171,9 +134,6 @@ export class inventoryEntities {
     inventoryEntities.inventoryGrid = this.createInventoryGrid();
     inventoryEntities.inventoryWrapper = this.createInventoryWrapper();
     inventoryEntities.quickAccessGrid = this.createQuickAccessGrid();
-    inventoryEntities.dropButton = this.createDropButton();
-    this.createTextBlockParts();
-    inventoryEntities.textBlock = this.createTextBlock();
     this.createSliderButtons();
   }
 }
