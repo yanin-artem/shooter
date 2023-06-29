@@ -15,7 +15,7 @@ import {
 
 import ControllEvents from "./characterControls";
 import InventoryInteractions from "./inventoryInteractions";
-import MainScene from "../scene/scene";
+import Instruments from "./instruments.ts/instruments";
 
 export default class HandActions {
   private pickedItem: AbstractMesh;
@@ -23,6 +23,7 @@ export default class HandActions {
   private detailScaleK = 3;
   private controls: ControllEvents;
   private inventory: InventoryInteractions;
+  private itemsStorage: Array<any>;
 
   constructor(
     public hand: AbstractMesh,
@@ -30,10 +31,11 @@ export default class HandActions {
     private scene: Scene,
     private engine: Engine,
     private head: Mesh,
-    private pickArea: Mesh
+    private pickArea: Mesh,
+    private Instruments: Instruments
   ) {
     this.controls = new ControllEvents();
-
+    this.itemsStorage = this.Instruments.storage;
     this.inventory = new InventoryInteractions(
       this.scene,
       this.engine,
@@ -96,7 +98,7 @@ export default class HandActions {
     if (this.controls.pickInHand) {
       function predicate(mesh: AbstractMesh): boolean {
         return (
-          ((mesh.metadata.isDetail && !mesh.metadata.isConditioner) ||
+          ((mesh.metadata?.isDetail && !mesh.metadata?.isConditioner) ||
             mesh.metadata.isItem) &&
           mesh.isPickable
         );
@@ -104,11 +106,11 @@ export default class HandActions {
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
         hit.pickedMesh.checkCollisions = false;
-        if (hit.pickedMesh.metadata.isItem === true) {
+        if (hit.pickedMesh.metadata?.isItem) {
           this.positionPickedItem(hit.pickedMesh);
           this.inventory.addInInventoryAndInHand(this.pickedItem);
         }
-        if (hit.pickedMesh.metadata.isDetail === true)
+        if (hit.pickedMesh.metadata?.isDetail)
           this.positionPickedDetail(hit.pickedMesh);
 
         HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
@@ -127,7 +129,7 @@ export default class HandActions {
         return mesh.isPickable && mesh.metadata.isConditioner;
       }
       const hit = this.castRay(predicate);
-      if (hit.pickedMesh && hit.pickedMesh.metadata.isDetail) {
+      if (hit.pickedMesh && hit.pickedMesh.metadata?.isDetail) {
         hit.pickedMesh.checkCollisions = false;
         this.positionPickedDetail(hit.pickedMesh);
         HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
@@ -215,7 +217,7 @@ export default class HandActions {
     if (this.controls.pickInInventar) {
       function predicate(mesh: AbstractMesh): boolean {
         return (
-          !mesh.metadata.isDetail && mesh.metadata.isItem && mesh.isPickable
+          !mesh.metadata?.isDetail && mesh.metadata?.isItem && mesh.isPickable
         );
       }
       const hit = this.castRay(predicate);
@@ -233,14 +235,15 @@ export default class HandActions {
     this.pickedItem?.setEnabled(true);
     HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
   }
+  //TODO: починить сбор с площади
   private pickManyFromArea() {
     if (this.controls.manyPick) {
-      MainScene.pickableItems.forEach((item) => {
+      this.itemsStorage.forEach((item) => {
         if (
-          item.intersectsMesh(this.pickArea) &&
-          !item.physicsImpostor.isDisposed
+          item.mesh.intersectsMesh(this.pickArea) &&
+          !item.mesh.physicsImpostor.isDisposed
         ) {
-          this.inventory.addInInventory(item);
+          this.inventory.addInInventory(item.mesh);
         }
       });
     }

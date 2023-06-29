@@ -31,6 +31,7 @@ import Root from "./root";
 import { Inspector } from "@babylonjs/inspector";
 
 import Character from "../character/character";
+import Instruments from "../character/instruments.ts/instruments";
 
 export default class MainScene {
   scene: Scene;
@@ -39,15 +40,12 @@ export default class MainScene {
   camera: UniversalCamera;
   fps: HTMLElement;
   light: DirectionalLight;
-  public static pickableItems: Array<AbstractMesh>;
+  private instruments: Instruments;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.engine = new Engine(this.canvas, true, { stencil: true });
     this.scene = this.CreateScene();
     this.CreateMeshes();
-
-    this.controller = new Character(this.scene, this.engine);
-    this.camera = this.controller.camera;
 
     this.createInspector();
 
@@ -124,8 +122,6 @@ export default class MainScene {
     ground.checkCollisions = true;
     ground.position.y = 4.359;
     ground.isVisible = false;
-
-    MainScene.pickableItems = [];
 
     const homeMeshes = await SceneLoader.ImportMeshAsync(
       "",
@@ -328,94 +324,12 @@ export default class MainScene {
       { mass: 0 }
     );
 
-    const pliersMeshes = await SceneLoader.ImportMeshAsync(
-      "",
-      "../assets/models/",
-      "instrument_01.glb"
-    );
-
-    const pliers = pliersMeshes.meshes;
-    pliers[1].position.set(0, 0, 0);
-
-    pliers[1].setParent(null);
-    pliers[1].position.set(-6, 5, -5);
-    pliers[1].name = "pliers";
-    const pliersHitbox = pliers[1].clone("pliersHitbox", pliers[1]);
-    pliersHitbox.position = Vector3.Zero();
-    pliersHitbox.scaling.scaleInPlace(2);
-    pliersHitbox.rotation = pliers[1].rotation;
-    pliersHitbox.isVisible = false;
-
-    pliers[1].physicsImpostor = new PhysicsImpostor(
-      pliers[1],
-      PhysicsImpostor.MeshImpostor,
-      { mass: 0.1 }
-    );
-    MainScene.pickableItems.push(pliers[1]);
-    console.log(pliers);
-
-    const screwdriverMeshes = await SceneLoader.ImportMeshAsync(
-      "",
-      "../assets/models/",
-      "instrument_02.glb"
-    );
-
-    const screwdriver = screwdriverMeshes.meshes;
-
-    screwdriver[1].position.set(0, 0, 0);
-
-    screwdriver[1].setParent(null);
-    screwdriver[1].position.set(-5, 5, -6);
-    screwdriver[1].name = "screwdriver";
-    const screwdriverHitbox = screwdriver[1].clone(
-      "screwdriverHitbox",
-      screwdriver[1]
-    );
-    screwdriverHitbox.position = Vector3.Zero();
-    screwdriverHitbox.scaling.scaleInPlace(2);
-    screwdriverHitbox.isVisible = false;
-
-    screwdriver[1].physicsImpostor = new PhysicsImpostor(
-      screwdriver[1],
-      PhysicsImpostor.MeshImpostor,
-      { mass: 0.01 }
-    );
-
-    MainScene.pickableItems.push(screwdriver[1]);
-
-    const scissorsMeshes = await SceneLoader.ImportMeshAsync(
-      "",
-      "../assets/models/",
-      "instrument_03.glb"
-    );
-
-    const scissors = scissorsMeshes.meshes;
-
-    scissors[1].position.set(0, 0, 0);
-    scissors[1].setParent(null);
-    scissors[1].position.set(-6, 5, -6);
-    scissors[1].name = "scissors";
-    const scissorsHitbox = scissors[1].clone("scissorsHitbox", scissors[1]);
-    scissorsHitbox.position = Vector3.Zero();
-    scissorsHitbox.scaling.scaleInPlace(2);
-    scissorsHitbox.rotation = scissors[1].rotation;
-    scissorsHitbox.isVisible = false;
-    scissors[1].physicsImpostor = new PhysicsImpostor(
-      scissors[1],
-      PhysicsImpostor.MeshImpostor,
-      { mass: 0.1 }
-    );
-    MainScene.pickableItems.push(scissors[1]);
-
+    this.instruments = new Instruments();
+    this.controller = new Character(this.scene, this.engine, this.instruments);
+    this.camera = this.controller.camera;
+    console.log(this.scene);
     this.scene.meshes.map((mesh) => {
       mesh.metadata = { isItem: false, isConditioner: false };
-    });
-
-    MainScene.pickableItems.map((mesh, index) => {
-      mesh.metadata.isItem = true;
-      mesh.metadata.ItemIndex = index;
-      mesh.getChildMeshes()[0].metadata.isItem = true;
-      mesh.getChildMeshes()[0].metadata.ItemIndex = index;
     });
 
     conditioner.map((mesh) => {
@@ -424,7 +338,6 @@ export default class MainScene {
         ? (mesh.metadata.isDetail = false)
         : (mesh.metadata.isDetail = true);
     });
-
     this.setShadow();
   }
 

@@ -18,9 +18,10 @@ import "@babylonjs/loaders";
 import * as GUI from "@babylonjs/gui";
 
 import playerController from "./PlayerController";
+import Instruments from "./instruments.ts/instruments";
 
 export default class Character {
-  camera: UniversalCamera;
+  public camera: UniversalCamera;
   protected gunSight: Mesh;
   body: AbstractMesh;
   hand: AbstractMesh;
@@ -29,7 +30,11 @@ export default class Character {
   pickArea: Mesh;
   characterOpportunities: playerController;
 
-  constructor(private scene: Scene, private engine: Engine) {
+  constructor(
+    private scene: Scene,
+    private engine: Engine,
+    private instruments: Instruments
+  ) {
     this.camera = this.createController(this.scene, this.engine);
     this.setBody(this.camera, this.scene);
     this.createHand();
@@ -44,7 +49,8 @@ export default class Character {
       this.scene,
       this.engine,
       this.head,
-      this.pickArea
+      this.pickArea,
+      this.instruments
     );
     this.characterOpportunities.setController();
   }
@@ -59,9 +65,9 @@ export default class Character {
     camera.minZ = 0;
     camera.inertia = 0;
     camera.angularSensibility = 600;
+    this.scene.activeCameras.push(camera);
 
     this.gunSight = this.addGunSight(scene);
-
     return camera;
   }
 
@@ -104,6 +110,7 @@ export default class Character {
     gunSight.material = mat;
     gunSight.isPickable = false;
     gunSight.metadata = { isTool: false };
+    scene.activeCamera = GunSightCamera;
     return gunSight;
   }
 
