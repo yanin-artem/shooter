@@ -14,7 +14,6 @@ import characterStatus from "./characterStatus";
 
 export default class Movement extends characterStatus {
   private isRunning = false;
-  private controls: ControllEvents;
 
   private mouseMaxY = 1.08;
   private mouseMinY = -1.25;
@@ -37,11 +36,11 @@ export default class Movement extends characterStatus {
     private body: AbstractMesh,
     private scene: Scene,
     private engine: Engine,
-    private head: Mesh
+    private head: Mesh,
+    private controls: ControllEvents
   ) {
     super();
 
-    this.controls = new ControllEvents();
     this.handleMouse();
   }
 

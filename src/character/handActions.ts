@@ -14,15 +14,14 @@ import {
 } from "@babylonjs/core";
 
 import ControllEvents from "./characterControls";
-import InventoryInteractions from "./inventory/inventoryInteractions";
 import Instruments from "./instruments.ts/instruments";
+import GeneralInvenory from "./inventory/generalInvenoty";
 
 export default class HandActions {
   private pickedItem: AbstractMesh;
   private pickedDetail: AbstractMesh;
   private detailScaleK = 3;
-  private controls: ControllEvents;
-  private inventory: InventoryInteractions;
+
   private itemsStorage: Array<any>;
 
   constructor(
@@ -32,16 +31,11 @@ export default class HandActions {
     private engine: Engine,
     private head: Mesh,
     private pickArea: Mesh,
-    private Instruments: Instruments
+    private Instruments: Instruments,
+    private inventory: GeneralInvenory,
+    private controls: ControllEvents
   ) {
-    this.controls = new ControllEvents();
     this.itemsStorage = this.Instruments.storage;
-    this.inventory = new InventoryInteractions(
-      this.scene,
-      this.engine,
-      this.closedHand,
-      this.hand
-    );
   }
 
   createPickEvents(): void {
@@ -55,12 +49,12 @@ export default class HandActions {
       if (this.controls.number) {
         this.changeItemInHand(
           this.controls.number - 1,
-          this.inventory.quickAccess
+          this.inventory.quickAccess.quickAccess
         );
       }
       this.pickManyFromArea();
       if (event.event.code === "KeyI" && event.type === 1) {
-        this.pickedItem = this.inventory.correctCurrentItem();
+        this.pickedItem = this.inventory.quickAccess.correctCurrentItem();
       }
     });
   }
@@ -85,7 +79,7 @@ export default class HandActions {
         this.pickedItem.position
       );
       this.pickedItem.rotation = Vector3.Zero();
-      this.inventory.deleteFromQuickAccessAndFromHand(
+      this.inventory.quickAccess.deleteFromQuickAccessAndFromHand(
         this.pickedItem.metadata.id
       );
       this.pickedItem = null;
@@ -108,7 +102,7 @@ export default class HandActions {
         hit.pickedMesh.checkCollisions = false;
         if (hit.pickedMesh.metadata?.isItem) {
           this.positionPickedItem(hit.pickedMesh);
-          this.inventory.addInInventoryAndInHand(this.pickedItem);
+          this.inventory.quickAccess.addInInventoryAndInHand(this.pickedItem);
         }
         if (hit.pickedMesh.metadata?.isDetail)
           this.positionPickedDetail(hit.pickedMesh);
@@ -223,13 +217,13 @@ export default class HandActions {
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
         const item = (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
-        this.inventory.addInInventory(item);
+        this.inventory.invetory.addInInventory(item);
       }
     }
   }
   private changeItemInHand(index: number, quickAccess: Array<AbstractMesh>) {
-    this.inventory.toggleQuickAccessVisibility();
-    const enabledMesh = quickAccess.find((item) => item?.isEnabled());
+    this.inventory.quickAccess.UI.toggleQuickAccessVisibility();
+    const enabledMesh = quickAccess?.find((item) => item?.isEnabled());
     if (enabledMesh) enabledMesh.setEnabled(false);
     this.pickedItem = quickAccess[index];
     this.pickedItem?.setEnabled(true);
@@ -243,7 +237,7 @@ export default class HandActions {
           item.mesh.intersectsMesh(this.pickArea) &&
           !item.mesh.physicsImpostor.isDisposed
         ) {
-          this.inventory.addInInventory(item.mesh);
+          this.inventory.invetory.addInInventory(item.mesh);
         }
       });
     }
