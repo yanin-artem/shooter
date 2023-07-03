@@ -443,16 +443,17 @@ export default class MainScene {
   }
 
   private createVideoMonitor(): void {
-    var planeOpts = {
-      height: 3.4762,
-      width: 5.3967,
+    const planeOpts = {
+      height: 1.835,
+      width: 2.93,
       sideOrientation: Mesh.DOUBLESIDE,
     };
-    var ANote0Video = MeshBuilder.CreatePlane("plane", planeOpts, this.scene);
-    var vidPos = new Vector3(0, 7.126, 7.969);
+    const ANote0Video = MeshBuilder.CreatePlane("plane", planeOpts, this.scene);
+    ANote0Video.rotation = new Vector3(0, Math.PI / 2, 0);
+    const vidPos = new Vector3(12.27, 1.815, 1.631);
     ANote0Video.position = vidPos;
-    var ANote0VideoMat = new StandardMaterial("m", this.scene);
-    var ANote0VideoVidTex = new VideoTexture(
+    const ANote0VideoMat = new StandardMaterial("m", this.scene);
+    const ANote0VideoVidTex = new VideoTexture(
       "vidtex",
       "../assets/videos/Rick Astley - Never Gonna Give You Up (Official Music Video).mp4",
       this.scene
