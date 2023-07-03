@@ -21,16 +21,16 @@ export default class Screwdriver {
   private createSrewdriverMesh() {
     SceneLoader.ImportMeshAsync(
       "",
-      "../assets/models/",
-      "instrument_02.glb"
+      "../assets/models/workshop/",
+      "tool_turn_screw_04.glb"
     ).then((meshes) => {
       const screwdriver = meshes.meshes[1];
 
-      screwdriver.position.set(0, 0, 0);
+      // screwdriver.position.set(0, 0, 0);
       const root = screwdriver.parent;
       screwdriver.setParent(null);
       root.dispose();
-      screwdriver.position.set(-5, 5, -6);
+      // screwdriver.position.set(-5, 5, -6);
       screwdriver.name = "screwdriver";
       const screwdriverHitbox = screwdriver.clone(
         "screwdriverHitbox",
@@ -40,11 +40,11 @@ export default class Screwdriver {
       screwdriverHitbox.scaling.scaleInPlace(2);
       screwdriverHitbox.isVisible = false;
 
-      screwdriver.physicsImpostor = new PhysicsImpostor(
-        screwdriver,
-        PhysicsImpostor.MeshImpostor,
-        { mass: 0.01 }
-      );
+      // screwdriver.physicsImpostor = new PhysicsImpostor(
+      //   screwdriver,
+      //   PhysicsImpostor.MeshImpostor,
+      //   { mass: 0.01 }
+      // );
 
       screwdriver.metadata = {
         isItem: true,

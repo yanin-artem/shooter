@@ -91,6 +91,7 @@ export default class HandActions {
   private setPick(): void {
     if (this.controls.pickInHand) {
       function predicate(mesh: AbstractMesh): boolean {
+        console.log(mesh);
         return (
           ((mesh.metadata?.isDetail && !mesh.metadata?.isConditioner) ||
             mesh.metadata.isItem) &&
@@ -200,7 +201,7 @@ export default class HandActions {
   //функция позиционирования инструмента в руке
   private positionPickedItem(pickedMesh: AbstractMesh) {
     this.pickedItem = (pickedMesh.parent as AbstractMesh) || pickedMesh;
-    this.pickedItem.physicsImpostor.dispose();
+    this.pickedItem.physicsImpostor?.dispose();
     this.closedHand.addChild(this.pickedItem);
     this.pickedItem.position.set(-0.11, 0.073, 0.028);
     this.pickedItem.rotationQuaternion = null;

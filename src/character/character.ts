@@ -109,20 +109,21 @@ export default class Character {
 
     gunSight.material = mat;
     gunSight.isPickable = false;
-    gunSight.metadata = { isTool: false };
+    gunSight.metadata = { isItem: false };
     scene.activeCamera = GunSightCamera;
     return gunSight;
   }
 
   private createHand(): void {
     this.hand = new AbstractMesh("hand");
-    SceneLoader.ImportMeshAsync("", "../assets/models/", "arm.glb").then(
+    SceneLoader.ImportMeshAsync("", "../assets/models/house/", "arm.glb").then(
       (meshes) => {
         const hand = meshes.meshes[1];
         meshes.meshes.map((mesh) => {
-          mesh.metadata = { isTool: false };
+          mesh.metadata = { isItem: false, isConditioner: false };
           mesh.isPickable = false;
         });
+        this.hand.metadata = { isItem: false, isConditioner: false };
 
         this.hand.position.set(0.15, -0.139, 0.358);
         this.hand.rotation.set(Math.PI / 3.33, Math.PI / 2, Math.PI / 6.66);
@@ -140,29 +141,27 @@ export default class Character {
 
   private createClosedHand(): void {
     this.closedHand = new AbstractMesh("closedHand");
-    SceneLoader.ImportMeshAsync("", "../assets/models/", "closedArm.glb").then(
-      (meshes) => {
-        const hand = meshes.meshes[1];
-        meshes.meshes.map((mesh) => {
-          mesh.metadata = { isTool: false };
-          mesh.isPickable = false;
-        });
+    SceneLoader.ImportMeshAsync(
+      "",
+      "../assets/models/house/",
+      "closedArm.glb"
+    ).then((meshes) => {
+      const hand = meshes.meshes[1];
+      meshes.meshes.map((mesh) => {
+        mesh.metadata = { isItem: false, isConditioner: false };
+        mesh.isPickable = false;
+      });
 
-        this.closedHand.position.set(0.15, -0.139, 0.358);
-        this.closedHand.rotation.set(
-          Math.PI / 3.33,
-          Math.PI / 2,
-          Math.PI / 6.66
-        );
+      this.closedHand.position.set(0.15, -0.139, 0.358);
+      this.closedHand.rotation.set(Math.PI / 3.33, Math.PI / 2, Math.PI / 6.66);
+      this.closedHand.metadata = { isItem: false, isConditioner: false };
+      this.closedHand.parent = this.head;
+      hand.position = Vector3.Zero();
 
-        this.closedHand.parent = this.head;
-        hand.position = Vector3.Zero();
-
-        hand.parent = this.closedHand;
-        this.closedHand.scaling.z = -1;
-        this.closedHand.getChildMeshes()[0].isVisible = false;
-      }
-    );
+      hand.parent = this.closedHand;
+      this.closedHand.scaling.z = -1;
+      this.closedHand.getChildMeshes()[0].isVisible = false;
+    });
   }
 
   private createHead(): Mesh {
@@ -172,13 +171,14 @@ export default class Character {
     head.parent = this.body;
     head.position.y = 0.4;
     head.isPickable = false;
-    head.metadata = { isTool: false };
+    head.metadata = { isItem: false, isConditioner: false };
     this.camera.parent = head;
     return head;
   }
 
   private createPickArea(): Mesh {
     const sphere = MeshBuilder.CreateSphere("pickArea", { diameter: 3 });
+    sphere.metadata = { isItem: false, isConditioner: false };
     this.body.addChild(sphere);
     sphere.position = Vector3.Zero();
     sphere.isVisible = false;
@@ -205,8 +205,8 @@ export default class Character {
     InnerMesh.isPickable = false;
     this.body = new AbstractMesh("playerWrapper");
     InnerMesh.parent = this.body;
-    this.body.metadata = { isTool: false };
-    InnerMesh.metadata = { isTool: false };
+    this.body.metadata = { isItem: false, isConditioner: false };
+    InnerMesh.metadata = { isItem: false, isConditioner: false };
     InnerMesh.position.y = -0.35;
     // InnerMesh.isVisible = false;
     this.body.position.y = 20;

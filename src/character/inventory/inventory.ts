@@ -45,7 +45,7 @@ export default class Inventory {
       this.id++;
     }
     item.checkCollisions = false;
-    item.physicsImpostor.dispose();
+    item.physicsImpostor?.dispose();
     this.closedHand.addChild(item);
     item.position = Vector3.Zero();
     item.setEnabled(false);

@@ -45,7 +45,8 @@ export default class MainScene {
   constructor(private canvas: HTMLCanvasElement) {
     this.engine = new Engine(this.canvas, true, { stencil: true });
     this.scene = this.CreateScene();
-    this.CreateMeshes();
+    this.createWorkshopLocation();
+    // this.CreateHouseLocation();
 
     this.createInspector();
 
@@ -92,7 +93,50 @@ export default class MainScene {
     );
   }
 
-  async CreateMeshes(): Promise<void> {
+  async createWorkshopLocation(): Promise<void> {
+    this.enablePhysic();
+
+    const ground = MeshBuilder.CreateGround(
+      "ground",
+      { width: 40, height: 40 },
+      this.scene
+    );
+
+    ground.physicsImpostor = new PhysicsImpostor(
+      ground,
+      PhysicsImpostor.PlaneImpostor,
+      { mass: 0 }
+    );
+
+    ground.checkCollisions = true;
+    ground.position.y = -0.024;
+    ground.isVisible = false;
+
+    const workshop = await SceneLoader.ImportMeshAsync(
+      "",
+      "../assets/models/workshop/",
+      "workshop.glb"
+    );
+    workshop.meshes.forEach((mesh) => (mesh.checkCollisions = true));
+
+    this.scene.meshes.map((mesh) => {
+      mesh.metadata = { isItem: false, isConditioner: false };
+    });
+
+    // conditioner.map((mesh) => {
+    //   mesh.metadata.isConditioner = true;
+    //   mesh.name === "Корпус"
+    //     ? (mesh.metadata.isDetail = false)
+    //     : (mesh.metadata.isDetail = true);
+    // });
+    this.setShadow();
+
+    this.instruments = new Instruments();
+    this.controller = new Character(this.scene, this.engine, this.instruments);
+    this.camera = this.controller.camera;
+  }
+
+  async CreateHouseLocation(): Promise<void> {
     this.enablePhysic();
 
     // const ground = MeshBuilder.CreateBox(
@@ -125,7 +169,7 @@ export default class MainScene {
 
     const homeMeshes = await SceneLoader.ImportMeshAsync(
       "",
-      "../assets/models/",
+      "../assets/models/house/",
       "home.glb"
     );
     const home = homeMeshes.meshes[1];
@@ -273,7 +317,7 @@ export default class MainScene {
 
     const plinthMeshes = await SceneLoader.ImportMeshAsync(
       "",
-      "../assets/models/",
+      "../assets/models/house/",
       "for_konder.glb"
     );
     const plinth = plinthMeshes.meshes;
@@ -290,7 +334,7 @@ export default class MainScene {
 
     const conditionerMeshes = await SceneLoader.ImportMeshAsync(
       "",
-      "../assets/models/",
+      "../assets/models/house/",
       "konder.glb"
     );
 
@@ -311,7 +355,7 @@ export default class MainScene {
 
     const instrumentsBoxMeshes = await SceneLoader.ImportMeshAsync(
       "",
-      "../assets/models/",
+      "../assets/models/house/",
       "box_instrument.glb"
     );
 

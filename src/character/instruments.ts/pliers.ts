@@ -20,27 +20,21 @@ export default class Pliers {
   private createPliersMesh() {
     SceneLoader.ImportMeshAsync(
       "",
-      "../assets/models/",
-      "instrument_01.glb"
+      "../assets/models/workshop/",
+      "tool_pliers.glb"
     ).then((meshes) => {
       const pliers = meshes.meshes[1];
 
-      pliers.position.set(0, 0, 0);
+      // pliers.position.set(0, 0, 0);
       const root = pliers.parent;
       pliers.setParent(null);
       root.dispose();
-      pliers.position.set(-6, 5, -5);
+      // pliers.position.set(-6, 5, -5);
       pliers.name = "pliers";
       const pliersHitbox = pliers.clone("pliersHitbox", pliers);
       pliersHitbox.position = Vector3.Zero();
       pliersHitbox.scaling.scaleInPlace(2);
       pliersHitbox.isVisible = false;
-
-      pliers.physicsImpostor = new PhysicsImpostor(
-        pliers,
-        PhysicsImpostor.MeshImpostor,
-        { mass: 0.01 }
-      );
 
       pliers.metadata = {
         isItem: true,
