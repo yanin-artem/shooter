@@ -12,6 +12,7 @@ import * as GUI from "@babylonjs/gui";
 import ControllEvents from "../characterControls";
 import QuickAccessUI from "./quickAccessUI";
 import Instruments from "../instruments.ts/instruments";
+import Instrument from "../instruments.ts/instrument";
 
 export type quickAccessItem = {
   id: number;
@@ -94,8 +95,8 @@ export class QuickAccess {
     }
   }
 
-  public correctCurrentItem(): AbstractMesh {
+  public correctCurrentItem(): Instrument {
     const enabledItem = this.quickAccess.find((e) => e.isEnabled);
-    return this.instruments.getById(enabledItem.id);
+    return this.instruments.getById(enabledItem?.id);
   }
 }

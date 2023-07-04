@@ -18,6 +18,7 @@ import TorqueWrenchNozzle from "./TorqueWrenchNozzle";
 import ScrewdriverIndicator from "./screwdriverIndicator";
 import { AbstractMesh, Scene } from "@babylonjs/core";
 import ControllEvents from "../characterControls";
+import Instrument from "./instrument";
 
 //TODO: КАКОЙ-ТО БАГ С АЙДИШНИКАМИ
 
@@ -123,7 +124,7 @@ export default class Instruments {
     return storage;
   }
 
-  public getById(id: number) {
+  public getById(id: number): Instrument {
     return this.storage.find((instrument) => instrument.id === id);
   }
 }

@@ -92,7 +92,11 @@ export default class QuickAccessUI {
         }
       });
       item.onPointerEnterObservable.add((event) => {
-        this.info.showItemInfo(item, this.dragNdrop.isDragItem);
+        this.info.showItemInfo(
+          item,
+          this.dragNdrop.isDragItem,
+          this.instruments
+        );
       });
       item.onPointerOutObservable.add((event) => {
         this.info.disableTextBlock();

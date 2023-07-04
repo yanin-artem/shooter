@@ -53,7 +53,7 @@ export default class HandActions {
       }
       this.pickManyFromArea();
       if (event.event.code === "KeyI" && event.type === 1) {
-        this.pickedItem = this.inventory.quickAccess.correctCurrentItem();
+        this.pickedItem = this.inventory.quickAccess.correctCurrentItem()?.mesh;
       }
     });
   }

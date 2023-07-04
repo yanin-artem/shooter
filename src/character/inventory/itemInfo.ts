@@ -1,4 +1,5 @@
 import * as GUI from "@babylonjs/gui";
+import Instruments from "../instruments.ts/instruments";
 
 export default class ItemInfo {
   public textBlock: GUI.Rectangle;
@@ -39,10 +40,15 @@ export default class ItemInfo {
     return description;
   }
 
-  public showItemInfo(cell: GUI.Button, isDragItem: boolean) {
+  public showItemInfo(
+    cell: GUI.Button,
+    isDragItem: boolean,
+    items: Instruments
+  ) {
     if (cell.textBlock.text != "" && !isDragItem) {
-      this.title.text = cell.textBlock.text;
-      this.description.text = "Описание предмета";
+      const item = items.getById(cell.metadata.id);
+      this.title.text = item.name;
+      this.description.text = item.description;
       this.itemInfoPosition(cell);
       this.textBlock.isVisible = true;
     } else return;
