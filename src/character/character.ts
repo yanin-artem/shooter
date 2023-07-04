@@ -15,10 +15,8 @@ import {
   ActionManager,
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
-import * as GUI from "@babylonjs/gui";
 
 import playerController from "./PlayerController";
-import Instruments from "./instruments.ts/instruments";
 
 export default class Character {
   public camera: UniversalCamera;
@@ -30,11 +28,7 @@ export default class Character {
   pickArea: Mesh;
   characterOpportunities: playerController;
 
-  constructor(
-    private scene: Scene,
-    private engine: Engine,
-    private instruments: Instruments
-  ) {
+  constructor(private scene: Scene, private engine: Engine) {
     this.camera = this.createController(this.scene, this.engine);
     this.setBody(this.camera, this.scene);
     this.createHand();
@@ -49,8 +43,7 @@ export default class Character {
       this.scene,
       this.engine,
       this.head,
-      this.pickArea,
-      this.instruments
+      this.pickArea
     );
     this.characterOpportunities.setController();
   }

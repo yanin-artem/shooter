@@ -13,6 +13,7 @@ import {
   MeshBuilder,
 } from "@babylonjs/core";
 import { quickAccessItem } from "./inventory/quickAccess";
+import Instrument from "./instruments.ts/instrument";
 
 import ControllEvents from "./characterControls";
 import GeneralInvenory from "./inventory/generalInvenoty";
@@ -44,7 +45,6 @@ export default class HandActions {
       this.dropDetail();
       this.setPick();
       this.addIntoInventory();
-      this.doItemAction();
       if (this.controls.number) {
         this.changeItemInHand(
           this.controls.number - 1,
@@ -53,7 +53,7 @@ export default class HandActions {
       }
       this.pickManyFromArea();
       if (event.event.code === "KeyI" && event.type === 1) {
-        // this.pickedItem = this.inventory.quickAccess.correctCurrentItem();
+        this.pickedItem = this.inventory.quickAccess.correctCurrentItem();
       }
     });
   }
@@ -92,17 +92,19 @@ export default class HandActions {
       function predicate(mesh: AbstractMesh): boolean {
         return (
           ((mesh.metadata?.isDetail && !mesh.metadata?.isConditioner) ||
-            mesh.metadata.isItem) &&
-          mesh.isPickable &&
-          mesh.isEnabled()
+            Instrument.isInstrument(mesh)) &&
+          mesh.isPickable
         );
       }
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
-        console.log(hit.pickedMesh);
         hit.pickedMesh.checkCollisions = false;
-        if (hit.pickedMesh.metadata?.isItem) {
-          this.positionPickedItem(hit.pickedMesh);
+        if (Instrument.isInstrument(hit.pickedMesh)) {
+          this.pickedItem =
+            (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
+          const id = this.pickedItem.metadata.id;
+          const item = this.instruments.getById(id);
+          item.positionInHand(this.closedHand);
           console.log(this.pickedItem);
           this.inventory.quickAccess.addInInventoryAndInHand(
             this.pickedItem.metadata.id
@@ -115,24 +117,7 @@ export default class HandActions {
       }
     }
   }
-  //функция разбора кондиционера отверткой
-  private doItemAction() {
-    if (
-      this.controls.takeApart &&
-      !this.pickedDetail &&
-      this.pickedItem?.isEnabled()
-    ) {
-      function predicate(mesh: AbstractMesh): boolean {
-        return mesh.isPickable && mesh.metadata.isConditioner;
-      }
-      const hit = this.castRay(predicate);
-      if (hit.pickedMesh && hit.pickedMesh.metadata?.isDetail) {
-        hit.pickedMesh.checkCollisions = false;
-        this.positionPickedDetail(hit.pickedMesh);
-        HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
-      }
-    }
-  }
+
   //бросок детали
   private dropDetail() {
     if (this.controls.drop && this.pickedDetail) {
@@ -201,8 +186,7 @@ export default class HandActions {
   }
 
   //функция позиционирования инструмента в руке
-  private positionPickedItem(pickedMesh: AbstractMesh) {
-    this.pickedItem = (pickedMesh.parent as AbstractMesh) || pickedMesh;
+  private positionPickedItem() {
     this.pickedItem.physicsImpostor?.dispose();
     this.closedHand.addChild(this.pickedItem);
     this.pickedItem.position.set(-0.11, 0.073, 0.028);
@@ -231,12 +215,16 @@ export default class HandActions {
     const enabledElem = quickAccess.find((item) => item.isEnabled);
     if (enabledElem) {
       enabledElem.isEnabled = false;
-      const enabledMesh = this.instruments.getById(enabledElem.id).mesh;
+      const instrument = this.instruments.getById(enabledElem.id);
+      instrument.isActive = false;
+      const enabledMesh = instrument.mesh;
       enabledMesh.setEnabled(false);
     }
     if (quickAccess[index].id != -1) {
       quickAccess[index].isEnabled = true;
-      this.pickedItem = this.instruments.getById(quickAccess[index].id).mesh;
+      const instrument = this.instruments.getById(quickAccess[index].id);
+      this.pickedItem = instrument.mesh;
+      instrument.isActive = true;
       this.pickedItem.setEnabled(true);
       HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
     } else {

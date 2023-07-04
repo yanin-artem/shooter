@@ -3,12 +3,14 @@ import {
   SceneLoader,
   Vector3,
   PhysicsImpostor,
+  Scene,
 } from "@babylonjs/core";
 import Instrument from "./instrument";
+import ControllEvents from "../characterControls";
 
 export default class RimmerPencil extends Instrument {
-  constructor() {
-    super();
+  constructor(scene: Scene, head: AbstractMesh, controls: ControllEvents) {
+    super(scene, head, controls);
     this.id = 13;
     this.createRimmerPencilMesh();
     this.name = "Риммер карандаш";

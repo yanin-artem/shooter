@@ -43,7 +43,6 @@ export default class InventoryUI {
   ) {
     this.inventoryCells = [];
     this.createInventoryElements();
-    console.log(this.inventory);
     this.addEventListeners();
     this.inventoryEvents();
     this.info = new ItemInfo(this.advancedTexture);
@@ -80,6 +79,7 @@ export default class InventoryUI {
             this.closedHand
           );
         }
+        //ДОДУМАТЬ ЛОГИКУ С ИС АКТИВЕ
         if (event.buttonIndex === 0 && this.dragNdrop.isDragItem) {
           this.dragNdrop.dropDruggingItem(
             item,

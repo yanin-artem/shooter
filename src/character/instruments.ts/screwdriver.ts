@@ -3,12 +3,14 @@ import {
   SceneLoader,
   Vector3,
   PhysicsImpostor,
+  Scene,
 } from "@babylonjs/core";
 import Instrument from "./instrument";
+import ControllEvents from "../characterControls";
 
 export default class Screwdriver extends Instrument {
-  constructor() {
-    super();
+  constructor(scene: Scene, head: AbstractMesh, controls: ControllEvents) {
+    super(scene, head, controls);
     this.id = 0;
     this.createSrewdriverMesh();
     this.name = "Отвертка";
@@ -56,5 +58,13 @@ export default class Screwdriver extends Instrument {
       };
       this.mesh = screwdriver;
     });
+  }
+
+  public override positionInHand(closedHand: AbstractMesh) {
+    this.mesh.physicsImpostor?.dispose();
+    closedHand.addChild(this.mesh);
+    this.mesh.position.set(-0.11, 0.073, 0.028);
+    this.mesh.rotationQuaternion = null;
+    this.mesh.rotation.set(0, -Math.PI / 1.8, 0);
   }
 }

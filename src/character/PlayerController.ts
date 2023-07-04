@@ -17,6 +17,7 @@ export default class playerController {
   private movement: Movement;
   private controls: ControllEvents;
   private inventory: GeneralInvenory;
+  private instruments: Instruments;
 
   constructor(
     private hand: AbstractMesh,
@@ -25,10 +26,10 @@ export default class playerController {
     private scene: Scene,
     private engine: Engine,
     private head: Mesh,
-    private pickArea: Mesh,
-    private instruments: Instruments
+    private pickArea: Mesh
   ) {
     this.controls = new ControllEvents();
+    this.instruments = new Instruments(this.scene, this.head, this.controls);
     this.movement = new Movement(
       this.body,
       this.scene,

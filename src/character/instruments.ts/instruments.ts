@@ -16,6 +16,8 @@ import Rolling from "./rolling";
 import TorqueWrench from "./torqueWrench";
 import TorqueWrenchNozzle from "./TorqueWrenchNozzle";
 import ScrewdriverIndicator from "./screwdriverIndicator";
+import { AbstractMesh, Scene } from "@babylonjs/core";
+import ControllEvents from "../characterControls";
 
 //TODO: КАКОЙ-ТО БАГ С АЙДИШНИКАМИ
 
@@ -40,25 +42,61 @@ export default class Instruments {
   public screwdriverIndicator: ScrewdriverIndicator;
 
   public storage: Array<any>;
-  constructor() {
-    this.screwdriver = new Screwdriver();
-    this.pliers = new Pliers();
-    this.scissors = new Scissors();
-    this.wrench = new Wrench();
-    this.pipeExpander = new PipeExpander();
-    this.leakDetector = new LeakDetecor();
-    this.leverPipeExpander = new LeverPipeExpander();
-    this.pipeBenderCrossbow = new PipeBenderCrossbow();
-    this.pipeBenderCrossbowNozzle = new PipeBenderCrossbowNozzle();
-    this.pipeBenderSpring = new PipeBenderSpring();
-    this.pipeCutterBig = new PipeCutterBig();
-    this.pipeCutterSmall = new PipeCutterSmall();
-    this.rimmerBarrel = new RimmerBarrel();
-    this.rimmerPencil = new RimmerPencil();
-    this.rolling = new Rolling();
-    this.torqueWrench = new TorqueWrench();
-    this.torqueWrenchNozzle = new TorqueWrenchNozzle();
-    this.screwdriverIndicator = new ScrewdriverIndicator();
+  constructor(
+    private scene: Scene,
+    private head: AbstractMesh,
+    private controls: ControllEvents
+  ) {
+    this.screwdriver = new Screwdriver(this.scene, this.head, this.controls);
+    this.pliers = new Pliers(this.scene, this.head, this.controls);
+    this.scissors = new Scissors(this.scene, this.head, this.controls);
+    this.wrench = new Wrench(this.scene, this.head, this.controls);
+    this.pipeExpander = new PipeExpander(this.scene, this.head, this.controls);
+    this.leakDetector = new LeakDetecor(this.scene, this.head, this.controls);
+    this.leverPipeExpander = new LeverPipeExpander(
+      this.scene,
+      this.head,
+      this.controls
+    );
+    this.pipeBenderCrossbow = new PipeBenderCrossbow(
+      this.scene,
+      this.head,
+      this.controls
+    );
+    this.pipeBenderCrossbowNozzle = new PipeBenderCrossbowNozzle(
+      this.scene,
+      this.head,
+      this.controls
+    );
+    this.pipeBenderSpring = new PipeBenderSpring(
+      this.scene,
+      this.head,
+      this.controls
+    );
+    this.pipeCutterBig = new PipeCutterBig(
+      this.scene,
+      this.head,
+      this.controls
+    );
+    this.pipeCutterSmall = new PipeCutterSmall(
+      this.scene,
+      this.head,
+      this.controls
+    );
+    this.rimmerBarrel = new RimmerBarrel(this.scene, this.head, this.controls);
+    this.rimmerPencil = new RimmerPencil(this.scene, this.head, this.controls);
+    this.rolling = new Rolling(this.scene, this.head, this.controls);
+    this.torqueWrench = new TorqueWrench(this.scene, this.head, this.controls);
+    this.torqueWrenchNozzle = new TorqueWrenchNozzle(
+      this.scene,
+      this.head,
+      this.controls
+    );
+    this.screwdriverIndicator = new ScrewdriverIndicator(
+      this.scene,
+      this.head,
+      this.controls
+    );
     this.storage = this.createInstrumentsStorage();
     console.log(this.storage);
   }

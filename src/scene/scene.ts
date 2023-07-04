@@ -40,7 +40,6 @@ export default class MainScene {
   camera: UniversalCamera;
   fps: HTMLElement;
   light: DirectionalLight;
-  public instruments: Instruments;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.engine = new Engine(this.canvas, true, { stencil: true });
@@ -131,8 +130,7 @@ export default class MainScene {
     // });
     this.setShadow();
 
-    this.instruments = new Instruments();
-    this.controller = new Character(this.scene, this.engine, this.instruments);
+    this.controller = new Character(this.scene, this.engine);
     this.camera = this.controller.camera;
   }
 
@@ -368,8 +366,7 @@ export default class MainScene {
       { mass: 0 }
     );
 
-    this.instruments = new Instruments();
-    this.controller = new Character(this.scene, this.engine, this.instruments);
+    this.controller = new Character(this.scene, this.engine);
     this.camera = this.controller.camera;
     console.log(this.scene);
     this.scene.meshes.map((mesh) => {

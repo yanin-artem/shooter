@@ -32,7 +32,6 @@ export class QuickAccess {
     private instruments: Instruments
   ) {
     this.quickAccess = Array(8).fill({ id: -1, isEnabled: false });
-    console.log(this.quickAccess);
     this.UI = new QuickAccessUI(
       this.quickAccess,
       this.advancedTexture,
@@ -50,6 +49,7 @@ export class QuickAccess {
     const index = this.quickAccess.findIndex((item) => id === id);
     if (index != -1) {
       instrument.mesh.setEnabled(true);
+      instrument.isActive = false;
       this.quickAccess[index].id = -1;
       this.quickAccess[index].isEnabled = false;
       this.deleteCell(index, this.UI.quickAccessCells);
@@ -61,10 +61,13 @@ export class QuickAccess {
   public addInInventoryAndInHand(id: number) {
     console.log(id);
     const instrument = this.instruments.getById(id);
+    instrument.isActive = true;
     const enableItem = this.quickAccess.find((item) => item.isEnabled);
     if (enableItem) {
       enableItem.isEnabled = false;
-      this.instruments.getById(enableItem.id).mesh.setEnabled(false);
+      const instrument = this.instruments.getById(enableItem.id);
+      instrument.mesh.setEnabled(false);
+      instrument.isActive = false;
     }
     this.calcQuickAccess(id, instrument);
   }

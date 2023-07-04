@@ -3,12 +3,14 @@ import {
   SceneLoader,
   Vector3,
   PhysicsImpostor,
+  Scene,
 } from "@babylonjs/core";
 import Instrument from "./instrument";
+import ControllEvents from "../characterControls";
 
 export default class TorqueWrench extends Instrument {
-  constructor() {
-    super();
+  constructor(scene: Scene, head: AbstractMesh, controls: ControllEvents) {
+    super(scene, head, controls);
     this.id = 15;
     this.createTorqueWrenchMesh();
     this.name = "Ключ ручка";

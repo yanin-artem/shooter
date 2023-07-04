@@ -62,19 +62,24 @@ export default class QuickAccessUI {
             this.closedHand
           );
         }
+        //УБРАТЬ ВСЮ ЛОГИКУ ВНУТРИ ОБРАБОТЧИКА В МЕТОД!!!
         if (event.buttonIndex === 0 && this.dragNdrop.isDragItem) {
           const enabledItem = this.quickAccess.find((item) => item.isEnabled);
           if (enabledItem) {
-            this.instruments.getById(enabledItem.id).mesh.setEnabled(false);
+            const instrument = this.instruments.getById(enabledItem.id);
+            instrument.mesh.setEnabled(false);
+            instrument.isActive = false;
           }
           this.dragNdrop.dropDruggingItem(
             item,
             this.quickAccess,
             this.quickAccessCells
           );
-          const mesh = this.instruments.getById(
+          const instrument = this.instruments.getById(
             this.dragNdrop.draggingItem.id
-          ).mesh;
+          );
+          instrument.isActive = true;
+          const mesh = instrument.mesh;
           mesh.setEnabled(true);
           this.positionItem(mesh);
           HandActions.toggleHand(this.closedHand, this.hand, mesh);
