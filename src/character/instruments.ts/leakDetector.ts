@@ -4,17 +4,15 @@ import {
   Vector3,
   PhysicsImpostor,
 } from "@babylonjs/core";
+import Instrument from "./instrument";
 
-export default class LeakDetecor {
-  public id = 5;
-  public mesh: AbstractMesh;
-  public imageSrc: string;
-  public name: string;
-  public description: string;
+export default class LeakDetecor extends Instrument {
   constructor() {
+    super();
     this.createLeakDetectorMesh();
+    this.id = 5;
     this.name = "Детектор утечек";
-    this.imageSrc = "../assets/images/leakDetector.jpg";
+    this.imageSrc = "";
     this.description = "";
   }
   private createLeakDetectorMesh() {

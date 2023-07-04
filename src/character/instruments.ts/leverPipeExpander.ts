@@ -4,14 +4,12 @@ import {
   Vector3,
   PhysicsImpostor,
 } from "@babylonjs/core";
+import Instrument from "./instrument";
 
-export default class LeverPipeExpander {
-  public id = 6;
-  public mesh: AbstractMesh;
-  public imageSrc: string;
-  public name: string;
-  public description: string;
+export default class LeverPipeExpander extends Instrument {
   constructor() {
+    super();
+    this.id = 6;
     this.createLeverPipeExpanderMesh();
     this.name = "Труборасширитель рычажный";
     this.imageSrc = "../assets/images/leverPipeExpander.jpg";

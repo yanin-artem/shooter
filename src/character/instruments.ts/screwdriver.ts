@@ -4,14 +4,12 @@ import {
   Vector3,
   PhysicsImpostor,
 } from "@babylonjs/core";
+import Instrument from "./instrument";
 
-export default class Screwdriver {
-  public id = 0;
-  public mesh: AbstractMesh;
-  public imageSrc: string;
-  public name: string;
-  public description: string;
+export default class Screwdriver extends Instrument {
   constructor() {
+    super();
+    this.id = 0;
     this.createSrewdriverMesh();
     this.name = "Отвертка";
     this.imageSrc = "../assets/images/screwdriver.jpg";

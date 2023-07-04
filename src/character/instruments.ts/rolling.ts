@@ -4,14 +4,12 @@ import {
   Vector3,
   PhysicsImpostor,
 } from "@babylonjs/core";
+import Instrument from "./instrument";
 
-export default class Rolling {
-  public id = 14;
-  public mesh: AbstractMesh;
-  public imageSrc: string;
-  public name: string;
-  public description: string;
+export default class Rolling extends Instrument {
   constructor() {
+    super();
+    this.id = 14;
     this.createRollingMesh();
     this.name = "Вальцовка";
     this.imageSrc = "";

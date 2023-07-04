@@ -4,14 +4,12 @@ import {
   Vector3,
   PhysicsImpostor,
 } from "@babylonjs/core";
+import Instrument from "./instrument";
 
-export default class Pliers {
-  public id = 1;
-  public mesh: AbstractMesh;
-  public imageSrc: string;
-  public name: string;
-  public description: string;
+export default class Pliers extends Instrument {
   constructor() {
+    super();
+    this.id = 1;
     this.createPliersMesh();
     this.name = "Пласкогубцы";
     this.imageSrc = "../assets/images/pliers.jpg";

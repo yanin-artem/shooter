@@ -4,14 +4,12 @@ import {
   Vector3,
   PhysicsImpostor,
 } from "@babylonjs/core";
+import Instrument from "./instrument";
 
-export default class PipeCutterBig {
-  public id = 10;
-  public mesh: AbstractMesh;
-  public imageSrc: string;
-  public name: string;
-  public description: string;
+export default class PipeCutterBig extends Instrument {
   constructor() {
+    super();
+    this.id = 10;
     this.createPipeCutterBigMesh();
     this.name = "Труборез большой";
     this.imageSrc = "";

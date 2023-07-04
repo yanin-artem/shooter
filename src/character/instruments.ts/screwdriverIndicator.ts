@@ -4,14 +4,12 @@ import {
   Vector3,
   PhysicsImpostor,
 } from "@babylonjs/core";
+import Instrument from "./instrument";
 
-export default class ScrewdriverIndicator {
-  public id = 17;
-  public mesh: AbstractMesh;
-  public imageSrc: string;
-  public name: string;
-  public description: string;
+export default class ScrewdriverIndicator extends Instrument {
   constructor() {
+    super();
+    this.id = 17;
     this.createSrewdriverIndicatorMesh();
     this.name = "Отвертка индикаторная";
     this.imageSrc = "";

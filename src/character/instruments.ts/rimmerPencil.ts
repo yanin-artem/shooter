@@ -4,14 +4,12 @@ import {
   Vector3,
   PhysicsImpostor,
 } from "@babylonjs/core";
+import Instrument from "./instrument";
 
-export default class RimmerPencil {
-  public id = 13;
-  public mesh: AbstractMesh;
-  public imageSrc: string;
-  public name: string;
-  public description: string;
+export default class RimmerPencil extends Instrument {
   constructor() {
+    super();
+    this.id = 13;
     this.createRimmerPencilMesh();
     this.name = "Риммер карандаш";
     this.imageSrc = "";

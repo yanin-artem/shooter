@@ -4,14 +4,12 @@ import {
   Vector3,
   PhysicsImpostor,
 } from "@babylonjs/core";
+import Instrument from "./instrument";
 
-export default class Wrench {
-  public id = 3;
-  public mesh: AbstractMesh;
-  public imageSrc: string;
-  public name: string;
-  public description: string;
+export default class Wrench extends Instrument {
   constructor() {
+    super();
+    this.id = 3;
     this.createWrenchMesh();
     this.name = "Гаечный ключ";
     this.imageSrc = "";

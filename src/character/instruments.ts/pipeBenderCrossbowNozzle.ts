@@ -4,14 +4,12 @@ import {
   Vector3,
   PhysicsImpostor,
 } from "@babylonjs/core";
+import Instrument from "./instrument";
 
-export default class PipeBenderCrossbowNozzle {
-  public id = 8;
-  public mesh: AbstractMesh;
-  public imageSrc: string;
-  public name: string;
-  public description: string;
+export default class PipeBenderCrossbowNozzle extends Instrument {
   constructor() {
+    super();
+    this.id = 8;
     this.createPipeBenderCrossbowNozzleMesh();
     this.name = "Насадка на трубогиб арбалетного типа";
     this.imageSrc = "";
