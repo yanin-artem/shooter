@@ -12,10 +12,11 @@ import {
   ActionManager,
   MeshBuilder,
 } from "@babylonjs/core";
+import { quickAccessItem } from "./inventory/quickAccess";
 
 import ControllEvents from "./characterControls";
-import Instruments from "./instruments.ts/instruments";
 import GeneralInvenory from "./inventory/generalInvenoty";
+import Instruments from "./instruments.ts/instruments";
 
 export default class HandActions {
   private pickedItem: AbstractMesh;
@@ -31,12 +32,10 @@ export default class HandActions {
     private engine: Engine,
     private head: Mesh,
     private pickArea: Mesh,
-    private Instruments: Instruments,
     private inventory: GeneralInvenory,
-    private controls: ControllEvents
-  ) {
-    this.itemsStorage = this.Instruments.storage;
-  }
+    private controls: ControllEvents,
+    private instruments: Instruments
+  ) {}
 
   createPickEvents(): void {
     this.scene.onKeyboardObservable.add((event) => {
@@ -54,7 +53,7 @@ export default class HandActions {
       }
       this.pickManyFromArea();
       if (event.event.code === "KeyI" && event.type === 1) {
-        this.pickedItem = this.inventory.quickAccess.correctCurrentItem();
+        // this.pickedItem = this.inventory.quickAccess.correctCurrentItem();
       }
     });
   }
@@ -91,19 +90,23 @@ export default class HandActions {
   private setPick(): void {
     if (this.controls.pickInHand) {
       function predicate(mesh: AbstractMesh): boolean {
-        console.log(mesh);
         return (
           ((mesh.metadata?.isDetail && !mesh.metadata?.isConditioner) ||
             mesh.metadata.isItem) &&
-          mesh.isPickable
+          mesh.isPickable &&
+          mesh.isEnabled()
         );
       }
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
+        console.log(hit.pickedMesh);
         hit.pickedMesh.checkCollisions = false;
         if (hit.pickedMesh.metadata?.isItem) {
           this.positionPickedItem(hit.pickedMesh);
-          this.inventory.quickAccess.addInInventoryAndInHand(this.pickedItem);
+          console.log(this.pickedItem);
+          this.inventory.quickAccess.addInInventoryAndInHand(
+            this.pickedItem.metadata.id
+          );
         }
         if (hit.pickedMesh.metadata?.isDetail)
           this.positionPickedDetail(hit.pickedMesh);
@@ -115,7 +118,6 @@ export default class HandActions {
   //функция разбора кондиционера отверткой
   private doItemAction() {
     if (
-      this.pickedItem?.metadata.ItemIndex === 1 &&
       this.controls.takeApart &&
       !this.pickedDetail &&
       this.pickedItem?.isEnabled()
@@ -218,17 +220,28 @@ export default class HandActions {
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
         const item = (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
-        this.inventory.invetory.addInInventory(item);
+        this.inventory.invetory.addInInventory(item.metadata.id);
       }
     }
   }
-  private changeItemInHand(index: number, quickAccess: Array<AbstractMesh>) {
+  private changeItemInHand(index: number, quickAccess: Array<quickAccessItem>) {
     this.inventory.quickAccess.UI.toggleQuickAccessVisibility();
-    const enabledMesh = quickAccess?.find((item) => item?.isEnabled());
-    if (enabledMesh) enabledMesh.setEnabled(false);
-    this.pickedItem = quickAccess[index];
-    this.pickedItem?.setEnabled(true);
-    HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
+    console.log(quickAccess);
+
+    const enabledElem = quickAccess.find((item) => item.isEnabled);
+    if (enabledElem) {
+      enabledElem.isEnabled = false;
+      const enabledMesh = this.instruments.getById(enabledElem.id).mesh;
+      enabledMesh.setEnabled(false);
+    }
+    if (quickAccess[index].id != -1) {
+      quickAccess[index].isEnabled = true;
+      this.pickedItem = this.instruments.getById(quickAccess[index].id).mesh;
+      this.pickedItem.setEnabled(true);
+      HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
+    } else {
+      HandActions.toggleHand(this.closedHand, this.hand, null);
+    }
   }
   //TODO: починить сбор с площади
   private pickManyFromArea() {

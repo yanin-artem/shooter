@@ -15,6 +15,8 @@ import DropItem from "./dropButton";
 import ItemInfo from "./itemInfo";
 import ControllEvents from "../characterControls";
 import dragNdrop from "./dragNdrop";
+import Instruments from "../instruments.ts/instruments";
+import { inventoryItem } from "./inventory";
 
 export default class InventoryUI {
   private info: ItemInfo;
@@ -30,13 +32,14 @@ export default class InventoryUI {
   public inventoryCells: Array<GUI.Button>;
 
   constructor(
-    private inventory: Array<AbstractMesh>,
+    private inventory: Array<inventoryItem>,
     private scene: Scene,
     private advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private engine: Engine,
     private hand: AbstractMesh,
-    private closedHand: AbstractMesh
+    private closedHand: AbstractMesh,
+    private instruments: Instruments
   ) {
     this.inventoryCells = [];
     this.createInventoryElements();
@@ -45,7 +48,7 @@ export default class InventoryUI {
     this.inventoryEvents();
     this.info = new ItemInfo(this.advancedTexture);
     this.dragNdrop = dragNdrop.Instance(this.advancedTexture, this.scene);
-    this.drop = new DropItem();
+    this.drop = new DropItem(instruments);
   }
 
   private slideInventar(value: number) {
@@ -78,18 +81,6 @@ export default class InventoryUI {
           );
         }
         if (event.buttonIndex === 0 && this.dragNdrop.isDragItem) {
-          // const index = this.quickAccess.findIndex((item) => item?.isEnabled());
-          // if (
-          //   index != -1 &&
-          //   this.quickAccess[index] === this.dragNdrop.draggingMesh
-          // ) {
-          this.dragNdrop.draggingMesh.setEnabled(false);
-          HandActions.toggleHand(
-            this.closedHand,
-            this.hand,
-            this.dragNdrop.draggingMesh
-          );
-          // }
           this.dragNdrop.dropDruggingItem(
             item,
             this.inventory,
@@ -221,16 +212,15 @@ export default class InventoryUI {
   // }
 
   //функция расчета сетки инвентаря
-  public calcInventoryGrid(item: AbstractMesh) {
+  public calcInventoryGrid(item: any) {
     const emptyCellIndex = this.inventoryCells.findIndex(
       (item) => item.textBlock.text === ""
     );
     if (emptyCellIndex != -1) {
       this.inventoryCells[emptyCellIndex].textBlock.text = item.name;
-      this.inventoryCells[emptyCellIndex].image.source =
-        "../assets/images/" + item.name + ".jpg";
+      this.inventoryCells[emptyCellIndex].image.source = item.imageSrc;
       this.inventoryCells[emptyCellIndex].metadata = {
-        id: item.metadata.id,
+        id: item.id,
       };
     } else return;
   }
@@ -242,7 +232,7 @@ export default class InventoryUI {
     this.createSliderButtons();
   }
 
-  public correctStorage(array: Array<AbstractMesh>) {
+  public correctStorage(array: Array<inventoryItem>) {
     this.inventory = array;
   }
 }

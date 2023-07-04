@@ -6,7 +6,7 @@ import {
 } from "@babylonjs/core";
 
 export default class Rolling {
-  public id: 1;
+  public id = 14;
   public mesh: AbstractMesh;
   public imageSrc: string;
   public name: string;
@@ -39,7 +39,7 @@ export default class Rolling {
       rolling.metadata = {
         isItem: true,
         isConditioner: false,
-        // id: this.id,
+        id: this.id,
       };
       rolling.getChildMeshes()[0].metadata = {
         isItem: true,

@@ -10,11 +10,16 @@ import {
 } from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "../characterControls";
-import HandActions from "../handActions";
 import QuickAccessUI from "./quickAccessUI";
+import Instruments from "../instruments.ts/instruments";
 
-export default class quickAccess {
-  public quickAccess: Array<AbstractMesh>;
+export type quickAccessItem = {
+  id: number;
+  isEnabled: boolean;
+};
+
+export class QuickAccess {
+  public quickAccess: Array<quickAccessItem>;
   protected id = 0;
   public UI: QuickAccessUI;
   constructor(
@@ -23,46 +28,51 @@ export default class quickAccess {
     protected closedHand: AbstractMesh,
     protected hand: AbstractMesh,
     private advancedTexture: GUI.AdvancedDynamicTexture,
-    private controls: ControllEvents
+    private controls: ControllEvents,
+    private instruments: Instruments
   ) {
-    this.quickAccess = Array(8).fill(undefined);
+    this.quickAccess = Array(8).fill({ id: -1, isEnabled: false });
+    console.log(this.quickAccess);
     this.UI = new QuickAccessUI(
       this.quickAccess,
       this.advancedTexture,
       this.controls,
       this.scene,
       this.hand,
-      this.closedHand
+      this.closedHand,
+      this.instruments
     );
   }
 
   //функция удаления предмета из инвентаря
   public deleteFromQuickAccessAndFromHand(id: Number) {
-    const index = this.quickAccess.findIndex((e) => e?.metadata.id === id);
+    const instrument = this.instruments.storage.find((e) => e.id === id);
+    const index = this.quickAccess.findIndex((item) => id === id);
     if (index != -1) {
-      this.quickAccess[index].setEnabled(true);
-      this.quickAccess[index] = undefined;
+      instrument.mesh.setEnabled(true);
+      this.quickAccess[index].id = -1;
+      this.quickAccess[index].isEnabled = false;
       this.deleteCell(index, this.UI.quickAccessCells);
       this.UI.correctStorage(this.quickAccess);
     } else return;
   }
 
   //функция добавления предмета в руку и в инвентарь
-  public addInInventoryAndInHand(item: AbstractMesh) {
-    if (!Object.keys(item.metadata).includes("id")) {
-      item.metadata.id = this.id;
-      this.id++;
+  public addInInventoryAndInHand(id: number) {
+    console.log(id);
+    const instrument = this.instruments.getById(id);
+    const enableItem = this.quickAccess.find((item) => item.isEnabled);
+    if (enableItem) {
+      enableItem.isEnabled = false;
+      this.instruments.getById(enableItem.id).mesh.setEnabled(false);
     }
-    if (this.quickAccess.length > 0) {
-      this.quickAccess.forEach((item) => item?.setEnabled(false));
-    }
-    this.calcQuickAccess(item);
+    this.calcQuickAccess(id, instrument);
   }
 
-  private calcQuickAccess(item: AbstractMesh) {
-    this.calcArray(item, this.quickAccess);
+  private calcQuickAccess(id: number, instrument: any) {
+    this.calcArray(id);
     this.UI.correctStorage(this.quickAccess);
-    this.UI.calcQuickAccessGrid(item);
+    this.UI.calcQuickAccessGrid(instrument);
   }
 
   //функция удаления ячейки инвентаря
@@ -72,16 +82,17 @@ export default class quickAccess {
   }
 
   //функция расчет массива инвентаря
-  private calcArray(item: AbstractMesh, array: Array<AbstractMesh>) {
-    const index = array.findIndex((item) => item === undefined);
+  private calcArray(id: number) {
+    const index = this.quickAccess.findIndex((item) => item.id === -1);
     if (index === -1) {
-      array.push(item);
+      this.quickAccess.push({ id: id, isEnabled: true });
     } else {
-      array[index] = item;
+      this.quickAccess[index] = { id: id, isEnabled: true };
     }
   }
 
   public correctCurrentItem(): AbstractMesh {
-    return this.quickAccess?.find((item) => item?.isEnabled());
+    const enabledItem = this.quickAccess.find((e) => e.isEnabled);
+    return this.instruments.getById(enabledItem.id);
   }
 }

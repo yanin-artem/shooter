@@ -1,5 +1,5 @@
 import * as GUI from "@babylonjs/gui";
-import Inventory from "./inventory";
+import { Inventory, inventoryItem } from "./inventory";
 import HandActions from "../handActions";
 import {
   AbstractMesh,
@@ -11,10 +11,12 @@ import {
   Vector2,
   PointerEventTypes,
 } from "@babylonjs/core";
+import { quickAccessItem } from "./quickAccess";
+import Instruments from "../instruments.ts/instruments";
 
 export default class DropItem {
   public dropButton: GUI.Button;
-  constructor() {
+  constructor(private instruments: Instruments) {
     this.dropButton = this.createDropButton();
   }
 
@@ -35,7 +37,7 @@ export default class DropItem {
   public showDropButton(
     cell: GUI.Button,
     grid: GUI.Grid,
-    meshArray: Array<AbstractMesh>,
+    itemsArray: Array<quickAccessItem> | Array<inventoryItem>,
     cellsArray: Array<GUI.Button>,
     hand: AbstractMesh,
     closedHand: AbstractMesh
@@ -51,7 +53,7 @@ export default class DropItem {
       this.dropButton.onPointerClickObservable.addOnce(() => {
         this.deleteItem(
           cell.metadata.id,
-          meshArray,
+          itemsArray,
           cellsArray,
           hand,
           closedHand
@@ -62,29 +64,33 @@ export default class DropItem {
 
   //удаление предмета в интерфейсе инвентаря
   protected deleteItem(
-    id: Number,
-    meshArray: Array<AbstractMesh>,
+    id: number,
+    itemsArray: Array<any>,
     cellsArray: Array<GUI.Button>,
     hand: AbstractMesh,
     closedHand: AbstractMesh
   ) {
-    const index = meshArray.findIndex((e) => e?.metadata.id === id);
+    const index = itemsArray.findIndex((e) => e.id === id);
     if (index != -1) {
-      meshArray[index].setEnabled(true);
-      closedHand.removeChild(meshArray[index]);
-      meshArray[index].physicsImpostor = new PhysicsImpostor(
-        meshArray[index],
+      const mesh = this.instruments.getById(id).mesh;
+      itemsArray[index].id = -1;
+      if (Object.keys(itemsArray).includes("isEnabled"))
+        itemsArray[index].isEnabled = true;
+      mesh.setEnabled(true);
+      closedHand.removeChild(mesh);
+      mesh.physicsImpostor = new PhysicsImpostor(
+        mesh,
         PhysicsImpostor.MeshImpostor,
         { mass: 0.1 }
       );
-      meshArray[index] = undefined;
-      HandActions.toggleHand(closedHand, hand, meshArray[index]);
+      HandActions.toggleHand(closedHand, hand, mesh);
       this.deleteCell(index, cellsArray);
     } else return;
   }
 
   //функция удаления ячейки инвентаря
   protected deleteCell(index: number, array: Array<GUI.Button>) {
+    console.log(array[index]);
     array[index].textBlock.text = "";
     array[index].image.source = "";
   }

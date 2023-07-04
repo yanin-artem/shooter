@@ -6,7 +6,7 @@ import {
 } from "@babylonjs/core";
 
 export default class PipeBenderCrossbow {
-  public id: 1;
+  public id = 7;
   public mesh: AbstractMesh;
   public imageSrc: string;
   public name: string;
@@ -42,7 +42,7 @@ export default class PipeBenderCrossbow {
       pipeBenderCrossbow.metadata = {
         isItem: true,
         isConditioner: false,
-        // id: this.id,
+        id: this.id,
       };
       pipeBenderCrossbow.getChildMeshes()[0].metadata = {
         isItem: true,

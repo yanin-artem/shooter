@@ -12,9 +12,13 @@ import * as GUI from "@babylonjs/gui";
 import ControllEvents from "../characterControls";
 import HandActions from "../handActions";
 import InventoryUI from "./inventoryUI";
+import Instruments from "../instruments.ts/instruments";
+export type inventoryItem = {
+  id: number;
+};
 
-export default class Inventory {
-  protected inventory: Array<AbstractMesh>;
+export class Inventory {
+  protected inventory: Array<inventoryItem>;
   protected id = 0;
   private UI: InventoryUI;
 
@@ -24,7 +28,8 @@ export default class Inventory {
     protected closedHand: AbstractMesh,
     protected hand: AbstractMesh,
     protected advancedTexture: GUI.AdvancedDynamicTexture,
-    private controls: ControllEvents
+    private controls: ControllEvents,
+    private instruments: Instruments
   ) {
     this.UI = new InventoryUI(
       this.inventory,
@@ -33,39 +38,38 @@ export default class Inventory {
       this.controls,
       this.engine,
       this.hand,
-      this.closedHand
+      this.closedHand,
+      this.instruments
     );
-    this.inventory = Array(96).fill(undefined);
+    this.inventory = Array(96).fill({ id: -1 });
   }
 
   //функция добавления предмета сразу в инвентарь
-  public addInInventory(item: AbstractMesh) {
-    if (!Object.keys(item.metadata).includes("id")) {
-      item.metadata.id = this.id;
-      this.id++;
-    }
-    item.checkCollisions = false;
-    item.physicsImpostor?.dispose();
-    this.closedHand.addChild(item);
-    item.position = Vector3.Zero();
-    item.setEnabled(false);
-    this.calcInventory(item);
+  public addInInventory(id: number) {
+    const instrument = this.instruments.getById(id);
+    instrument.mesh.checkCollisions = false;
+    instrument.mesh.physicsImpostor?.dispose();
+    this.closedHand.addChild(instrument.mesh);
+    instrument.mesh.position = Vector3.Zero();
+    instrument.mesh.setEnabled(false);
+    this.calcInventory(id, instrument);
   }
 
   //функция расчета инвентаря из двух частей - расчет массива и расчет сетки инвентаря
-  private calcInventory(item: AbstractMesh) {
-    this.calcArray(item, this.inventory);
+  private calcInventory(id: number, instrument: any) {
+    this.calcArray(id);
     this.UI.correctStorage(this.inventory);
-    this.UI.calcInventoryGrid(item);
+    this.UI.calcInventoryGrid(instrument);
+    console.log(this.inventory);
   }
 
   //функция расчет массива инвентаря
-  private calcArray(item: AbstractMesh, array: Array<AbstractMesh>) {
-    const index = array.findIndex((item) => item === undefined);
+  private calcArray(id: number) {
+    const index = this.inventory.findIndex((item) => item.id === -1);
     if (index === -1) {
-      array.push(item);
+      this.inventory.push({ id: id });
     } else {
-      array[index] = item;
+      this.inventory[index] = { id: id };
     }
   }
 }

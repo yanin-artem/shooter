@@ -6,7 +6,7 @@ import {
 } from "@babylonjs/core";
 
 export default class Scissors {
-  public id: 2;
+  public id = 2;
   public mesh: AbstractMesh;
   public imageSrc: string;
   public name: string;
@@ -45,7 +45,7 @@ export default class Scissors {
       scissors.metadata = {
         isItem: true,
         isConditioner: false,
-        // id: this.id,
+        id: this.id,
       };
       scissors.getChildMeshes()[0].metadata = {
         isItem: true,

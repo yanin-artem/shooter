@@ -6,7 +6,7 @@ import {
 } from "@babylonjs/core";
 
 export default class LeverPipeExpander {
-  public id: 1;
+  public id = 6;
   public mesh: AbstractMesh;
   public imageSrc: string;
   public name: string;
@@ -42,7 +42,7 @@ export default class LeverPipeExpander {
       leverPipeExpander.metadata = {
         isItem: true,
         isConditioner: false,
-        // id: this.id,
+        id: this.id,
       };
       leverPipeExpander.getChildMeshes()[0].metadata = {
         isItem: true,

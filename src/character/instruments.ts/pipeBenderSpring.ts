@@ -6,7 +6,7 @@ import {
 } from "@babylonjs/core";
 
 export default class PipeBenderSpring {
-  public id: 1;
+  public id = 9;
   public mesh: AbstractMesh;
   public imageSrc: string;
   public name: string;
@@ -42,7 +42,7 @@ export default class PipeBenderSpring {
       pipeBenderSpring.metadata = {
         isItem: true,
         isConditioner: false,
-        // id: this.id,
+        id: this.id,
       };
       pipeBenderSpring.getChildMeshes()[0].metadata = {
         isItem: true,

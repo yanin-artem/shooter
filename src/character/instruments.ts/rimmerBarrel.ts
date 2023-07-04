@@ -6,7 +6,7 @@ import {
 } from "@babylonjs/core";
 
 export default class RimmerBarrel {
-  public id: 1;
+  public id = 12;
   public mesh: AbstractMesh;
   public imageSrc: string;
   public name: string;
@@ -42,7 +42,7 @@ export default class RimmerBarrel {
       rimmerBarrel.metadata = {
         isItem: true,
         isConditioner: false,
-        // id: this.id,
+        id: this.id,
       };
       rimmerBarrel.getChildMeshes()[0].metadata = {
         isItem: true,

@@ -34,13 +34,13 @@ import Character from "../character/character";
 import Instruments from "../character/instruments.ts/instruments";
 
 export default class MainScene {
-  scene: Scene;
+  public scene: Scene;
   engine: Engine;
   controller: Character;
   camera: UniversalCamera;
   fps: HTMLElement;
   light: DirectionalLight;
-  private instruments: Instruments;
+  public instruments: Instruments;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.engine = new Engine(this.canvas, true, { stencil: true });

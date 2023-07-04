@@ -6,7 +6,7 @@ import {
 } from "@babylonjs/core";
 
 export default class PipeExpander {
-  public id: 1;
+  public id = 4;
   public mesh: AbstractMesh;
   public imageSrc: string;
   public name: string;
@@ -42,7 +42,7 @@ export default class PipeExpander {
       pipeExpander.metadata = {
         isItem: true,
         isConditioner: false,
-        // id: this.id,
+        id: this.id,
       };
       pipeExpander.getChildMeshes()[0].metadata = {
         isItem: true,

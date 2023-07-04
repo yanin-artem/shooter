@@ -15,6 +15,8 @@ import ItemInfo from "./itemInfo";
 import ControllEvents from "../characterControls";
 import dragNdrop from "./dragNdrop";
 import DropItem from "./dropButton";
+import { quickAccessItem } from "./quickAccess";
+import Instruments from "../instruments.ts/instruments";
 
 export default class QuickAccessUI {
   public quickAccessCells: Array<GUI.Button>;
@@ -28,18 +30,19 @@ export default class QuickAccessUI {
   private drop: DropItem;
 
   constructor(
-    private quickAccess: Array<AbstractMesh>,
+    private quickAccess: Array<quickAccessItem>,
     private advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private scene: Scene,
     private hand: AbstractMesh,
-    private closedHand: AbstractMesh
+    private closedHand: AbstractMesh,
+    private instruments: Instruments
   ) {
     this.quickAccessCells = [];
     this.quickAccessGrid = this.createQuickAccessGrid();
     this.info = new ItemInfo(this.advancedTexture);
     this.dragNdrop = dragNdrop.Instance(advancedTexture, scene);
-    this.drop = new DropItem();
+    this.drop = new DropItem(instruments);
     this.inventoryEvents();
     this.addEventListeners();
   }
@@ -60,22 +63,21 @@ export default class QuickAccessUI {
           );
         }
         if (event.buttonIndex === 0 && this.dragNdrop.isDragItem) {
-          const index = this.quickAccess.findIndex((item) => item?.isEnabled());
-          if (index != -1) {
-            this.quickAccess[index].setEnabled(false);
+          const enabledItem = this.quickAccess.find((item) => item.isEnabled);
+          if (enabledItem) {
+            this.instruments.getById(enabledItem.id).mesh.setEnabled(false);
           }
           this.dragNdrop.dropDruggingItem(
             item,
             this.quickAccess,
             this.quickAccessCells
           );
-          this.dragNdrop.draggingMesh.setEnabled(true);
-          this.positionItem(this.dragNdrop.draggingMesh);
-          HandActions.toggleHand(
-            this.closedHand,
-            this.hand,
-            this.dragNdrop.draggingMesh
-          );
+          const mesh = this.instruments.getById(
+            this.dragNdrop.draggingItem.id
+          ).mesh;
+          mesh.setEnabled(true);
+          this.positionItem(mesh);
+          HandActions.toggleHand(this.closedHand, this.hand, mesh);
         } else if (
           event.buttonIndex === 0 &&
           !this.dragNdrop.isDragItem &&
@@ -132,16 +134,15 @@ export default class QuickAccessUI {
     }
   }
 
-  public calcQuickAccessGrid(item: AbstractMesh) {
+  public calcQuickAccessGrid(item: any) {
     const emptyCellIndex = this.quickAccessCells.findIndex(
       (item) => item.textBlock.text === ""
     );
     if (emptyCellIndex != -1) {
       this.quickAccessCells[emptyCellIndex].textBlock.text = item.name;
-      this.quickAccessCells[emptyCellIndex].image.source =
-        "../assets/images/" + item.name + ".jpg";
+      this.quickAccessCells[emptyCellIndex].image.source = item.imageSrc;
       this.quickAccessCells[emptyCellIndex].metadata = {
-        id: item.metadata.id,
+        id: item.id,
       };
     } else {
       return;
@@ -205,7 +206,7 @@ export default class QuickAccessUI {
     });
   }
 
-  public correctStorage(array: Array<AbstractMesh>) {
+  public correctStorage(array: Array<quickAccessItem>) {
     this.quickAccess = array;
   }
 }

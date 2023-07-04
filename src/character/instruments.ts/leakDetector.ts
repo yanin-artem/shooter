@@ -6,7 +6,7 @@ import {
 } from "@babylonjs/core";
 
 export default class LeakDetecor {
-  public id: 1;
+  public id = 5;
   public mesh: AbstractMesh;
   public imageSrc: string;
   public name: string;
@@ -42,7 +42,7 @@ export default class LeakDetecor {
       leakDetector.metadata = {
         isItem: true,
         isConditioner: false,
-        // id: this.id,
+        id: this.id,
       };
       leakDetector.getChildMeshes()[0].metadata = {
         isItem: true,

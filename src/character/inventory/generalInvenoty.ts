@@ -1,5 +1,3 @@
-import InventoryInteractions from "./inventoryUI";
-import QuickAccess from "./quickAccess";
 import {
   AbstractMesh,
   Engine,
@@ -12,7 +10,10 @@ import {
 } from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "../characterControls";
-import Inventory from "./inventory";
+import { Inventory } from "./inventory";
+import Instruments from "../instruments.ts/instruments";
+import { QuickAccess } from "./quickAccess";
+
 //в сцене
 export default class GeneralInvenory {
   public quickAccess: QuickAccess;
@@ -24,7 +25,8 @@ export default class GeneralInvenory {
     private engine: Engine,
     private closedHand: AbstractMesh,
     private hand: AbstractMesh,
-    private controls: ControllEvents
+    private controls: ControllEvents,
+    private instruments: Instruments
   ) {
     this.advancedTexture =
       GUI.AdvancedDynamicTexture.CreateFullscreenUI("main");
@@ -35,7 +37,8 @@ export default class GeneralInvenory {
       this.closedHand,
       this.hand,
       this.advancedTexture,
-      this.controls
+      this.controls,
+      this.instruments
     );
     this.quickAccess = new QuickAccess(
       this.scene,
@@ -43,7 +46,8 @@ export default class GeneralInvenory {
       this.closedHand,
       this.hand,
       this.advancedTexture,
-      this.controls
+      this.controls,
+      this.instruments
     );
   }
 }

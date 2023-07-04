@@ -10,16 +10,17 @@ import {
   Vector2,
   PointerEventTypes,
 } from "@babylonjs/core";
-import Inventory from "./inventory";
+import { Inventory, inventoryItem } from "./inventory";
+import { quickAccessItem } from "./quickAccess";
 
 export default class dragNdrop {
   private draggingCell: GUI.Button;
-  private originMeshArray: Array<AbstractMesh>;
+  private originMeshArray: Array<quickAccessItem | inventoryItem>;
   private draggingMeshIndex = 0;
   private cursorPos: Vector2;
   private dragImpostor: GUI.Button;
   public isDragItem = false;
-  public draggingMesh: AbstractMesh;
+  public draggingItem: quickAccessItem | inventoryItem;
   private static instance: dragNdrop;
   private advancedTexture: GUI.AdvancedDynamicTexture;
   private scene: Scene;
@@ -27,19 +28,22 @@ export default class dragNdrop {
   private constructor() {
     this.cursorPos = Vector2.Zero();
   }
-  public dragItem(cell: GUI.Button, meshArray: Array<AbstractMesh>) {
-    console.log(meshArray);
+  public dragItem(
+    cell: GUI.Button,
+    itemsArray: Array<quickAccessItem | inventoryItem>
+  ) {
+    console.log(itemsArray);
     if (!this.isDragItem) {
       const width = cell.widthInPixels;
       const height = cell.heightInPixels;
       this.dragImpostor = cell.clone(cell.host) as GUI.Button;
       this.dragImpostor.metadata = { id: cell.metadata.id };
-      const index = meshArray.findIndex(
-        (item) => item?.metadata.id === cell.metadata.id
+      const index = itemsArray.findIndex(
+        (item) => item.id === cell.metadata.id
       );
       this.draggingMeshIndex = index;
-      this.draggingMesh = meshArray[index];
-      this.originMeshArray = meshArray;
+      this.draggingItem = itemsArray[index];
+      this.originMeshArray = itemsArray;
       this.advancedTexture.addControl(this.dragImpostor);
       this.isDragItem = true;
       this.dragImpostor.widthInPixels = width;
@@ -58,10 +62,10 @@ export default class dragNdrop {
 
   public dropDruggingItem(
     cell: GUI.Button,
-    meshArray: Array<AbstractMesh>,
+    itemsArray: Array<quickAccessItem | inventoryItem>,
     cellsArray: Array<GUI.Button>
   ) {
-    this.switchItems(cell, meshArray, cellsArray);
+    this.switchItems(cell, itemsArray, cellsArray);
     this.isDragItem = false;
     this.advancedTexture.removeControl(this.dragImpostor);
     this.dragImpostor.dispose();
@@ -69,7 +73,7 @@ export default class dragNdrop {
 
   private switchItems(
     cell: GUI.Button,
-    meshArray: Array<AbstractMesh>,
+    itemsArray: Array<quickAccessItem | inventoryItem>,
     cellsArray: Array<GUI.Button>
   ) {
     this.draggingCell.image.source = cell.image.source;
@@ -81,8 +85,8 @@ export default class dragNdrop {
     let meshIndex = cellsArray.findIndex(
       (item) => item.metadata?.id === this.dragImpostor.metadata.id
     );
-    this.originMeshArray[this.draggingMeshIndex] = meshArray[meshIndex];
-    meshArray[meshIndex] = this.draggingMesh;
+    this.originMeshArray[this.draggingMeshIndex] = itemsArray[meshIndex];
+    itemsArray[meshIndex] = this.draggingItem;
   }
 
   private dragItemPosition() {

@@ -18,7 +18,6 @@ export default class ControllEvents {
   public manyPick = false;
 
   public handleControlEvents(event: KeyboardInfo) {
-    console.log(event);
     if (event.event.code === "KeyW") this.forward = event.type === 1;
     if (event.event.code === "KeyS") this.back = event.type === 1;
     if (event.event.code === "KeyD") this.right = event.type === 1;

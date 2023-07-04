@@ -6,7 +6,7 @@ import {
 } from "@babylonjs/core";
 
 export default class RimmerPencil {
-  public id: 1;
+  public id = 13;
   public mesh: AbstractMesh;
   public imageSrc: string;
   public name: string;
@@ -42,7 +42,7 @@ export default class RimmerPencil {
       rimmerPencil.metadata = {
         isItem: true,
         isConditioner: false,
-        // id: this.id,
+        id: this.id,
       };
       rimmerPencil.getChildMeshes()[0].metadata = {
         isItem: true,

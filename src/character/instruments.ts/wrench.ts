@@ -6,7 +6,7 @@ import {
 } from "@babylonjs/core";
 
 export default class Wrench {
-  public id: 1;
+  public id = 3;
   public mesh: AbstractMesh;
   public imageSrc: string;
   public name: string;
@@ -39,7 +39,7 @@ export default class Wrench {
       wrench.metadata = {
         isItem: true,
         isConditioner: false,
-        // id: this.id,
+        id: this.id,
       };
       wrench.getChildMeshes()[0].metadata = {
         isItem: true,

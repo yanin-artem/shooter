@@ -6,7 +6,7 @@ import {
 } from "@babylonjs/core";
 
 export default class PipeCutterBig {
-  public id: 1;
+  public id = 10;
   public mesh: AbstractMesh;
   public imageSrc: string;
   public name: string;
@@ -42,7 +42,7 @@ export default class PipeCutterBig {
       pipeCutterBig.metadata = {
         isItem: true,
         isConditioner: false,
-        // id: this.id,
+        id: this.id,
       };
       pipeCutterBig.getChildMeshes()[0].metadata = {
         isItem: true,

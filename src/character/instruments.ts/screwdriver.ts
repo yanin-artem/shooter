@@ -6,7 +6,7 @@ import {
 } from "@babylonjs/core";
 
 export default class Screwdriver {
-  public id: 0;
+  public id = 0;
   public mesh: AbstractMesh;
   public imageSrc: string;
   public name: string;
@@ -49,7 +49,7 @@ export default class Screwdriver {
       screwdriver.metadata = {
         isItem: true,
         isConditioner: false,
-        // id: this.id,
+        id: this.id,
       };
       screwdriver.getChildMeshes()[0].metadata = {
         isItem: true,

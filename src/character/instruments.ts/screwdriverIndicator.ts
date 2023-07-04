@@ -6,7 +6,7 @@ import {
 } from "@babylonjs/core";
 
 export default class ScrewdriverIndicator {
-  public id: 0;
+  public id = 17;
   public mesh: AbstractMesh;
   public imageSrc: string;
   public name: string;
@@ -14,7 +14,7 @@ export default class ScrewdriverIndicator {
   constructor() {
     this.createSrewdriverIndicatorMesh();
     this.name = "Отвертка индикаторная";
-    this.imageSrc = "../assets/images/screwdriver.jpg";
+    this.imageSrc = "";
     this.description =
       "Полезна для откручивания саморезов, болтов и прочего ковыряния";
   }
@@ -49,7 +49,7 @@ export default class ScrewdriverIndicator {
       screwdriverIndicator.metadata = {
         isItem: true,
         isConditioner: false,
-        // id: this.id,
+        id: this.id,
       };
       screwdriverIndicator.getChildMeshes()[0].metadata = {
         isItem: true,

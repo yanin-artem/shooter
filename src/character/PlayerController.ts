@@ -26,7 +26,7 @@ export default class playerController {
     private engine: Engine,
     private head: Mesh,
     private pickArea: Mesh,
-    private Instruments: Instruments
+    private instruments: Instruments
   ) {
     this.controls = new ControllEvents();
     this.movement = new Movement(
@@ -41,7 +41,8 @@ export default class playerController {
       this.engine,
       this.closedHand,
       this.hand,
-      this.controls
+      this.controls,
+      this.instruments
     );
     this.pick = new Pick(
       this.hand,
@@ -50,9 +51,9 @@ export default class playerController {
       this.engine,
       this.head,
       this.pickArea,
-      this.Instruments,
       this.inventory,
-      this.controls
+      this.controls,
+      this.instruments
     );
   }
   setController(): void {

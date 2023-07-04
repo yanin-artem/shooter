@@ -60,6 +60,7 @@ export default class Instruments {
     this.torqueWrenchNozzle = new TorqueWrenchNozzle();
     this.screwdriverIndicator = new ScrewdriverIndicator();
     this.storage = this.createInstrumentsStorage();
+    console.log(this.storage);
   }
   private createInstrumentsStorage(): Array<any> {
     const storage = [];
@@ -82,5 +83,9 @@ export default class Instruments {
     storage.push(this.torqueWrenchNozzle);
     storage.push(this.screwdriverIndicator);
     return storage;
+  }
+
+  public getById(id: number) {
+    return this.storage.find((instrument) => instrument.id === id);
   }
 }
