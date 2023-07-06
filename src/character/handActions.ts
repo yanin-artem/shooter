@@ -66,7 +66,7 @@ export default class HandActions {
       this.pickedItem?.isEnabled() &&
       !this.pickedDetail
     ) {
-      this.hands.mesh.removeChild(this.pickedItem);
+      this.pickedItem.setParent(null);
       this.pickedItem.physicsImpostor = new PhysicsImpostor(
         this.pickedItem,
         PhysicsImpostor.MeshImpostor,
@@ -104,7 +104,6 @@ export default class HandActions {
           const id = this.pickedItem.metadata.id;
           const item = this.instruments.getById(id);
           item.positionInHand(this.hands.rootNode);
-          console.log(this.pickedItem);
           this.inventory.quickAccess.addInInventoryAndInHand(
             this.pickedItem.metadata.id
           );
@@ -209,8 +208,8 @@ export default class HandActions {
       this.pickedItem = instrument.mesh;
       instrument.isActive = true;
       this.pickedItem.setEnabled(true);
-    } else {
     }
+    console.log(this.pickedItem?.name);
   }
   //TODO: починить сбор с площади
   private pickManyFromArea() {

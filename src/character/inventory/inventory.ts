@@ -47,7 +47,7 @@ export class Inventory {
     const instrument = this.instruments.getById(id);
     instrument.mesh.checkCollisions = false;
     instrument.mesh.physicsImpostor?.dispose();
-    this.hands.mesh.addChild(instrument.mesh);
+    instrument.mesh.setParent(this.hands.rootNode);
     instrument.mesh.position = Vector3.Zero();
     instrument.mesh.setEnabled(false);
     this.calcInventory(id, instrument);

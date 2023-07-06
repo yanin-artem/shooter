@@ -56,7 +56,6 @@ export default class Hands {
     });
     this.scene.onPointerObservable.add((event) => {
       if (event.event.button === 0) {
-        console.log("hello");
         if (this.rootNode.getChildMeshes().find((mesh) => mesh.isEnabled()))
           this.closeHand();
         else this.openHand();
