@@ -94,7 +94,6 @@ export default class dragNdrop {
       this.cursorPos.x - document.body.clientWidth / 2;
     this.dragImpostor.topInPixels =
       this.cursorPos.y - document.body.clientHeight / 2;
-    console.log(document.body.clientHeight);
   }
 
   public moveDraggingItem() {

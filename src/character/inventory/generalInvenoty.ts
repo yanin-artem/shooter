@@ -13,6 +13,7 @@ import ControllEvents from "../characterControls";
 import { Inventory } from "./inventory";
 import Instruments from "../instruments.ts/instruments";
 import { QuickAccess } from "./quickAccess";
+import Hands from "../hands";
 
 //в сцене
 export default class GeneralInvenory {
@@ -23,8 +24,7 @@ export default class GeneralInvenory {
   constructor(
     private scene: Scene,
     private engine: Engine,
-    private closedHand: AbstractMesh,
-    private hand: AbstractMesh,
+    private hands: Hands,
     private controls: ControllEvents,
     private instruments: Instruments
   ) {
@@ -34,8 +34,7 @@ export default class GeneralInvenory {
     this.invetory = new Inventory(
       this.scene,
       this.engine,
-      this.closedHand,
-      this.hand,
+      this.hands,
       this.advancedTexture,
       this.controls,
       this.instruments
@@ -43,8 +42,7 @@ export default class GeneralInvenory {
     this.quickAccess = new QuickAccess(
       this.scene,
       this.engine,
-      this.closedHand,
-      this.hand,
+      this.hands,
       this.advancedTexture,
       this.controls,
       this.instruments

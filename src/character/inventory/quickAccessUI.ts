@@ -17,6 +17,7 @@ import dragNdrop from "./dragNdrop";
 import DropItem from "./dropButton";
 import { quickAccessItem } from "./quickAccess";
 import Instruments from "../instruments.ts/instruments";
+import Hands from "../hands";
 
 export default class QuickAccessUI {
   public quickAccessCells: Array<GUI.Button>;
@@ -34,8 +35,7 @@ export default class QuickAccessUI {
     private advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private scene: Scene,
-    private hand: AbstractMesh,
-    private closedHand: AbstractMesh,
+    private hands: Hands,
     private instruments: Instruments
   ) {
     this.quickAccessCells = [];
@@ -58,8 +58,7 @@ export default class QuickAccessUI {
             this.quickAccessGrid,
             this.quickAccess,
             this.quickAccessCells,
-            this.hand,
-            this.closedHand
+            this.hands
           );
         }
         //УБРАТЬ ВСЮ ЛОГИКУ ВНУТРИ ОБРАБОТЧИКА В МЕТОД!!!
@@ -82,7 +81,6 @@ export default class QuickAccessUI {
           const mesh = instrument.mesh;
           mesh.setEnabled(true);
           this.positionItem(mesh);
-          HandActions.toggleHand(this.closedHand, this.hand, mesh);
         } else if (
           event.buttonIndex === 0 &&
           !this.dragNdrop.isDragItem &&

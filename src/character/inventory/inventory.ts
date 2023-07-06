@@ -10,9 +10,9 @@ import {
 } from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "../characterControls";
-import HandActions from "../handActions";
 import InventoryUI from "./inventoryUI";
 import Instruments from "../instruments.ts/instruments";
+import Hands from "../hands";
 export type inventoryItem = {
   id: number;
 };
@@ -25,8 +25,7 @@ export class Inventory {
   constructor(
     protected scene: Scene,
     protected engine: Engine,
-    protected closedHand: AbstractMesh,
-    protected hand: AbstractMesh,
+    protected hands: Hands,
     protected advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private instruments: Instruments
@@ -37,8 +36,7 @@ export class Inventory {
       this.advancedTexture,
       this.controls,
       this.engine,
-      this.hand,
-      this.closedHand,
+      this.hands,
       this.instruments
     );
     this.inventory = Array(96).fill({ id: -1 });
@@ -49,7 +47,7 @@ export class Inventory {
     const instrument = this.instruments.getById(id);
     instrument.mesh.checkCollisions = false;
     instrument.mesh.physicsImpostor?.dispose();
-    this.closedHand.addChild(instrument.mesh);
+    this.hands.mesh.addChild(instrument.mesh);
     instrument.mesh.position = Vector3.Zero();
     instrument.mesh.setEnabled(false);
     this.calcInventory(id, instrument);

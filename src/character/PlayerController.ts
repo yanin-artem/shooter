@@ -11,6 +11,7 @@ import Pick from "./handActions";
 import Instruments from "./instruments.ts/instruments";
 import GeneralInvenory from "./inventory/generalInvenoty";
 import ControllEvents from "./characterControls";
+import Hands from "./hands";
 
 export default class playerController {
   private pick: Pick;
@@ -20,8 +21,7 @@ export default class playerController {
   private instruments: Instruments;
 
   constructor(
-    private hand: AbstractMesh,
-    private closedHand: AbstractMesh,
+    private hands: Hands,
     private body: AbstractMesh,
     private scene: Scene,
     private engine: Engine,
@@ -40,14 +40,12 @@ export default class playerController {
     this.inventory = new GeneralInvenory(
       this.scene,
       this.engine,
-      this.closedHand,
-      this.hand,
+      this.hands,
       this.controls,
       this.instruments
     );
     this.pick = new Pick(
-      this.hand,
-      this.closedHand,
+      this.hands,
       this.scene,
       this.engine,
       this.head,

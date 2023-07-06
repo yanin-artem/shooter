@@ -10,13 +10,13 @@ import {
   PointerEventTypes,
 } from "@babylonjs/core";
 import Root from "../../scene/root";
-import HandActions from "../handActions";
 import DropItem from "./dropButton";
 import ItemInfo from "./itemInfo";
 import ControllEvents from "../characterControls";
 import dragNdrop from "./dragNdrop";
 import Instruments from "../instruments.ts/instruments";
 import { inventoryItem } from "./inventory";
+import Hands from "../hands";
 
 export default class InventoryUI {
   private info: ItemInfo;
@@ -37,8 +37,7 @@ export default class InventoryUI {
     private advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private engine: Engine,
-    private hand: AbstractMesh,
-    private closedHand: AbstractMesh,
+    private hands: Hands,
     private instruments: Instruments
   ) {
     this.inventoryCells = [];
@@ -75,11 +74,10 @@ export default class InventoryUI {
             this.inventoryGrid,
             this.inventory,
             this.inventoryCells,
-            this.hand,
-            this.closedHand
+            this.hands
           );
         }
-        //ДОДУМАТЬ ЛОГИКУ С ИС АКТИВЕ
+        //TODO:ДОДУМАТЬ ЛОГИКУ С ИС АКТИВЕ
         if (event.buttonIndex === 0 && this.dragNdrop.isDragItem) {
           this.dragNdrop.dropDruggingItem(
             item,

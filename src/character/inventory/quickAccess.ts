@@ -13,6 +13,7 @@ import ControllEvents from "../characterControls";
 import QuickAccessUI from "./quickAccessUI";
 import Instruments from "../instruments.ts/instruments";
 import Instrument from "../instruments.ts/instrument";
+import Hands from "../hands";
 
 export type quickAccessItem = {
   id: number;
@@ -26,8 +27,7 @@ export class QuickAccess {
   constructor(
     protected scene: Scene,
     protected engine: Engine,
-    protected closedHand: AbstractMesh,
-    protected hand: AbstractMesh,
+    protected hands: Hands,
     private advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private instruments: Instruments
@@ -38,8 +38,7 @@ export class QuickAccess {
       this.advancedTexture,
       this.controls,
       this.scene,
-      this.hand,
-      this.closedHand,
+      this.hands,
       this.instruments
     );
   }

@@ -15,6 +15,7 @@ import {
   ActionManager,
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
+import Hands from "./hands";
 
 import playerController from "./PlayerController";
 
@@ -22,23 +23,24 @@ export default class Character {
   public camera: UniversalCamera;
   protected gunSight: Mesh;
   body: AbstractMesh;
-  hand: AbstractMesh;
+  hands: Hands;
   closedHand: AbstractMesh;
   head: Mesh;
   pickArea: Mesh;
   characterOpportunities: playerController;
+  newHand: any;
 
   constructor(private scene: Scene, private engine: Engine) {
     this.camera = this.createController(this.scene, this.engine);
     this.setBody(this.camera, this.scene);
-    this.createHand();
-    this.createClosedHand();
     this.pickArea = this.createPickArea();
     this.head = this.createHead();
+    this.hands = new Hands(this.head, this.scene);
+
+    console.log(this.newHand);
 
     this.characterOpportunities = new playerController(
-      this.hand,
-      this.closedHand,
+      this.hands,
       this.body,
       this.scene,
       this.engine,
@@ -107,62 +109,12 @@ export default class Character {
     return gunSight;
   }
 
-  private createHand(): void {
-    this.hand = new AbstractMesh("hand");
-    SceneLoader.ImportMeshAsync("", "../assets/models/house/", "arm.glb").then(
-      (meshes) => {
-        const hand = meshes.meshes[1];
-        meshes.meshes.map((mesh) => {
-          mesh.metadata = { isItem: false, isConditioner: false };
-          mesh.isPickable = false;
-        });
-        this.hand.metadata = { isItem: false, isConditioner: false };
-
-        this.hand.position.set(0.15, -0.139, 0.358);
-        this.hand.rotation.set(Math.PI / 3.33, Math.PI / 2, Math.PI / 6.66);
-        // this.hand.rotate(Axis.X, -Math.PI / 7.8, Space.WORLD);
-        // this.hand.rotate(Axis.Y, Math.PI / 2.16, Space.WORLD);
-
-        this.hand.parent = this.head;
-        hand.position = Vector3.Zero();
-
-        hand.parent = this.hand;
-        this.hand.scaling.z = -1;
-      }
-    );
-  }
-
-  private createClosedHand(): void {
-    this.closedHand = new AbstractMesh("closedHand");
-    SceneLoader.ImportMeshAsync(
-      "",
-      "../assets/models/house/",
-      "closedArm.glb"
-    ).then((meshes) => {
-      const hand = meshes.meshes[1];
-      meshes.meshes.map((mesh) => {
-        mesh.metadata = { isItem: false, isConditioner: false };
-        mesh.isPickable = false;
-      });
-
-      this.closedHand.position.set(0.15, -0.139, 0.358);
-      this.closedHand.rotation.set(Math.PI / 3.33, Math.PI / 2, Math.PI / 6.66);
-      this.closedHand.metadata = { isItem: false, isConditioner: false };
-      this.closedHand.parent = this.head;
-      hand.position = Vector3.Zero();
-
-      hand.parent = this.closedHand;
-      this.closedHand.scaling.z = -1;
-      this.closedHand.getChildMeshes()[0].isVisible = false;
-    });
-  }
-
   private createHead(): Mesh {
     const head = MeshBuilder.CreateSphere("head", {
       diameter: 0.2,
     });
     head.parent = this.body;
-    head.position.y = 0.4;
+    head.position.y = 0.7;
     head.isPickable = false;
     head.metadata = { isItem: false, isConditioner: false };
     this.camera.parent = head;
@@ -182,7 +134,7 @@ export default class Character {
 
   private setBody(camera: UniversalCamera, scene: Scene) {
     const body1 = MeshBuilder.CreateBox("body", {
-      height: 1.3,
+      height: 1.6,
       width: 0.2,
       depth: 0.05,
     });

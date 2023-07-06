@@ -13,6 +13,7 @@ import {
 } from "@babylonjs/core";
 import { quickAccessItem } from "./quickAccess";
 import Instruments from "../instruments.ts/instruments";
+import Hands from "../hands";
 
 export default class DropItem {
   public dropButton: GUI.Button;
@@ -39,8 +40,7 @@ export default class DropItem {
     grid: GUI.Grid,
     itemsArray: Array<quickAccessItem> | Array<inventoryItem>,
     cellsArray: Array<GUI.Button>,
-    hand: AbstractMesh,
-    closedHand: AbstractMesh
+    hands: Hands
   ) {
     if (cell.textBlock.text != "") {
       this.dropButton.onPointerClickObservable.clear();
@@ -51,13 +51,7 @@ export default class DropItem {
         +cellCoordinates[1]
       );
       this.dropButton.onPointerClickObservable.addOnce(() => {
-        this.deleteItem(
-          cell.metadata.id,
-          itemsArray,
-          cellsArray,
-          hand,
-          closedHand
-        );
+        this.deleteItem(cell.metadata.id, itemsArray, cellsArray, hands);
       });
     } else return;
   }
@@ -67,8 +61,7 @@ export default class DropItem {
     id: number,
     itemsArray: Array<any>,
     cellsArray: Array<GUI.Button>,
-    hand: AbstractMesh,
-    closedHand: AbstractMesh
+    hands: Hands
   ) {
     const index = itemsArray.findIndex((e) => e.id === id);
     if (index != -1) {
@@ -77,13 +70,13 @@ export default class DropItem {
       if (Object.keys(itemsArray).includes("isEnabled"))
         itemsArray[index].isEnabled = true;
       mesh.setEnabled(true);
-      closedHand.removeChild(mesh);
+      //TODO:ипсправить
+      mesh.setParent(null);
       mesh.physicsImpostor = new PhysicsImpostor(
         mesh,
         PhysicsImpostor.MeshImpostor,
         { mass: 0.1 }
       );
-      HandActions.toggleHand(closedHand, hand, mesh);
       this.deleteCell(index, cellsArray);
     } else return;
   }

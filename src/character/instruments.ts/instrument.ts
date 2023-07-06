@@ -5,6 +5,7 @@ import {
   PhysicsImpostor,
   Scene,
   Ray,
+  TransformNode,
 } from "@babylonjs/core";
 import ControllEvents from "../characterControls";
 
@@ -31,10 +32,11 @@ export default class Instrument {
     });
   }
 
-  public positionInHand(closedHand: AbstractMesh) {
+  public positionInHand(closedHand: TransformNode) {
     this.mesh.physicsImpostor?.dispose();
-    closedHand.addChild(this.mesh);
-    this.mesh.position.set(-0.11, 0.073, 0.028);
+    this.mesh.parent = closedHand;
+    this.mesh.position.set(42.813, -62.56, -14.786);
+    this.mesh.scaling.multiplyInPlace(new Vector3(100, 100, 100));
     this.mesh.rotationQuaternion = null;
     this.mesh.rotation.set(0, 0, 0);
   }

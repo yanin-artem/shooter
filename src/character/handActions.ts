@@ -18,6 +18,7 @@ import Instrument from "./instruments.ts/instrument";
 import ControllEvents from "./characterControls";
 import GeneralInvenory from "./inventory/generalInvenoty";
 import Instruments from "./instruments.ts/instruments";
+import Hands from "./hands";
 
 export default class HandActions {
   private pickedItem: AbstractMesh;
@@ -27,8 +28,7 @@ export default class HandActions {
   private itemsStorage: Array<any>;
 
   constructor(
-    public hand: AbstractMesh,
-    public closedHand: AbstractMesh,
+    public hands: Hands,
     private scene: Scene,
     private engine: Engine,
     private head: Mesh,
@@ -66,7 +66,7 @@ export default class HandActions {
       this.pickedItem?.isEnabled() &&
       !this.pickedDetail
     ) {
-      this.closedHand.removeChild(this.pickedItem);
+      this.hands.mesh.removeChild(this.pickedItem);
       this.pickedItem.physicsImpostor = new PhysicsImpostor(
         this.pickedItem,
         PhysicsImpostor.MeshImpostor,
@@ -82,7 +82,6 @@ export default class HandActions {
         this.pickedItem.metadata.id
       );
       this.pickedItem = null;
-      HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
     } else return;
   }
 
@@ -104,7 +103,7 @@ export default class HandActions {
             (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
           const id = this.pickedItem.metadata.id;
           const item = this.instruments.getById(id);
-          item.positionInHand(this.closedHand);
+          item.positionInHand(this.hands.rootNode);
           console.log(this.pickedItem);
           this.inventory.quickAccess.addInInventoryAndInHand(
             this.pickedItem.metadata.id
@@ -112,8 +111,6 @@ export default class HandActions {
         }
         if (hit.pickedMesh.metadata?.isDetail)
           this.positionPickedDetail(hit.pickedMesh);
-
-        HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
       }
     }
   }
@@ -121,7 +118,7 @@ export default class HandActions {
   //бросок детали
   private dropDetail() {
     if (this.controls.drop && this.pickedDetail) {
-      this.closedHand.removeChild(this.pickedDetail);
+      this.hands.mesh.removeChild(this.pickedDetail);
       this.pickedDetail.physicsImpostor = new PhysicsImpostor(
         this.pickedDetail,
         PhysicsImpostor.BoxImpostor,
@@ -131,23 +128,9 @@ export default class HandActions {
       this.pickedDetail.scaling.scaleInPlace(this.detailScaleK);
       this.pickedDetail = null;
       if (this.pickedItem?.isEnabled()) this.pickedItem.isVisible = true;
-      HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
     }
   }
   // функция смены моделей рук (сжатая или свободная)
-  public static toggleHand(
-    closedHand: AbstractMesh,
-    hand: AbstractMesh,
-    item: AbstractMesh
-  ): void {
-    if (item?.isEnabled()) {
-      hand.getChildMeshes()[0].isVisible = false;
-      closedHand.getChildMeshes()[0].isVisible = true;
-    } else {
-      hand.getChildMeshes()[0].isVisible = true;
-      closedHand.getChildMeshes()[0].isVisible = false;
-    }
-  }
 
   //функция рэйкастинга в направлении просмотра
   private castRay(predicate) {
@@ -179,7 +162,7 @@ export default class HandActions {
     if (this.pickedItem?.isEnabled()) {
       this.pickedItem.isVisible = false;
     }
-    this.closedHand.addChild(this.pickedDetail);
+    this.hands.mesh.addChild(this.pickedDetail);
     this.pickedDetail.position.set(-0.11, 0.073, 0.028);
     this.pickedDetail.scaling.scaleInPlace(1 / this.detailScaleK);
     this.pickedDetail?.physicsImpostor.dispose();
@@ -188,7 +171,7 @@ export default class HandActions {
   //функция позиционирования инструмента в руке
   private positionPickedItem() {
     this.pickedItem.physicsImpostor?.dispose();
-    this.closedHand.addChild(this.pickedItem);
+    this.hands.mesh.addChild(this.pickedItem);
     this.pickedItem.position.set(-0.11, 0.073, 0.028);
     this.pickedItem.rotationQuaternion = null;
     this.pickedItem.rotation.set(0, 0, 0);
@@ -226,9 +209,7 @@ export default class HandActions {
       this.pickedItem = instrument.mesh;
       instrument.isActive = true;
       this.pickedItem.setEnabled(true);
-      HandActions.toggleHand(this.closedHand, this.hand, this.pickedItem);
     } else {
-      HandActions.toggleHand(this.closedHand, this.hand, null);
     }
   }
   //TODO: починить сбор с площади
