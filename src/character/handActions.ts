@@ -11,6 +11,7 @@ import {
   ExecuteCodeAction,
   ActionManager,
   MeshBuilder,
+  TransformNode,
 } from "@babylonjs/core";
 import { quickAccessItem } from "./inventory/quickAccess";
 import Instrument from "./instruments.ts/instrument";
@@ -66,7 +67,10 @@ export default class HandActions {
       this.pickedItem?.isEnabled() &&
       !this.pickedDetail
     ) {
-      this.pickedItem.setParent(null);
+      const position = this.pickedItem.absolutePosition;
+      this.pickedItem.detachFromBone();
+      this.hands.dettachFromHand(this.pickedItem);
+      this.pickedItem.position = position;
       this.pickedItem.physicsImpostor = new PhysicsImpostor(
         this.pickedItem,
         PhysicsImpostor.MeshImpostor,
@@ -103,7 +107,11 @@ export default class HandActions {
             (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
           const id = this.pickedItem.metadata.id;
           const item = this.instruments.getById(id);
-          item.positionInHand(this.hands.rootNode);
+          item.positionInHand(
+            this.hands.skeletons.bones[11],
+            this.hands.mesh.parent as TransformNode
+          );
+          this.hands.attachToHand(item.mesh);
           this.inventory.quickAccess.addInInventoryAndInHand(
             this.pickedItem.metadata.id
           );
@@ -211,7 +219,6 @@ export default class HandActions {
     }
     console.log(this.pickedItem?.name);
   }
-  //TODO: починить сбор с площади
   private pickManyFromArea() {
     if (this.controls.manyPick) {
       this.itemsStorage.forEach((item) => {

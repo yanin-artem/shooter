@@ -20,8 +20,6 @@ import { AbstractMesh, Scene } from "@babylonjs/core";
 import ControllEvents from "../characterControls";
 import Instrument from "./instrument";
 
-//TODO: КАКОЙ-ТО БАГ С АЙДИШНИКАМИ
-
 export default class Instruments {
   public screwdriver: Screwdriver;
   public pliers: Pliers;
@@ -99,7 +97,6 @@ export default class Instruments {
       this.controls
     );
     this.storage = this.createInstrumentsStorage();
-    console.log(this.storage);
   }
   private createInstrumentsStorage(): Array<any> {
     const storage = [];
@@ -125,6 +122,6 @@ export default class Instruments {
   }
 
   public getById(id: number): Instrument {
-    return this.storage.find((instrument) => instrument.id === id);
+    return this.storage.find((instrument) => instrument.id === Math.floor(id));
   }
 }

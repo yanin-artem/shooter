@@ -4,6 +4,9 @@ import {
   Vector3,
   PhysicsImpostor,
   Scene,
+  TransformNode,
+  Skeleton,
+  Bone,
 } from "@babylonjs/core";
 import Instrument from "./instrument";
 import ControllEvents from "../characterControls";
@@ -48,5 +51,12 @@ export default class Pliers extends Instrument {
       };
       this.mesh = pliers;
     });
+  }
+
+  public override positionInHand(closedHand: Bone) {
+    this.mesh.physicsImpostor?.dispose();
+    this.mesh.position.set(0.42813, -0.5731, -0.14786);
+    this.mesh.rotationQuaternion = null;
+    this.mesh.rotation.set(Math.PI / 13, Math.PI / 15, -Math.PI / 2.4);
   }
 }

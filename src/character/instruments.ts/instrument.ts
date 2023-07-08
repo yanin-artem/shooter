@@ -1,11 +1,12 @@
 import {
   AbstractMesh,
-  SceneLoader,
   Vector3,
   PhysicsImpostor,
   Scene,
   Ray,
   TransformNode,
+  Skeleton,
+  Bone,
 } from "@babylonjs/core";
 import ControllEvents from "../characterControls";
 
@@ -32,11 +33,10 @@ export default class Instrument {
     });
   }
 
-  public positionInHand(closedHand: TransformNode) {
+  public positionInHand(bone: Bone, node: TransformNode) {
     this.mesh.physicsImpostor?.dispose();
-    this.mesh.parent = closedHand;
-    this.mesh.position.set(42.813, -62.56, -14.786);
-    this.mesh.scaling.multiplyInPlace(new Vector3(100, 100, 100));
+    this.mesh.attachToBone(bone, node);
+    this.mesh.position = Vector3.Zero();
     this.mesh.rotationQuaternion = null;
     this.mesh.rotation.set(0, 0, 0);
   }

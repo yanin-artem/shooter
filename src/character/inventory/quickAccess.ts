@@ -45,7 +45,6 @@ export class QuickAccess {
 
   //функция удаления предмета из инвентаря
   public deleteFromQuickAccessAndFromHand(id: Number) {
-    console.log("hello world");
     const instrument = this.instruments.storage.find((e) => e.id === id);
     const index = this.quickAccess.findIndex((item) => item.id === id);
     if (index != -1) {
@@ -60,7 +59,6 @@ export class QuickAccess {
 
   //функция добавления предмета в руку и в инвентарь
   public addInInventoryAndInHand(id: number) {
-    console.log(id);
     const instrument = this.instruments.getById(id);
     instrument.isActive = true;
     const enableItem = this.quickAccess.find((item) => item.isEnabled);

@@ -5,6 +5,8 @@ import {
   PhysicsImpostor,
   Scene,
   TransformNode,
+  Skeleton,
+  Bone,
 } from "@babylonjs/core";
 import Instrument from "./instrument";
 import ControllEvents from "../characterControls";
@@ -61,12 +63,10 @@ export default class Screwdriver extends Instrument {
     });
   }
 
-  public override positionInHand(closedHand: TransformNode) {
+  public override positionInHand(closedHand: Bone) {
     this.mesh.physicsImpostor?.dispose();
-    this.mesh.parent = closedHand;
-    this.mesh.position.set(42.813, -62.56, -14.786);
-    this.mesh.scaling.multiplyInPlace(new Vector3(100, 100, 100));
+    this.mesh.position.set(0.42813, -0.6256, -0.14786);
     this.mesh.rotationQuaternion = null;
-    this.mesh.rotation.set(0, -Math.PI / 1.8, 0);
+    this.mesh.rotation.set(0, Math.PI / 0.69, Math.PI / 0.62);
   }
 }

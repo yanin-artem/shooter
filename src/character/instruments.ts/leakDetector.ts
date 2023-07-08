@@ -4,6 +4,9 @@ import {
   Vector3,
   PhysicsImpostor,
   Scene,
+  TransformNode,
+  Skeleton,
+  Bone,
 } from "@babylonjs/core";
 import Instrument from "./instrument";
 import ControllEvents from "../characterControls";
@@ -51,5 +54,12 @@ export default class LeakDetecor extends Instrument {
       };
       this.mesh = leakDetector;
     });
+  }
+
+  public override positionInHand(closedHand: Bone) {
+    this.mesh.physicsImpostor?.dispose();
+    this.mesh.position.set(0.42813, -0.6256, -0.14786);
+    this.mesh.rotationQuaternion = null;
+    this.mesh.rotation.set(Math.PI / 2.9, Math.PI / 10, -Math.PI / 1.3);
   }
 }
