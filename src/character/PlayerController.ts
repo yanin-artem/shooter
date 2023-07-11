@@ -8,7 +8,7 @@ import {
 
 import Movement from "./movement";
 import Pick from "./handActions";
-import Instruments from "./instruments.ts/instruments";
+import { Instruments, instrument } from "./instruments.ts/instruments";
 import GeneralInvenory from "./inventory/generalInvenoty";
 import ControllEvents from "./characterControls";
 import Hands from "./hands";
@@ -29,7 +29,7 @@ export default class playerController {
     private pickArea: Mesh
   ) {
     this.controls = new ControllEvents();
-    this.instruments = new Instruments(this.scene, this.head, this.controls);
+    this.instruments = new Instruments();
     this.movement = new Movement(
       this.body,
       this.scene,

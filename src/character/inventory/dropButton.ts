@@ -12,7 +12,7 @@ import {
   PointerEventTypes,
 } from "@babylonjs/core";
 import { quickAccessItem } from "./quickAccess";
-import Instruments from "../instruments.ts/instruments";
+import { Instruments, instrument } from "../instruments.ts/instruments";
 import Hands from "../hands";
 
 export default class DropItem {
@@ -65,7 +65,7 @@ export default class DropItem {
   ) {
     const index = itemsArray.findIndex((e) => e.id === id);
     if (index != -1) {
-      const mesh = this.instruments.getById(id).mesh;
+      const mesh = this.instruments.getByID(id).mesh;
       itemsArray[index].id = -1;
       if (Object.keys(itemsArray).includes("isEnabled"))
         itemsArray[index].isEnabled = true;

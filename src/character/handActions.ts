@@ -12,13 +12,14 @@ import {
   ActionManager,
   MeshBuilder,
   TransformNode,
+  Bone,
 } from "@babylonjs/core";
 import { quickAccessItem } from "./inventory/quickAccess";
 import Instrument from "./instruments.ts/instrument";
 
 import ControllEvents from "./characterControls";
 import GeneralInvenory from "./inventory/generalInvenoty";
-import Instruments from "./instruments.ts/instruments";
+import { Instruments, instrument } from "./instruments.ts/instruments";
 import Hands from "./hands";
 
 export default class HandActions {
@@ -37,7 +38,9 @@ export default class HandActions {
     private inventory: GeneralInvenory,
     private controls: ControllEvents,
     private instruments: Instruments
-  ) {}
+  ) {
+    console.log(this.instruments);
+  }
 
   createPickEvents(): void {
     this.scene.onKeyboardObservable.add((event) => {
@@ -92,24 +95,28 @@ export default class HandActions {
   //функция подбора любого лежащего предмета
   private setPick(): void {
     if (this.controls.pickInHand) {
-      function predicate(mesh: AbstractMesh): boolean {
+      function predicate(
+        mesh: AbstractMesh,
+        instruments: Instruments
+      ): boolean {
         return (
           ((mesh.metadata?.isDetail && !mesh.metadata?.isConditioner) ||
-            Instrument.isInstrument(mesh)) &&
+            Instruments.isInstrument(mesh)) &&
           mesh.isPickable
         );
       }
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
         hit.pickedMesh.checkCollisions = false;
-        if (Instrument.isInstrument(hit.pickedMesh)) {
+        if (Instruments.isInstrument(hit.pickedMesh)) {
           this.pickedItem =
             (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
           const id = this.pickedItem.metadata.id;
-          const item = this.instruments.getById(id);
-          item.positionInHand(
+          const item = this.instruments.getByID(id);
+          this.positionPickedItem(
             this.hands.skeletons.bones[11],
-            this.hands.mesh.parent as TransformNode
+            this.hands.mesh.parent as TransformNode,
+            item
           );
           this.hands.attachToHand(item.mesh);
           this.inventory.quickAccess.addInInventoryAndInHand(
@@ -176,12 +183,16 @@ export default class HandActions {
   }
 
   //функция позиционирования инструмента в руке
-  private positionPickedItem() {
-    this.pickedItem.physicsImpostor?.dispose();
-    this.hands.mesh.addChild(this.pickedItem);
-    this.pickedItem.position.set(-0.11, 0.073, 0.028);
-    this.pickedItem.rotationQuaternion = null;
-    this.pickedItem.rotation.set(0, 0, 0);
+  private positionPickedItem(
+    bone: Bone,
+    node: TransformNode,
+    item: instrument
+  ) {
+    item.mesh.physicsImpostor?.dispose();
+    item.mesh.attachToBone(bone, node);
+    item.mesh.position = item.position;
+    item.mesh.rotationQuaternion = null;
+    item.mesh.rotation = item.rotation;
   }
 
   private addIntoInventory() {
@@ -200,19 +211,18 @@ export default class HandActions {
   }
   private changeItemInHand(index: number, quickAccess: Array<quickAccessItem>) {
     this.inventory.quickAccess.UI.toggleQuickAccessVisibility();
-    console.log(quickAccess);
 
     const enabledElem = quickAccess.find((item) => item.isEnabled);
     if (enabledElem) {
       enabledElem.isEnabled = false;
-      const instrument = this.instruments.getById(enabledElem.id);
+      const instrument = this.instruments.getByID(enabledElem.id);
       instrument.isActive = false;
       const enabledMesh = instrument.mesh;
       enabledMesh.setEnabled(false);
     }
     if (quickAccess[index].id != -1) {
       quickAccess[index].isEnabled = true;
-      const instrument = this.instruments.getById(quickAccess[index].id);
+      const instrument = this.instruments.getByID(quickAccess[index].id);
       this.pickedItem = instrument.mesh;
       instrument.isActive = true;
       this.pickedItem.setEnabled(true);

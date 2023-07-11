@@ -11,7 +11,7 @@ import {
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "../characterControls";
 import InventoryUI from "./inventoryUI";
-import Instruments from "../instruments.ts/instruments";
+import { Instruments, instrument } from "../instruments.ts/instruments";
 import Hands from "../hands";
 export type inventoryItem = {
   id: number;
@@ -44,7 +44,7 @@ export class Inventory {
 
   //функция добавления предмета сразу в инвентарь
   public addInInventory(id: number) {
-    const instrument = this.instruments.getById(id);
+    const instrument = this.instruments.getByID(id);
     instrument.mesh.checkCollisions = false;
     instrument.mesh.physicsImpostor?.dispose();
     instrument.mesh.setParent(this.hands.rootNode);

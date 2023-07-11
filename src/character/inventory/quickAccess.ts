@@ -11,7 +11,7 @@ import {
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "../characterControls";
 import QuickAccessUI from "./quickAccessUI";
-import Instruments from "../instruments.ts/instruments";
+import { Instruments, instrument } from "../instruments.ts/instruments";
 import Instrument from "../instruments.ts/instrument";
 import Hands from "../hands";
 
@@ -44,8 +44,8 @@ export class QuickAccess {
   }
 
   //функция удаления предмета из инвентаря
-  public deleteFromQuickAccessAndFromHand(id: Number) {
-    const instrument = this.instruments.storage.find((e) => e.id === id);
+  public deleteFromQuickAccessAndFromHand(id: number) {
+    const instrument = this.instruments.getByID(id);
     const index = this.quickAccess.findIndex((item) => item.id === id);
     if (index != -1) {
       instrument.mesh.setEnabled(true);
@@ -59,12 +59,12 @@ export class QuickAccess {
 
   //функция добавления предмета в руку и в инвентарь
   public addInInventoryAndInHand(id: number) {
-    const instrument = this.instruments.getById(id);
+    const instrument = this.instruments.getByID(id);
     instrument.isActive = true;
     const enableItem = this.quickAccess.find((item) => item.isEnabled);
     if (enableItem) {
       enableItem.isEnabled = false;
-      const instrument = this.instruments.getById(enableItem.id);
+      const instrument = this.instruments.getByID(enableItem.id);
       instrument.mesh.setEnabled(false);
       instrument.isActive = false;
     }
@@ -93,8 +93,8 @@ export class QuickAccess {
     }
   }
 
-  public correctCurrentItem(): Instrument {
+  public correctCurrentItem(): instrument {
     const enabledItem = this.quickAccess.find((e) => e.isEnabled);
-    return this.instruments.getById(enabledItem?.id);
+    return this.instruments.getByID(enabledItem?.id);
   }
 }

@@ -11,7 +11,7 @@ import {
 import * as GUI from "@babylonjs/gui";
 import ControllEvents from "../characterControls";
 import { Inventory } from "./inventory";
-import Instruments from "../instruments.ts/instruments";
+import { Instruments, instrument } from "../instruments.ts/instruments";
 import { QuickAccess } from "./quickAccess";
 import Hands from "../hands";
 

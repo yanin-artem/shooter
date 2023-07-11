@@ -33,13 +33,7 @@ export default class Instrument {
     });
   }
 
-  public positionInHand(bone: Bone, node: TransformNode) {
-    this.mesh.physicsImpostor?.dispose();
-    this.mesh.attachToBone(bone, node);
-    this.mesh.position = Vector3.Zero();
-    this.mesh.rotationQuaternion = null;
-    this.mesh.rotation.set(0, 0, 0);
-  }
+  public positionInHand(bone: Bone, node: TransformNode) {}
 
   //функция рэйкастинга в направлении просмотра
   protected castRay(predicate) {

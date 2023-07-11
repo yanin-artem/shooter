@@ -31,7 +31,6 @@ import Root from "./root";
 import { Inspector } from "@babylonjs/inspector";
 
 import Character from "../character/character";
-import Instruments from "../character/instruments.ts/instruments";
 
 export default class MainScene {
   public scene: Scene;

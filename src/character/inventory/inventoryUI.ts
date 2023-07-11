@@ -14,7 +14,7 @@ import DropItem from "./dropButton";
 import ItemInfo from "./itemInfo";
 import ControllEvents from "../characterControls";
 import dragNdrop from "./dragNdrop";
-import Instruments from "../instruments.ts/instruments";
+import { Instruments, instrument } from "../instruments.ts/instruments";
 import { inventoryItem } from "./inventory";
 import Hands from "../hands";
 

@@ -16,7 +16,7 @@ import ControllEvents from "../characterControls";
 import dragNdrop from "./dragNdrop";
 import DropItem from "./dropButton";
 import { quickAccessItem } from "./quickAccess";
-import Instruments from "../instruments.ts/instruments";
+import { Instruments, instrument } from "../instruments.ts/instruments";
 import Hands from "../hands";
 
 export default class QuickAccessUI {
@@ -65,7 +65,7 @@ export default class QuickAccessUI {
         if (event.buttonIndex === 0 && this.dragNdrop.isDragItem) {
           const enabledItem = this.quickAccess.find((item) => item.isEnabled);
           if (enabledItem) {
-            const instrument = this.instruments.getById(enabledItem.id);
+            const instrument = this.instruments.getByID(enabledItem.id);
             instrument.mesh.setEnabled(false);
             instrument.isActive = false;
           }
@@ -74,7 +74,7 @@ export default class QuickAccessUI {
             this.quickAccess,
             this.quickAccessCells
           );
-          const instrument = this.instruments.getById(
+          const instrument = this.instruments.getByID(
             this.dragNdrop.draggingItem.id
           );
           instrument.isActive = true;

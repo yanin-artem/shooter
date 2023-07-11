@@ -1,127 +1,79 @@
-import Screwdriver from "./screwdriver";
-import Pliers from "./pliers";
-import Scissors from "./scissors";
-import Wrench from "./wrench";
-import PipeExpander from "./pipeExpander";
-import LeakDetecor from "./leakDetector";
-import LeverPipeExpander from "./leverPipeExpander";
-import PipeBenderCrossbow from "./pipeBenderCrossbow";
-import PipeBenderCrossbowNozzle from "./pipeBenderCrossbowNozzle";
-import PipeBenderSpring from "./pipeBenderSpring";
-import PipeCutterBig from "./pipeCutterBig";
-import PipeCutterSmall from "./pipeCutterSmall";
-import RimmerBarrel from "./rimmerBarrel";
-import RimmerPencil from "./rimmerPencil";
-import Rolling from "./rolling";
-import TorqueWrench from "./torqueWrench";
-import TorqueWrenchNozzle from "./TorqueWrenchNozzle";
-import ScrewdriverIndicator from "./screwdriverIndicator";
-import { AbstractMesh, Scene } from "@babylonjs/core";
-import ControllEvents from "../characterControls";
-import Instrument from "./instrument";
+import { AbstractMesh, SceneLoader, Vector3 } from "@babylonjs/core";
 
-export default class Instruments {
-  public screwdriver: Screwdriver;
-  public pliers: Pliers;
-  public scissors: Scissors;
-  public wrench: Wrench;
-  public pipeExpander: PipeExpander;
-  public leakDetector: LeakDetecor;
-  public leverPipeExpander: LeverPipeExpander;
-  public pipeBenderCrossbow: PipeBenderCrossbow;
-  public pipeBenderCrossbowNozzle: PipeBenderCrossbowNozzle;
-  public pipeBenderSpring: PipeBenderSpring;
-  public pipeCutterBig: PipeCutterBig;
-  public pipeCutterSmall: PipeCutterSmall;
-  public rimmerBarrel: RimmerBarrel;
-  public rimmerPencil: RimmerPencil;
-  public rolling: Rolling;
-  public torqueWrench: TorqueWrench;
-  public torqueWrenchNozzle: TorqueWrenchNozzle;
-  public screwdriverIndicator: ScrewdriverIndicator;
+export type instrument = {
+  id: number;
+  name: string;
+  imageSrc: string;
+  description: string;
+  mesh: AbstractMesh;
+  isActive: boolean;
+  filename: string;
+  position: Vector3;
+  rotation: Vector3;
+};
 
-  public storage: Array<any>;
-  constructor(
-    private scene: Scene,
-    private head: AbstractMesh,
-    private controls: ControllEvents
-  ) {
-    this.screwdriver = new Screwdriver(this.scene, this.head, this.controls);
-    this.pliers = new Pliers(this.scene, this.head, this.controls);
-    this.scissors = new Scissors(this.scene, this.head, this.controls);
-    this.wrench = new Wrench(this.scene, this.head, this.controls);
-    this.pipeExpander = new PipeExpander(this.scene, this.head, this.controls);
-    this.leakDetector = new LeakDetecor(this.scene, this.head, this.controls);
-    this.leverPipeExpander = new LeverPipeExpander(
-      this.scene,
-      this.head,
-      this.controls
-    );
-    this.pipeBenderCrossbow = new PipeBenderCrossbow(
-      this.scene,
-      this.head,
-      this.controls
-    );
-    this.pipeBenderCrossbowNozzle = new PipeBenderCrossbowNozzle(
-      this.scene,
-      this.head,
-      this.controls
-    );
-    this.pipeBenderSpring = new PipeBenderSpring(
-      this.scene,
-      this.head,
-      this.controls
-    );
-    this.pipeCutterBig = new PipeCutterBig(
-      this.scene,
-      this.head,
-      this.controls
-    );
-    this.pipeCutterSmall = new PipeCutterSmall(
-      this.scene,
-      this.head,
-      this.controls
-    );
-    this.rimmerBarrel = new RimmerBarrel(this.scene, this.head, this.controls);
-    this.rimmerPencil = new RimmerPencil(this.scene, this.head, this.controls);
-    this.rolling = new Rolling(this.scene, this.head, this.controls);
-    this.torqueWrench = new TorqueWrench(this.scene, this.head, this.controls);
-    this.torqueWrenchNozzle = new TorqueWrenchNozzle(
-      this.scene,
-      this.head,
-      this.controls
-    );
-    this.screwdriverIndicator = new ScrewdriverIndicator(
-      this.scene,
-      this.head,
-      this.controls
-    );
-    this.storage = this.createInstrumentsStorage();
-  }
-  private createInstrumentsStorage(): Array<any> {
-    const storage = [];
-    storage.push(this.screwdriver);
-    storage.push(this.pliers);
-    storage.push(this.scissors);
-    storage.push(this.wrench);
-    storage.push(this.pipeExpander);
-    storage.push(this.leakDetector);
-    storage.push(this.leverPipeExpander);
-    storage.push(this.pipeBenderCrossbow);
-    storage.push(this.pipeBenderCrossbowNozzle);
-    storage.push(this.pipeBenderSpring);
-    storage.push(this.pipeCutterBig);
-    storage.push(this.pipeCutterSmall);
-    storage.push(this.rimmerBarrel);
-    storage.push(this.rimmerPencil);
-    storage.push(this.rolling);
-    storage.push(this.torqueWrench);
-    storage.push(this.torqueWrenchNozzle);
-    storage.push(this.screwdriverIndicator);
-    return storage;
+const instruments: Array<instrument> = [
+  {
+    id: 0,
+    name: "Отвертка",
+    imageSrc: "../assets/images/screwdriver.jpg",
+    description:
+      "Полезна для откручивания саморезов, болтов и прочего ковыряния",
+    mesh: null,
+    isActive: false,
+    filename: "tool_turn_screw_01",
+    position: new Vector3(-0.05, 0.1, -0.03),
+    rotation: new Vector3(0, -Math.PI, 0),
+  },
+];
+
+export class Instruments {
+  private instruments: Array<instrument>;
+  constructor() {
+    this.instruments = instruments;
+    this.createInstrumentsMeshes();
   }
 
-  public getById(id: number): Instrument {
-    return this.storage.find((instrument) => instrument.id === Math.floor(id));
+  private createInstrumentsMeshes() {
+    this.instruments.forEach((instrument) => {
+      SceneLoader.ImportMeshAsync(
+        "",
+        "../assets/models/workshop/",
+        instrument.filename + ".glb"
+      ).then((meshes) => {
+        const mesh = meshes.meshes[1];
+        const root = mesh.parent;
+        mesh.setParent(null);
+        root.dispose();
+        mesh.name = "screwdriver";
+        const screwdriverHitbox = mesh.clone(
+          `${instrument.filename}Hitbox`,
+          mesh
+        );
+        screwdriverHitbox.position = Vector3.Zero();
+        screwdriverHitbox.scaling.scaleInPlace(2);
+        screwdriverHitbox.isVisible = false;
+
+        mesh.metadata = {
+          isItem: true,
+          isConditioner: false,
+          id: instrument.id,
+        };
+        mesh.getChildMeshes()[0].metadata = {
+          isItem: true,
+          isConditioner: false,
+          id: instrument.id,
+        };
+        instrument.mesh = mesh;
+      });
+    });
+  }
+
+  public getByID(index: number) {
+    return instruments[index];
+  }
+
+  public static isInstrument(mesh: AbstractMesh) {
+    return mesh.metadata.isItem && mesh.isEnabled();
   }
 }
