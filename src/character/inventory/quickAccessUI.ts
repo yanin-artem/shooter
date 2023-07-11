@@ -63,24 +63,25 @@ export default class QuickAccessUI {
         }
         //УБРАТЬ ВСЮ ЛОГИКУ ВНУТРИ ОБРАБОТЧИКА В МЕТОД!!!
         if (event.buttonIndex === 0 && this.dragNdrop.isDragItem) {
-          const enabledItem = this.quickAccess.find((item) => item.isEnabled);
-          if (enabledItem) {
-            const instrument = this.instruments.getByID(enabledItem.id);
-            instrument.mesh.setEnabled(false);
-            instrument.isActive = false;
-          }
+          // const enabledItem = this.quickAccess.find((item) => item.isEnabled);
+          // if (enabledItem) {
+          //   const instrument = this.instruments.getByID(enabledItem.id);
+          //   instrument.mesh.setEnabled(false);
+          //   instrument.isActive = false;
+          // }
           this.dragNdrop.dropDruggingItem(
             item,
             this.quickAccess,
-            this.quickAccessCells
+            this.quickAccessCells,
+            this.instruments
           );
-          const instrument = this.instruments.getByID(
-            this.dragNdrop.draggingItem.id
-          );
-          instrument.isActive = true;
-          const mesh = instrument.mesh;
-          mesh.setEnabled(true);
-          this.positionItem(mesh);
+          // const instrument = this.instruments.getByID(
+          //   this.dragNdrop.draggingItem.id
+          // );
+          // instrument.isActive = true;
+          // const mesh = instrument.mesh;
+          // mesh.setEnabled(true);
+          // this.positionItem(mesh);
         } else if (
           event.buttonIndex === 0 &&
           !this.dragNdrop.isDragItem &&
@@ -195,7 +196,6 @@ export default class QuickAccessUI {
       Root.usePointerLock = false;
     } else if (!Root.usePointerLock) {
       Root.usePointerLock = true;
-      console.log("hello");
       this.quickAccessGrid.isVisible = false;
       this.drop.disableDropButton(this.quickAccessGrid);
     }
@@ -205,11 +205,6 @@ export default class QuickAccessUI {
     this.scene.onKeyboardObservable.add((event) => {
       this.controls.handleQuickAccessEvents(event);
       this.showInventory();
-    });
-    this.scene.onPointerObservable.add((event) => {
-      if (event.type === PointerEventTypes.POINTERMOVE) {
-        this.dragNdrop.moveDraggingItem();
-      }
     });
   }
 

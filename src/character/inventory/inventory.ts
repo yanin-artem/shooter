@@ -30,6 +30,12 @@ export class Inventory {
     private controls: ControllEvents,
     private instruments: Instruments
   ) {
+    this.inventory = Array(96).fill(undefined);
+    this.inventory = this.inventory.map((el) => {
+      return { id: -1 };
+    });
+    console.log(this.inventory);
+
     this.UI = new InventoryUI(
       this.inventory,
       this.scene,
@@ -39,7 +45,6 @@ export class Inventory {
       this.hands,
       this.instruments
     );
-    this.inventory = Array(96).fill({ id: -1 });
   }
 
   //функция добавления предмета сразу в инвентарь
@@ -58,7 +63,6 @@ export class Inventory {
     this.calcArray(id);
     this.UI.correctStorage(this.inventory);
     this.UI.calcInventoryGrid(instrument);
-    console.log(this.inventory);
   }
 
   //функция расчет массива инвентаря

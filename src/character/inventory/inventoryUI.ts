@@ -77,18 +77,21 @@ export default class InventoryUI {
             this.hands
           );
         }
-        //TODO:ДОДУМАТЬ ЛОГИКУ С ИС АКТИВЕ
         if (event.buttonIndex === 0 && this.dragNdrop.isDragItem) {
+          // console.log(this.inventory);
+
           this.dragNdrop.dropDruggingItem(
             item,
             this.inventory,
-            this.inventoryCells
+            this.inventoryCells,
+            this.instruments
           );
         } else if (
           event.buttonIndex === 0 &&
           !this.dragNdrop.isDragItem &&
           item.textBlock.text != ""
         ) {
+          console.log(this.inventory);
           this.dragNdrop.dragItem(item, this.inventory);
         }
       });
@@ -214,7 +217,7 @@ export default class InventoryUI {
   // }
 
   //функция расчета сетки инвентаря
-  public calcInventoryGrid(item: any) {
+  public calcInventoryGrid(item: instrument) {
     const emptyCellIndex = this.inventoryCells.findIndex(
       (item) => item.textBlock.text === ""
     );

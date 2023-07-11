@@ -32,7 +32,10 @@ export class QuickAccess {
     private controls: ControllEvents,
     private instruments: Instruments
   ) {
-    this.quickAccess = Array(8).fill({ id: -1, isEnabled: false });
+    this.quickAccess = Array(8).fill(undefined);
+    this.quickAccess = this.quickAccess.map((el) => {
+      return { id: -1, isEnabled: false };
+    });
     this.UI = new QuickAccessUI(
       this.quickAccess,
       this.advancedTexture,
