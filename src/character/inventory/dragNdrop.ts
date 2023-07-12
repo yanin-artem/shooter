@@ -15,9 +15,23 @@ export default class dragNdrop {
   private static instance: dragNdrop;
   private advancedTexture: GUI.AdvancedDynamicTexture;
   private scene: Scene;
+  private eventQuickAccess: CustomEvent;
+  private eventInventory: CustomEvent;
 
   private constructor() {
     this.cursorPos = Vector2.Zero();
+    this.eventQuickAccess = new CustomEvent("dropInQuickAccess", {
+      detail: {},
+      bubbles: true,
+      cancelable: true,
+      composed: false,
+    });
+    this.eventInventory = new CustomEvent("dropInInventory", {
+      detail: {},
+      bubbles: true,
+      cancelable: true,
+      composed: false,
+    });
   }
   public dragItem(cell: GUI.Button, itemsArray: Array<any>) {
     if (!this.isDragItem) {
@@ -70,13 +84,9 @@ export default class dragNdrop {
     currentCellsArray: Array<GUI.Button>,
     instruments: Instruments
   ) {
-    console.log(this.originMeshArray);
-
     let meshIndex = currentCellsArray.findIndex(
       (item) => item.metadata?.id === this.dragImpostor.metadata.id
     );
-    console.log(this.originMeshArray);
-
     const bufferId = originItemsArray[this.draggingMeshIndex].id;
     this.toggleIsActive(originItemsArray, this.draggingMeshIndex, instruments);
     originItemsArray[this.draggingMeshIndex].id =
@@ -95,9 +105,11 @@ export default class dragNdrop {
       array[index].isEnabled = !array[index].isEnabled;
       item.isActive = !item.isActive;
       item.mesh.setEnabled(item.isActive);
+      document.dispatchEvent(this.eventQuickAccess);
     } else {
       item.isActive = false;
       item.mesh.setEnabled(false);
+      document.dispatchEvent(this.eventInventory);
     }
   }
 

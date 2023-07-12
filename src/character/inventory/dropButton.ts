@@ -1,6 +1,5 @@
 import * as GUI from "@babylonjs/gui";
 import { Inventory, inventoryItem } from "./inventory";
-import HandActions from "../handActions";
 import {
   AbstractMesh,
   Engine,
@@ -13,7 +12,6 @@ import {
 } from "@babylonjs/core";
 import { quickAccessItem } from "./quickAccess";
 import { Instruments, instrument } from "../instruments.ts/instruments";
-import Hands from "../hands";
 
 export default class DropItem {
   public dropButton: GUI.Button;
@@ -39,8 +37,7 @@ export default class DropItem {
     cell: GUI.Button,
     grid: GUI.Grid,
     itemsArray: Array<quickAccessItem> | Array<inventoryItem>,
-    cellsArray: Array<GUI.Button>,
-    hands: Hands
+    cellsArray: Array<GUI.Button>
   ) {
     if (cell.textBlock.text != "") {
       this.dropButton.onPointerClickObservable.clear();
@@ -51,7 +48,7 @@ export default class DropItem {
         +cellCoordinates[1]
       );
       this.dropButton.onPointerClickObservable.addOnce(() => {
-        this.deleteItem(cell.metadata.id, itemsArray, cellsArray, hands);
+        this.deleteItem(cell.metadata.id, itemsArray, cellsArray);
       });
     } else return;
   }
@@ -60,20 +57,28 @@ export default class DropItem {
   protected deleteItem(
     id: number,
     itemsArray: Array<any>,
-    cellsArray: Array<GUI.Button>,
-    hands: Hands
+    cellsArray: Array<GUI.Button>
   ) {
     const index = itemsArray.findIndex((e) => e.id === id);
     if (index != -1) {
-      const mesh = this.instruments.getByID(id).mesh;
+      const item = this.instruments.getByID(id);
       itemsArray[index].id = -1;
       if (Object.keys(itemsArray).includes("isEnabled"))
         itemsArray[index].isEnabled = true;
-      mesh.setEnabled(true);
-      //TODO:ипсправить
-      mesh.setParent(null);
-      mesh.physicsImpostor = new PhysicsImpostor(
-        mesh,
+      item.mesh.setEnabled(true);
+      //TODO: ПЕРЕПИСАТЬ ВСЕ ПОД СОБЫТИЕ, УДАЛЕНИЕ ПРЕДМЕТА В РУКАХ ВЫДЕЛИТЬ В ОТДЕЛЬНЫЙ МЕТОД, А ПРОВЕРКУ В НА НАЖАТИЕ КЛАВИШИ СДЕЛАТЬ ЕГО ДЕКОРАТОРОМ
+      const event = new CustomEvent("dropFromInventory", {
+        detail: { item: item },
+        bubbles: true,
+        cancelable: true,
+        composed: false,
+      });
+      document.dispatchEvent(event);
+      const position = item.mesh.absolutePosition;
+      item.mesh.detachFromBone();
+      item.mesh.position = position;
+      item.mesh.physicsImpostor = new PhysicsImpostor(
+        item.mesh,
         PhysicsImpostor.MeshImpostor,
         { mass: 0.1 }
       );

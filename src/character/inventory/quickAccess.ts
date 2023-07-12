@@ -27,7 +27,6 @@ export class QuickAccess {
   constructor(
     protected scene: Scene,
     protected engine: Engine,
-    protected hands: Hands,
     private advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private instruments: Instruments
@@ -41,7 +40,6 @@ export class QuickAccess {
       this.advancedTexture,
       this.controls,
       this.scene,
-      this.hands,
       this.instruments
     );
   }

@@ -37,7 +37,6 @@ export default class InventoryUI {
     private advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private engine: Engine,
-    private hands: Hands,
     private instruments: Instruments
   ) {
     this.inventoryCells = [];
@@ -73,8 +72,7 @@ export default class InventoryUI {
             item,
             this.inventoryGrid,
             this.inventory,
-            this.inventoryCells,
-            this.hands
+            this.inventoryCells
           );
         }
         if (event.buttonIndex === 0 && this.dragNdrop.isDragItem) {

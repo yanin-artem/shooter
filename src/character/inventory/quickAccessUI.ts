@@ -10,7 +10,6 @@ import {
   PointerEventTypes,
 } from "@babylonjs/core";
 import Root from "../../scene/root";
-import HandActions from "../handActions";
 import ItemInfo from "./itemInfo";
 import ControllEvents from "../characterControls";
 import dragNdrop from "./dragNdrop";
@@ -35,7 +34,6 @@ export default class QuickAccessUI {
     private advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private scene: Scene,
-    private hands: Hands,
     private instruments: Instruments
   ) {
     this.quickAccessCells = [];
@@ -57,31 +55,17 @@ export default class QuickAccessUI {
             item,
             this.quickAccessGrid,
             this.quickAccess,
-            this.quickAccessCells,
-            this.hands
+            this.quickAccessCells
           );
         }
         //УБРАТЬ ВСЮ ЛОГИКУ ВНУТРИ ОБРАБОТЧИКА В МЕТОД!!!
         if (event.buttonIndex === 0 && this.dragNdrop.isDragItem) {
-          // const enabledItem = this.quickAccess.find((item) => item.isEnabled);
-          // if (enabledItem) {
-          //   const instrument = this.instruments.getByID(enabledItem.id);
-          //   instrument.mesh.setEnabled(false);
-          //   instrument.isActive = false;
-          // }
           this.dragNdrop.dropDruggingItem(
             item,
             this.quickAccess,
             this.quickAccessCells,
             this.instruments
           );
-          // const instrument = this.instruments.getByID(
-          //   this.dragNdrop.draggingItem.id
-          // );
-          // instrument.isActive = true;
-          // const mesh = instrument.mesh;
-          // mesh.setEnabled(true);
-          // this.positionItem(mesh);
         } else if (
           event.buttonIndex === 0 &&
           !this.dragNdrop.isDragItem &&

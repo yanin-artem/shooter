@@ -25,16 +25,14 @@ export class Inventory {
   constructor(
     protected scene: Scene,
     protected engine: Engine,
-    protected hands: Hands,
     protected advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private instruments: Instruments
   ) {
     this.inventory = Array(96).fill(undefined);
-    this.inventory = this.inventory.map((el) => {
+    this.inventory = this.inventory.map(() => {
       return { id: -1 };
     });
-    console.log(this.inventory);
 
     this.UI = new InventoryUI(
       this.inventory,
@@ -42,7 +40,6 @@ export class Inventory {
       this.advancedTexture,
       this.controls,
       this.engine,
-      this.hands,
       this.instruments
     );
   }
@@ -52,8 +49,14 @@ export class Inventory {
     const instrument = this.instruments.getByID(id);
     instrument.mesh.checkCollisions = false;
     instrument.mesh.physicsImpostor?.dispose();
-    instrument.mesh.setParent(this.hands.rootNode);
-    instrument.mesh.position = Vector3.Zero();
+    instrument.isActive = false;
+    const event = new CustomEvent("addInInventory", {
+      detail: { item: instrument },
+      bubbles: true,
+      cancelable: true,
+      composed: false,
+    });
+    document.dispatchEvent(event);
     instrument.mesh.setEnabled(false);
     this.calcInventory(id, instrument);
   }

@@ -15,6 +15,9 @@ import {
   ActionManager,
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
+import { Instruments, instrument } from "./instruments.ts/instruments";
+import GeneralInvenory from "./inventory/generalInvenoty";
+import ControllEvents from "./characterControls";
 import Hands from "./hands";
 
 import playerController from "./PlayerController";
@@ -29,25 +32,45 @@ export default class Character {
   pickArea: Mesh;
   characterOpportunities: playerController;
   newHand: any;
+  private controls: ControllEvents;
+  private inventory: GeneralInvenory;
+  private instruments: Instruments;
 
   constructor(private scene: Scene, private engine: Engine) {
     this.camera = this.createController(this.scene, this.engine);
     this.setBody(this.camera, this.scene);
     this.pickArea = this.createPickArea();
     this.head = this.createHead();
-    this.hands = new Hands(this.head, this.scene);
-
-    console.log(this.newHand);
-
+    this.controls = new ControllEvents();
+    this.instruments = new Instruments();
+    this.inventory = new GeneralInvenory(
+      this.scene,
+      this.engine,
+      this.controls,
+      this.instruments
+    );
+    this.hands = new Hands(
+      this.head,
+      this.scene,
+      this.engine,
+      this.head,
+      this.pickArea,
+      this.inventory,
+      this.controls,
+      this.instruments
+    );
     this.characterOpportunities = new playerController(
       this.hands,
       this.body,
       this.scene,
       this.engine,
       this.head,
-      this.pickArea
+      this.pickArea,
+      this.controls
     );
     this.characterOpportunities.setController();
+
+    this.hands.createPickEvents();
   }
 
   private createController(scene: Scene, engine: Engine): UniversalCamera {

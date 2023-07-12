@@ -7,18 +7,13 @@ import {
 } from "@babylonjs/core";
 
 import Movement from "./movement";
-import Pick from "./handActions";
 import { Instruments, instrument } from "./instruments.ts/instruments";
 import GeneralInvenory from "./inventory/generalInvenoty";
 import ControllEvents from "./characterControls";
 import Hands from "./hands";
 
 export default class playerController {
-  private pick: Pick;
   private movement: Movement;
-  private controls: ControllEvents;
-  private inventory: GeneralInvenory;
-  private instruments: Instruments;
 
   constructor(
     private hands: Hands,
@@ -26,10 +21,9 @@ export default class playerController {
     private scene: Scene,
     private engine: Engine,
     private head: Mesh,
-    private pickArea: Mesh
+    private pickArea: Mesh,
+    private controls: ControllEvents
   ) {
-    this.controls = new ControllEvents();
-    this.instruments = new Instruments();
     this.movement = new Movement(
       this.body,
       this.scene,
@@ -37,26 +31,8 @@ export default class playerController {
       this.head,
       this.controls
     );
-    this.inventory = new GeneralInvenory(
-      this.scene,
-      this.engine,
-      this.hands,
-      this.controls,
-      this.instruments
-    );
-    this.pick = new Pick(
-      this.hands,
-      this.scene,
-      this.engine,
-      this.head,
-      this.pickArea,
-      this.inventory,
-      this.controls,
-      this.instruments
-    );
   }
   setController(): void {
     this.movement.setMovementEvents();
-    this.pick.createPickEvents();
   }
 }
