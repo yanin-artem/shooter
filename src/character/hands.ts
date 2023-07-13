@@ -53,6 +53,7 @@ export default class Hands {
     this.open = loadObject.animationGroups[1];
     this.hold = loadObject.animationGroups[0];
     this.open.start(true, 1, this.open.from, this.open.to, false);
+    console.log("hello");
     this.mesh = loadObject.meshes[1];
     this.skeletons = this.mesh.skeleton;
     this.hand = loadObject.meshes[0];
@@ -134,6 +135,7 @@ export default class Hands {
       const position = this.pickedItem.absolutePosition;
       this.pickedItem.detachFromBone();
       this.dettachFromHand(this.pickedItem);
+      this.openHand();
       this.pickedItem.position = position;
       this.pickedItem.physicsImpostor = new PhysicsImpostor(
         this.pickedItem,
@@ -174,6 +176,7 @@ export default class Hands {
           const id = this.pickedItem.metadata.id;
           const item = this.instruments.getByID(id);
           this.attachToHand(item);
+          this.closeHand();
           this.inventory.quickAccess.addInInventoryAndInHand(
             this.pickedItem.metadata.id
           );

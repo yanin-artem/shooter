@@ -12,20 +12,7 @@ export type instrument = {
   rotation: Vector3;
 };
 
-const instruments: Array<instrument> = [
-  {
-    id: 0,
-    name: "Отвертка",
-    imageSrc: "../assets/images/screwdriver.jpg",
-    description:
-      "Полезна для откручивания саморезов, болтов и прочего ковыряния",
-    mesh: null,
-    isActive: false,
-    filename: "tool_turn_screw_01",
-    position: new Vector3(-0.05, 0.1, -0.03),
-    rotation: new Vector3(0, -Math.PI, 0),
-  },
-];
+import { instruments } from "./instrumentsList";
 
 export class Instruments {
   private instruments: Array<instrument>;
@@ -45,7 +32,7 @@ export class Instruments {
         const root = mesh.parent;
         mesh.setParent(null);
         root.dispose();
-        mesh.name = "screwdriver";
+        mesh.name = instrument.filename;
         const screwdriverHitbox = mesh.clone(
           `${instrument.filename}Hitbox`,
           mesh
