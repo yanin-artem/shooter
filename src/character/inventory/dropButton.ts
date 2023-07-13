@@ -65,7 +65,6 @@ export default class DropItem {
       itemsArray[index].id = -1;
       if (Object.keys(itemsArray).includes("isEnabled"))
         itemsArray[index].isEnabled = true;
-      item.mesh.setEnabled(true);
       //TODO: ПЕРЕПИСАТЬ ВСЕ ПОД СОБЫТИЕ, УДАЛЕНИЕ ПРЕДМЕТА В РУКАХ ВЫДЕЛИТЬ В ОТДЕЛЬНЫЙ МЕТОД, А ПРОВЕРКУ В НА НАЖАТИЕ КЛАВИШИ СДЕЛАТЬ ЕГО ДЕКОРАТОРОМ
       const event = new CustomEvent("dropFromInventory", {
         detail: { item: item },
@@ -74,14 +73,6 @@ export default class DropItem {
         composed: false,
       });
       document.dispatchEvent(event);
-      const position = item.mesh.absolutePosition;
-      item.mesh.detachFromBone();
-      item.mesh.position = position;
-      item.mesh.physicsImpostor = new PhysicsImpostor(
-        item.mesh,
-        PhysicsImpostor.MeshImpostor,
-        { mass: 0.1 }
-      );
       this.deleteCell(index, cellsArray);
     } else return;
   }

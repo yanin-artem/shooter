@@ -12,8 +12,7 @@ import * as GUI from "@babylonjs/gui";
 import ControllEvents from "../characterControls";
 import QuickAccessUI from "./quickAccessUI";
 import { Instruments, instrument } from "../instruments.ts/instruments";
-import Instrument from "../instruments.ts/instrument";
-import Hands from "../hands";
+import { Inventory } from "./inventory";
 
 export type quickAccessItem = {
   id: number;
@@ -25,6 +24,7 @@ export class QuickAccess {
   protected id = 0;
   public UI: QuickAccessUI;
   constructor(
+    private inventory: Inventory,
     protected scene: Scene,
     protected engine: Engine,
     private advancedTexture: GUI.AdvancedDynamicTexture,
@@ -88,7 +88,7 @@ export class QuickAccess {
   private calcArray(id: number) {
     const index = this.quickAccess.findIndex((item) => item.id === -1);
     if (index === -1) {
-      this.quickAccess.push({ id: id, isEnabled: true });
+      this.inventory.addInInventory(id);
     } else {
       this.quickAccess[index] = { id: id, isEnabled: true };
     }

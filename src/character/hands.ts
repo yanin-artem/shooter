@@ -84,7 +84,17 @@ export default class Hands {
       this.openHand();
     });
     document.addEventListener("dropFromInventory", (event: CustomEvent) => {
-      this.dettachFromHand(event.detail.item.mesh);
+      const item = event.detail.item;
+      this.dettachFromHand(item.mesh);
+      item.mesh.setEnabled(true);
+      const position = item.mesh.absolutePosition;
+      item.mesh.detachFromBone();
+      item.mesh.position = position;
+      item.mesh.physicsImpostor = new PhysicsImpostor(
+        item.mesh,
+        PhysicsImpostor.MeshImpostor,
+        { mass: 0.1 }
+      );
     });
   }
 

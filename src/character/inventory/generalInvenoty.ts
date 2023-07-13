@@ -37,6 +37,7 @@ export default class GeneralInvenory {
       this.instruments
     );
     this.quickAccess = new QuickAccess(
+      this.invetory,
       this.scene,
       this.engine,
       this.advancedTexture,

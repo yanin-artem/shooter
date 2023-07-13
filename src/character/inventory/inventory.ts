@@ -72,7 +72,14 @@ export class Inventory {
   private calcArray(id: number) {
     const index = this.inventory.findIndex((item) => item.id === -1);
     if (index === -1) {
-      this.inventory.push({ id: id });
+      const item = this.instruments.getByID(id);
+      const event = new CustomEvent("dropFromInventory", {
+        detail: { item: item },
+        bubbles: true,
+        cancelable: true,
+        composed: false,
+      });
+      document.dispatchEvent(event);
     } else {
       this.inventory[index] = { id: id };
     }
