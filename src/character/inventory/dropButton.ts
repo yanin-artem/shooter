@@ -1,15 +1,5 @@
 import * as GUI from "@babylonjs/gui";
 import { Inventory, inventoryItem } from "./inventory";
-import {
-  AbstractMesh,
-  Engine,
-  Scene,
-  PhysicsImpostor,
-  KeyboardInfo,
-  Vector3,
-  Vector2,
-  PointerEventTypes,
-} from "@babylonjs/core";
 import { quickAccessItem } from "./quickAccess";
 import { Instruments, instrument } from "../instruments.ts/instruments";
 
@@ -58,6 +48,7 @@ export default class DropItem {
     id: number,
     itemsArray: Array<any>,
     cellsArray: Array<GUI.Button>
+    //onDelete()
   ) {
     const index = itemsArray.findIndex((e) => e.id === id);
     if (index != -1) {
@@ -65,7 +56,7 @@ export default class DropItem {
       itemsArray[index].id = -1;
       if (Object.keys(itemsArray).includes("isEnabled"))
         itemsArray[index].isEnabled = true;
-      //TODO: ПЕРЕПИСАТЬ ВСЕ ПОД СОБЫТИЕ, УДАЛЕНИЕ ПРЕДМЕТА В РУКАХ ВЫДЕЛИТЬ В ОТДЕЛЬНЫЙ МЕТОД, А ПРОВЕРКУ В НА НАЖАТИЕ КЛАВИШИ СДЕЛАТЬ ЕГО ДЕКОРАТОРОМ
+      //onDelete()
       const event = new CustomEvent("dropFromInventory", {
         detail: { item: item },
         bubbles: true,

@@ -50,13 +50,6 @@ export class Inventory {
     instrument.mesh.checkCollisions = false;
     instrument.mesh.physicsImpostor?.dispose();
     instrument.isActive = false;
-    const event = new CustomEvent("addInInventory", {
-      detail: { item: instrument },
-      bubbles: true,
-      cancelable: true,
-      composed: false,
-    });
-    document.dispatchEvent(event);
     instrument.mesh.setEnabled(false);
     this.calcInventory(id, instrument);
   }
@@ -73,6 +66,7 @@ export class Inventory {
     const index = this.inventory.findIndex((item) => item.id === -1);
     if (index === -1) {
       const item = this.instruments.getByID(id);
+      //если инвентарь заполнен, то предмет бросается
       const event = new CustomEvent("dropFromInventory", {
         detail: { item: item },
         bubbles: true,

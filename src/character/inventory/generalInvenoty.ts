@@ -25,7 +25,8 @@ export default class GeneralInvenory {
     private engine: Engine,
     private controls: ControllEvents,
     private instruments: Instruments
-  ) {
+  ) //callback
+  {
     this.advancedTexture =
       GUI.AdvancedDynamicTexture.CreateFullscreenUI("main");
 
