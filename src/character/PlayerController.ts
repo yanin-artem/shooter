@@ -16,12 +16,10 @@ export default class playerController {
   private movement: Movement;
 
   constructor(
-    private hands: Hands,
     private body: AbstractMesh,
     private scene: Scene,
     private engine: Engine,
     private head: Mesh,
-    private pickArea: Mesh,
     private controls: ControllEvents
   ) {
     this.movement = new Movement(

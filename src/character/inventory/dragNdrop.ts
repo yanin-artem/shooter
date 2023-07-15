@@ -15,23 +15,9 @@ export default class dragNdrop {
   private static instance: dragNdrop;
   private advancedTexture: GUI.AdvancedDynamicTexture;
   private scene: Scene;
-  private eventQuickAccess: CustomEvent;
-  private eventInventory: CustomEvent;
 
   private constructor() {
     this.cursorPos = Vector2.Zero();
-    this.eventQuickAccess = new CustomEvent("dropInQuickAccess", {
-      detail: {},
-      bubbles: true,
-      cancelable: true,
-      composed: false,
-    });
-    this.eventInventory = new CustomEvent("dropInInventory", {
-      detail: {},
-      bubbles: true,
-      cancelable: true,
-      composed: false,
-    });
   }
   public dragItem(cell: GUI.Button, itemsArray: Array<any>) {
     if (!this.isDragItem) {
@@ -56,14 +42,18 @@ export default class dragNdrop {
     cell: GUI.Button,
     itemsArray: Array<quickAccessItem> | Array<inventoryItem>,
     cellsArray: Array<GUI.Button>,
-    instruments: Instruments
+    instruments: Instruments,
+    closeHandCallBack,
+    openHandCallBack
   ) {
     this.switchCells(this.draggingCell, cell);
     this.switchArrayItems(
       this.originMeshArray,
       itemsArray,
       cellsArray,
-      instruments
+      instruments,
+      closeHandCallBack,
+      openHandCallBack
     );
     this.dragImpostor.isVisible = false;
     this.isDragItem = false;
@@ -82,34 +72,50 @@ export default class dragNdrop {
     originItemsArray: any,
     currentItemsArray: any,
     currentCellsArray: Array<GUI.Button>,
-    instruments: Instruments
+    instruments: Instruments,
+    closeHandCallBack,
+    openHandCallBack
   ) {
     let meshIndex = currentCellsArray.findIndex(
       (item) => item.metadata?.id === this.dragImpostor.metadata.id
     );
     const bufferId = originItemsArray[this.draggingMeshIndex].id;
-    this.toggleIsActive(originItemsArray, this.draggingMeshIndex, instruments);
+    this.toggleIsActive(
+      originItemsArray,
+      this.draggingMeshIndex,
+      instruments,
+      closeHandCallBack,
+      openHandCallBack
+    );
     originItemsArray[this.draggingMeshIndex].id =
       currentItemsArray[meshIndex].id;
     currentItemsArray[meshIndex].id = bufferId;
-    this.toggleIsActive(currentItemsArray, meshIndex, instruments);
+    this.toggleIsActive(
+      currentItemsArray,
+      meshIndex,
+      instruments,
+      closeHandCallBack,
+      openHandCallBack
+    );
   }
 
   private toggleIsActive(
     array: Array<any>,
     index: number,
-    instruments: Instruments
+    instruments: Instruments,
+    closeHandCallBack,
+    openHandCallBack
   ) {
     const item = instruments.getByID(array[index].id);
     if (array[index]?.isEnabled != undefined) {
       array[index].isEnabled = !array[index].isEnabled;
       item.isActive = !item.isActive;
       item.mesh.setEnabled(item.isActive);
-      document.dispatchEvent(this.eventQuickAccess);
+      closeHandCallBack();
     } else {
       item.isActive = false;
       item.mesh.setEnabled(false);
-      document.dispatchEvent(this.eventInventory);
+      openHandCallBack();
     }
   }
 

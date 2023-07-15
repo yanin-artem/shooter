@@ -37,7 +37,10 @@ export default class InventoryUI {
     private advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private engine: Engine,
-    private instruments: Instruments
+    private instruments: Instruments,
+    private dropCallBack,
+    private openHandCallBack,
+    private closeHandCallBack
   ) {
     this.inventoryCells = [];
     this.createInventoryElements();
@@ -72,7 +75,8 @@ export default class InventoryUI {
             item,
             this.inventoryGrid,
             this.inventory,
-            this.inventoryCells
+            this.inventoryCells,
+            this.dropCallBack
           );
         }
         if (event.buttonIndex === 0 && this.dragNdrop.isDragItem) {
@@ -82,7 +86,9 @@ export default class InventoryUI {
             item,
             this.inventory,
             this.inventoryCells,
-            this.instruments
+            this.instruments,
+            this.closeHandCallBack,
+            this.openHandCallBack
           );
         } else if (
           event.buttonIndex === 0 &&

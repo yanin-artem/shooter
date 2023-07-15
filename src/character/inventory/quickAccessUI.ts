@@ -34,7 +34,10 @@ export default class QuickAccessUI {
     private advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private scene: Scene,
-    private instruments: Instruments
+    private instruments: Instruments,
+    private dropCallBack,
+    private openHandCallBack,
+    private closeHandCallBack
   ) {
     this.quickAccessCells = [];
     this.quickAccessGrid = this.createQuickAccessGrid();
@@ -55,7 +58,8 @@ export default class QuickAccessUI {
             item,
             this.quickAccessGrid,
             this.quickAccess,
-            this.quickAccessCells
+            this.quickAccessCells,
+            this.dropCallBack
           );
         }
         //УБРАТЬ ВСЮ ЛОГИКУ ВНУТРИ ОБРАБОТЧИКА В МЕТОД!!!
@@ -64,7 +68,9 @@ export default class QuickAccessUI {
             item,
             this.quickAccess,
             this.quickAccessCells,
-            this.instruments
+            this.instruments,
+            this.closeHandCallBack,
+            this.openHandCallBack
           );
         } else if (
           event.buttonIndex === 0 &&

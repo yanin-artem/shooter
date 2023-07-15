@@ -7,14 +7,9 @@ import {
   StandardMaterial,
   Color3,
   Mesh,
-  TransformNode,
-  SceneLoader,
   AbstractMesh,
-  Axis,
-  Space,
-  ActionManager,
-  Ray,
   PhysicsImpostor,
+  PickingInfo,
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
 import { Instruments, instrument } from "./instruments.ts/instruments";
@@ -23,7 +18,7 @@ import ControllEvents from "./characterControls";
 import Hands from "./hands";
 
 import playerController from "./PlayerController";
-import { quickAccessItem } from "./inventory/quickAccess";
+import rayCast from "./rayCast";
 
 export default class Character {
   public camera: UniversalCamera;
@@ -40,6 +35,7 @@ export default class Character {
   private instruments: Instruments;
   private pickedItem: AbstractMesh;
   private pickedDetail: AbstractMesh;
+  private raycast: rayCast;
 
   constructor(private scene: Scene, private engine: Engine) {
     this.camera = this.createController(this.scene, this.engine);
@@ -47,29 +43,29 @@ export default class Character {
     this.pickArea = this.createPickArea();
     this.head = this.createHead();
     this.controls = new ControllEvents();
+    this.raycast = new rayCast(this.head, this.scene, this.controls);
     this.instruments = new Instruments();
+    this.hands = new Hands(this.head, this.scene);
 
     this.inventory = new GeneralInvenory(
       this.scene,
       this.engine,
       this.controls,
-      this.instruments
-      //this.hands.deleteItem
+      this.instruments,
+      this.hands.drop.bind(this.hands),
+      this.hands.openHand.bind(this.hands),
+      this.hands.closeHand.bind(this.hands)
     );
 
-    this.hands = new Hands(this.head, this.scene);
     this.characterOpportunities = new playerController(
-      this.hands,
       this.body,
       this.scene,
       this.engine,
       this.head,
-      this.pickArea,
       this.controls
     );
     this.characterOpportunities.setController();
 
-    this.hands.createPickEvents();
     this.createPickEvents();
   }
 
@@ -134,10 +130,10 @@ export default class Character {
 
   private createHead(): Mesh {
     const head = MeshBuilder.CreateSphere("head", {
-      diameter: 0.2,
+      diameter: 0.1,
     });
     head.parent = this.body;
-    head.position.y = 0.8;
+    head.position.y = 0.75;
     head.isPickable = false;
     head.metadata = { isItem: false, isConditioner: false };
     this.camera.parent = head;
@@ -150,7 +146,6 @@ export default class Character {
     this.body.addChild(sphere);
     sphere.position = Vector3.Zero();
     sphere.isVisible = false;
-    // sphere.setEnabled(false);
     sphere.isPickable = false;
     return sphere;
   }
@@ -161,13 +156,11 @@ export default class Character {
       width: 0.2,
       depth: 0.05,
     });
-
     const body2 = MeshBuilder.CreateBox("box", {
       height: 0.1,
       width: 0.5,
       depth: 0.1,
     });
-
     const InnerMesh = Mesh.MergeMeshes([body1, body2], true);
     InnerMesh.billboardMode = 2;
     InnerMesh.isPickable = false;
@@ -176,87 +169,45 @@ export default class Character {
     this.body.metadata = { isItem: false, isConditioner: false };
     InnerMesh.metadata = { isItem: false, isConditioner: false };
     InnerMesh.position.y = -0.15;
-    // InnerMesh.isVisible = false;
     this.body.position.y = 20;
-    // this.body.position.z = -7;
   }
 
-  private castRay(predicate) {
-    const direction = this.getVisionDirection();
-    const length = 3;
-    const origin = this.head.getAbsolutePosition();
-    const ray = new Ray(origin, direction, length);
-    return this.scene.pickWithRay(ray, predicate);
-  }
-
-  private getVisionDirection(): Vector3 {
-    function vecToLocal(vector: Vector3): Vector3 {
-      const m = this.head.getWorldMatrix();
-      const v = Vector3.TransformCoordinates(vector, m);
-      return v;
+  private pickItem(hit: PickingInfo) {
+    hit.pickedMesh.checkCollisions = false;
+    if (Instruments.isInstrument(hit.pickedMesh)) {
+      this.pickedItem =
+        (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
+      const item = this.getItemByMesh(this.pickedItem);
+      this.hands.pick(item);
+      this.inventory.quickAccess.addInInventoryAndInHand(item.id);
     }
-    const origin = this.head.getAbsolutePosition();
-    let forward = new Vector3(0, 0, 1);
-    forward = vecToLocal.call(this, forward);
-    let direction = forward.subtract(origin);
-    direction = Vector3.Normalize(direction);
-
-    return direction;
+    if (hit.pickedMesh.metadata?.isDetail) {
+      // this.hands.positionPickedDetail(
+      //   hit.pickedMesh,
+      //   this.pickedDetail,
+      //   this.pickedItem
+      // );
+    }
   }
 
-  //функция подбора любого лежащего предмета
-  private setPick(): void {
-    if (this.controls.pickInHand) {
-      function predicate(
-        mesh: AbstractMesh,
-        instruments: Instruments
-      ): boolean {
-        return (
-          ((mesh.metadata?.isDetail && !mesh.metadata?.isConditioner) ||
-            Instruments.isInstrument(mesh)) &&
-          mesh.isPickable
-        );
-      }
-      const hit = this.castRay(predicate);
-      if (hit.pickedMesh) {
-        hit.pickedMesh.checkCollisions = false;
-        if (Instruments.isInstrument(hit.pickedMesh)) {
-          this.pickedItem =
-            (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
-          const id = this.pickedItem.metadata.id;
-          const item = this.instruments.getByID(id);
-          this.hands.attachToHand(item);
-          this.hands.closeHand();
-          this.inventory.quickAccess.addInInventoryAndInHand(
-            this.pickedItem.metadata.id
-          );
-        }
-        if (hit.pickedMesh.metadata?.isDetail)
-          this.hands.positionPickedDetail(
-            hit.pickedMesh,
-            this.pickedDetail,
-            this.pickedItem
-          );
-      }
-    }
+  protected getItemByMesh(mesh: AbstractMesh): instrument {
+    const id = mesh.metadata.id;
+    const item = this.instruments.getByID(id);
+    return item;
   }
 
   private createPickEvents() {
     this.scene.onKeyboardObservable.add((event) => {
       this.controls.handleControlEvents(event);
       this.dropItem();
-      this.setPick();
-      this.controls.handleControlEvents(event);
-      this.dropItem();
       this.dropDetail();
-      this.setPick();
-      this.addIntoInventory();
-      if (this.controls.number) {
-        this.changeItemInHand(
-          this.controls.number - 1,
-          this.inventory.quickAccess.quickAccess
-        );
-      }
+      this.raycast.setPick(this.pickItem.bind(this));
+      this.raycast.addIntoInventory(this.pickInInventory.bind(this));
+      this.pickedItem = this.inventory.quickAccess.changeItemInHand(
+        this.hands,
+        this.pickedItem
+      );
+
       this.pickManyFromArea();
       if (event.event.code === "KeyI" && event.type === 1) {
         this.pickedItem = this.inventory.quickAccess.correctCurrentItem()?.mesh;
@@ -265,22 +216,15 @@ export default class Character {
   }
 
   private dropItem(): void {
+    console.log(this.pickedItem);
     if (
       this.controls.drop &&
       this.pickedItem?.isEnabled() &&
       !this.pickedDetail
     ) {
-      const position = this.pickedItem.absolutePosition;
-      this.pickedItem.detachFromBone();
-      this.hands.dettachFromHand(this.pickedItem);
-      this.hands.openHand();
-      this.pickedItem.position = position;
-      this.pickedItem.physicsImpostor = new PhysicsImpostor(
-        this.pickedItem,
-        PhysicsImpostor.MeshImpostor,
-        { mass: 0.1, friction: 0.9 }
-      );
-      const direction = this.getVisionDirection();
+      console.log("hello");
+      this.hands.drop(this.pickedItem);
+      const direction = this.raycast.getVisionDirection();
       this.pickedItem.applyImpulse(
         direction.scaleInPlace(0.5),
         this.pickedItem.position
@@ -308,44 +252,12 @@ export default class Character {
     }
   }
 
-  private changeItemInHand(index: number, quickAccess: Array<quickAccessItem>) {
-    this.inventory.quickAccess.UI.toggleQuickAccessVisibility();
-
-    const enabledElem = quickAccess.find((item) => item.isEnabled);
-    if (enabledElem) {
-      enabledElem.isEnabled = false;
-      const instrument = this.instruments.getByID(enabledElem.id);
-      instrument.isActive = false;
-      const enabledMesh = instrument.mesh;
-      enabledMesh.setEnabled(false);
-      this.hands.openHand();
-    }
-    if (quickAccess[index].id != -1) {
-      quickAccess[index].isEnabled = true;
-      const instrument = this.instruments.getByID(quickAccess[index].id);
-      this.pickedItem = instrument.mesh;
-      instrument.isActive = true;
-      this.pickedItem.setEnabled(true);
-      this.hands.closeHand();
-    }
-  }
-
   //pick item
-  private addIntoInventory() {
-    if (this.controls.pickInInventar) {
-      function predicate(mesh: AbstractMesh): boolean {
-        return (
-          !mesh.metadata?.isDetail && mesh.metadata?.isItem && mesh.isPickable
-        );
-      }
-      const hit = this.castRay(predicate);
-      if (hit.pickedMesh) {
-        const item = (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
-        const instrument = this.instruments.getByID(item.metadata.id);
-        this.hands.attachToHand(instrument);
-        this.inventory.invetory.addInInventory(item.metadata.id);
-      }
-    }
+  private pickInInventory(hit: PickingInfo) {
+    this.pickedItem = (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
+    const item = this.getItemByMesh(this.pickedItem);
+    this.hands.attachToHand(item);
+    this.inventory.invetory.addInInventory(item.id);
   }
 
   private pickManyFromArea() {

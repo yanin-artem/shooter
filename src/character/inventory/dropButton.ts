@@ -27,7 +27,8 @@ export default class DropItem {
     cell: GUI.Button,
     grid: GUI.Grid,
     itemsArray: Array<quickAccessItem> | Array<inventoryItem>,
-    cellsArray: Array<GUI.Button>
+    cellsArray: Array<GUI.Button>,
+    dropCallBack
   ) {
     if (cell.textBlock.text != "") {
       this.dropButton.onPointerClickObservable.clear();
@@ -38,7 +39,7 @@ export default class DropItem {
         +cellCoordinates[1]
       );
       this.dropButton.onPointerClickObservable.addOnce(() => {
-        this.deleteItem(cell.metadata.id, itemsArray, cellsArray);
+        this.deleteItem(cell.metadata.id, itemsArray, cellsArray, dropCallBack);
       });
     } else return;
   }
@@ -47,7 +48,8 @@ export default class DropItem {
   protected deleteItem(
     id: number,
     itemsArray: Array<any>,
-    cellsArray: Array<GUI.Button>
+    cellsArray: Array<GUI.Button>,
+    dropCallBack
     //onDelete()
   ) {
     const index = itemsArray.findIndex((e) => e.id === id);
@@ -56,14 +58,8 @@ export default class DropItem {
       itemsArray[index].id = -1;
       if (Object.keys(itemsArray).includes("isEnabled"))
         itemsArray[index].isEnabled = true;
-      //onDelete()
-      const event = new CustomEvent("dropFromInventory", {
-        detail: { item: item },
-        bubbles: true,
-        cancelable: true,
-        composed: false,
-      });
-      document.dispatchEvent(event);
+      item.mesh.setEnabled(true);
+      dropCallBack(item.mesh);
       this.deleteCell(index, cellsArray);
     } else return;
   }

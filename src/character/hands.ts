@@ -12,10 +12,7 @@ import {
   TransformNode,
   Vector3,
 } from "@babylonjs/core";
-import ControllEvents from "./characterControls";
 import { Instruments, instrument } from "./instruments.ts/instruments";
-import GeneralInvenory from "./inventory/generalInvenoty";
-import { quickAccessItem } from "./inventory/quickAccess";
 
 export default class Hands {
   public hand: any;
@@ -38,6 +35,7 @@ export default class Hands {
       "../assets/models/character/",
       "normal_hands_anim.glb"
     );
+
     this.open = loadObject.animationGroups[1];
     this.hold = loadObject.animationGroups[0];
     this.open.start(true, 1, this.open.from, this.open.to, false);
@@ -67,19 +65,6 @@ export default class Hands {
     document.addEventListener("dropInInventory", () => {
       this.openHand();
     });
-    document.addEventListener("dropFromInventory", (event: CustomEvent) => {
-      const item = event.detail.item;
-      this.dettachFromHand(item.mesh);
-      item.mesh.setEnabled(true);
-      const position = item.mesh.absolutePosition;
-      item.mesh.detachFromBone();
-      item.mesh.position = position;
-      item.mesh.physicsImpostor = new PhysicsImpostor(
-        item.mesh,
-        PhysicsImpostor.MeshImpostor,
-        { mass: 0.1 }
-      );
-    });
   }
 
   public attachToHand(item: instrument) {
@@ -92,23 +77,30 @@ export default class Hands {
   }
 
   public dettachFromHand(item: AbstractMesh) {
+    item.detachFromBone();
     const index = this.attachedMeshes.findIndex(
       (mesh) => mesh.metadata.id === item.metadata.id
     );
     this.attachedMeshes.splice(index, 1);
   }
 
-  createPickEvents(): void {
-    this.scene.onKeyboardObservable.add((event) => {});
+  public drop(item: AbstractMesh) {
+    const position = item.absolutePosition;
+    this.dettachFromHand(item);
+    this.openHand();
+    item.position = position;
+    item.physicsImpostor = new PhysicsImpostor(
+      item,
+      PhysicsImpostor.MeshImpostor,
+      { mass: 0.1, friction: 0.9 }
+    );
   }
 
-  //
+  public pick(item: instrument) {
+    this.attachToHand(item);
+    this.closeHand();
+  }
 
-  // функция смены моделей рук (сжатая или свободная)
-
-  //функция рэйкастинга в направлении просмотра
-
-  //функция позиционирования детали в руке
   public positionPickedDetail(
     pickedMesh: AbstractMesh,
     pickedDetail: AbstractMesh,

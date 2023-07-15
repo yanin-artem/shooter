@@ -24,9 +24,11 @@ export default class GeneralInvenory {
     private scene: Scene,
     private engine: Engine,
     private controls: ControllEvents,
-    private instruments: Instruments
-  ) //callback
-  {
+    private instruments: Instruments,
+    private dropCallBack,
+    private openHandCallBack,
+    private closeHandCallBack //callback
+  ) {
     this.advancedTexture =
       GUI.AdvancedDynamicTexture.CreateFullscreenUI("main");
 
@@ -35,7 +37,10 @@ export default class GeneralInvenory {
       this.engine,
       this.advancedTexture,
       this.controls,
-      this.instruments
+      this.instruments,
+      this.dropCallBack,
+      this.openHandCallBack,
+      this.closeHandCallBack
     );
     this.quickAccess = new QuickAccess(
       this.invetory,
@@ -43,7 +48,10 @@ export default class GeneralInvenory {
       this.engine,
       this.advancedTexture,
       this.controls,
-      this.instruments
+      this.instruments,
+      this.dropCallBack,
+      this.openHandCallBack,
+      this.closeHandCallBack
     );
   }
 }

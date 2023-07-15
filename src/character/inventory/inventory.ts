@@ -27,7 +27,10 @@ export class Inventory {
     protected engine: Engine,
     protected advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
-    private instruments: Instruments
+    private instruments: Instruments,
+    private dropCallBack,
+    private openHandCallBack,
+    private closeHandCallBack
   ) {
     this.inventory = Array(96).fill(undefined);
     this.inventory = this.inventory.map(() => {
@@ -40,7 +43,10 @@ export class Inventory {
       this.advancedTexture,
       this.controls,
       this.engine,
-      this.instruments
+      this.instruments,
+      this.dropCallBack,
+      this.openHandCallBack,
+      this.closeHandCallBack
     );
   }
 
@@ -67,12 +73,8 @@ export class Inventory {
     if (index === -1) {
       const item = this.instruments.getByID(id);
       //если инвентарь заполнен, то предмет бросается
-      const event = new CustomEvent("dropFromInventory", {
-        detail: { item: item },
-        bubbles: true,
-        cancelable: true,
-        composed: false,
-      });
+      item.mesh.setEnabled(true);
+      this.dropCallBack();
       document.dispatchEvent(event);
     } else {
       this.inventory[index] = { id: id };

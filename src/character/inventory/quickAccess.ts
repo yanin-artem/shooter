@@ -13,6 +13,7 @@ import ControllEvents from "../characterControls";
 import QuickAccessUI from "./quickAccessUI";
 import { Instruments, instrument } from "../instruments.ts/instruments";
 import { Inventory } from "./inventory";
+import Hands from "../hands";
 
 export type quickAccessItem = {
   id: number;
@@ -29,7 +30,10 @@ export class QuickAccess {
     protected engine: Engine,
     private advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
-    private instruments: Instruments
+    private instruments: Instruments,
+    private dropCallBack,
+    private openHandCallBack,
+    private closeHandCallBack
   ) {
     this.quickAccess = Array(8).fill(undefined);
     this.quickAccess = this.quickAccess.map((el) => {
@@ -40,7 +44,10 @@ export class QuickAccess {
       this.advancedTexture,
       this.controls,
       this.scene,
-      this.instruments
+      this.instruments,
+      this.dropCallBack,
+      this.openHandCallBack,
+      this.closeHandCallBack
     );
   }
 
@@ -97,5 +104,35 @@ export class QuickAccess {
   public correctCurrentItem(): instrument {
     const enabledItem = this.quickAccess.find((e) => e.isEnabled);
     return this.instruments.getByID(enabledItem?.id);
+  }
+
+  public changeItemInHand(
+    hands: Hands,
+    pickedItem: AbstractMesh
+  ): AbstractMesh {
+    if (this.controls.number) {
+      const index = this.controls.number - 1;
+      this.UI.toggleQuickAccessVisibility();
+
+      const enabledElem = this.quickAccess.find((item) => item.isEnabled);
+      if (enabledElem) {
+        enabledElem.isEnabled = false;
+        const instrument = this.instruments.getByID(enabledElem.id);
+        instrument.isActive = false;
+        const enabledMesh = instrument.mesh;
+        enabledMesh.setEnabled(false);
+        hands.openHand();
+      }
+      if (this.quickAccess[index].id != -1) {
+        this.quickAccess[index].isEnabled = true;
+        const instrument = this.instruments.getByID(this.quickAccess[index].id);
+        pickedItem = instrument.mesh;
+        instrument.isActive = true;
+        pickedItem.setEnabled(true);
+        hands.closeHand();
+        return pickedItem;
+      }
+    }
+    return pickedItem;
   }
 }
