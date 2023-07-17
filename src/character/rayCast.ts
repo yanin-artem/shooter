@@ -1,14 +1,29 @@
-import { AbstractMesh, Ray, Scene, Vector3 } from "@babylonjs/core";
+import {
+  AbstractMesh,
+  Axis,
+  MeshBuilder,
+  PhysicsImpostor,
+  Ray,
+  Scene,
+  SceneLoader,
+  Space,
+  Vector3,
+} from "@babylonjs/core";
 import ControllEvents from "./characterControls";
 import { Instruments } from "./instruments.ts/instruments";
-import Character from "./character";
+import LocationMeshes from "../scene/locationMeshes";
 
 export default class rayCast {
+  private location: LocationMeshes;
+
   constructor(
     private head: AbstractMesh,
     private scene: Scene,
-    private controls: ControllEvents
-  ) {}
+    private controls: ControllEvents,
+    private body: AbstractMesh
+  ) {
+    this.location = LocationMeshes.Instance(this.scene);
+  }
   private castRay(predicate) {
     const direction = this.getVisionDirection();
     const length = 3;
@@ -63,6 +78,31 @@ export default class rayCast {
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
         addIntoInventoryCallBack(hit);
+      }
+    }
+  }
+
+  //pick item
+  public async pickDoorToHouseLocation(): Promise<void> {
+    if (this.controls.pickInInventar) {
+      function predicate(mesh: AbstractMesh): boolean {
+        return mesh.metadata?.isDoorToHouse && mesh.isPickable;
+      }
+      const hit = this.castRay(predicate);
+      if (hit.pickedMesh) {
+        await this.location.CreateHouseLocation(this.body);
+      }
+    }
+  }
+
+  public pickDoorToWorkshopLocation() {
+    if (this.controls.pickInInventar) {
+      function predicate(mesh: AbstractMesh): boolean {
+        return mesh.metadata?.isDoorToWorkshop && mesh.isPickable;
+      }
+      const hit = this.castRay(predicate);
+      if (hit.pickedMesh) {
+        this.location.disposeHomeLocation();
       }
     }
   }

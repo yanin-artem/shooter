@@ -43,9 +43,9 @@ export default class Character {
     this.pickArea = this.createPickArea();
     this.head = this.createHead();
     this.controls = new ControllEvents();
-    this.raycast = new rayCast(this.head, this.scene, this.controls);
     this.instruments = new Instruments();
     this.hands = new Hands(this.head, this.scene);
+    this.raycast = new rayCast(this.head, this.scene, this.controls, this.body);
 
     this.inventory = new GeneralInvenory(
       this.scene,
@@ -207,7 +207,8 @@ export default class Character {
         this.hands,
         this.pickedItem
       );
-
+      this.raycast.pickDoorToHouseLocation();
+      this.raycast.pickDoorToWorkshopLocation();
       this.pickManyFromArea();
       if (event.event.code === "KeyI" && event.type === 1) {
         this.pickedItem = this.inventory.quickAccess.correctCurrentItem()?.mesh;
