@@ -1,17 +1,8 @@
-import {
-  AbstractMesh,
-  Axis,
-  MeshBuilder,
-  PhysicsImpostor,
-  Ray,
-  Scene,
-  SceneLoader,
-  Space,
-  Vector3,
-} from "@babylonjs/core";
+import { AbstractMesh, Ray, Scene, Vector3 } from "@babylonjs/core";
 import ControllEvents from "./characterControls";
 import { Instruments } from "./instruments.ts/instruments";
 import LocationMeshes from "../scene/locationMeshes";
+import { pumpingOutFreon } from "../scene/workScenarios";
 
 export default class rayCast {
   private location: LocationMeshes;
@@ -83,14 +74,20 @@ export default class rayCast {
   }
 
   //pick item
-  public async pickDoorToHouseLocation(): Promise<void> {
+  public async pickDoorToHouseLocation(inventory, quickAccess): Promise<void> {
     if (this.controls.pickInInventar) {
       function predicate(mesh: AbstractMesh): boolean {
         return mesh.metadata?.isDoorToHouse && mesh.isPickable;
       }
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
-        await this.location.CreateHouseLocation(this.body);
+        if (
+          pumpingOutFreon.pumpingOutFreonCheckInstruments(
+            inventory,
+            quickAccess
+          )
+        )
+          await this.location.CreateHouseLocation(this.body);
       }
     }
   }

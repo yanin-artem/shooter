@@ -207,7 +207,10 @@ export default class Character {
         this.hands,
         this.pickedItem
       );
-      this.raycast.pickDoorToHouseLocation();
+      this.raycast.pickDoorToHouseLocation(
+        this.inventory.invetory,
+        this.inventory.quickAccess
+      );
       this.raycast.pickDoorToWorkshopLocation();
       this.pickManyFromArea();
       if (event.event.code === "KeyI" && event.type === 1) {
@@ -217,13 +220,11 @@ export default class Character {
   }
 
   private dropItem(): void {
-    console.log(this.pickedItem);
     if (
       this.controls.drop &&
       this.pickedItem?.isEnabled() &&
       !this.pickedDetail
     ) {
-      console.log("hello");
       this.hands.drop(this.pickedItem);
       const direction = this.raycast.getVisionDirection();
       this.pickedItem.applyImpulse(

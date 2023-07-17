@@ -18,7 +18,7 @@ export type inventoryItem = {
 };
 
 export class Inventory {
-  protected inventory: Array<inventoryItem>;
+  public inventory: Array<inventoryItem>;
   protected id = 0;
   private UI: InventoryUI;
 

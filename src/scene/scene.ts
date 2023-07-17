@@ -80,9 +80,6 @@ export default class MainScene {
     scene.gravity = new Vector3(0, gravity / framesPerSecond, 0);
     scene.collisionsEnabled = true;
 
-    // // scene.useRightHandedSystem = true;
-    // const physicsEngine = scene.getPhysicsEngine();
-    // physicsEngine.setSubTimeStep(100);
     return scene;
   }
 
