@@ -22,11 +22,6 @@ export default class Conditioner {
     conditioner[0].rotate(Axis.Y, Math.PI / 2, Space.WORLD);
 
     conditioner.forEach((mesh) => {
-      mesh.physicsImpostor = new PhysicsImpostor(
-        mesh,
-        PhysicsImpostor.BoxImpostor,
-        { mass: 0 }
-      );
       mesh.checkCollisions = true;
     });
 

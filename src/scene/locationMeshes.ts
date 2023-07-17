@@ -225,8 +225,9 @@ export default class LocationMeshes {
         };
       }
     }
-    this.houseLocation.conditioner.map((mesh) => {
+    this.houseLocation.conditioner.map((mesh, index) => {
       mesh.metadata.isConditioner = true;
+      mesh.metadata["id"] = index;
       mesh.name === "Корпус"
         ? (mesh.metadata.isDetail = false)
         : (mesh.metadata.isDetail = true);

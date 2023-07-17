@@ -19,6 +19,7 @@ import Hands from "./hands";
 
 import playerController from "./PlayerController";
 import rayCast from "./rayCast";
+import WorkScenarios from "../scene/workScenarios";
 
 export default class Character {
   public camera: UniversalCamera;
@@ -36,6 +37,7 @@ export default class Character {
   private pickedItem: AbstractMesh;
   private pickedDetail: AbstractMesh;
   private raycast: rayCast;
+  private scenarios: WorkScenarios;
 
   constructor(private scene: Scene, private engine: Engine) {
     this.camera = this.createController(this.scene, this.engine);
@@ -66,6 +68,13 @@ export default class Character {
     );
     this.characterOpportunities.setController();
 
+    this.scenarios = new WorkScenarios(
+      this.inventory.invetory,
+      this.inventory.quickAccess,
+      this.raycast,
+      this.scene,
+      this.body
+    );
     this.createPickEvents();
   }
 
@@ -207,11 +216,7 @@ export default class Character {
         this.hands,
         this.pickedItem
       );
-      this.raycast.pickDoorToHouseLocation(
-        this.inventory.invetory,
-        this.inventory.quickAccess
-      );
-      this.raycast.pickDoorToWorkshopLocation();
+
       this.pickManyFromArea();
       if (event.event.code === "KeyI" && event.type === 1) {
         this.pickedItem = this.inventory.quickAccess.correctCurrentItem()?.mesh;

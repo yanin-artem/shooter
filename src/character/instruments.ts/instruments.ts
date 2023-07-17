@@ -60,6 +60,10 @@ export class Instruments {
     return instruments[index];
   }
 
+  public addInstrument(instrument: instrument) {
+    instruments.push(instrument);
+  }
+
   public static isInstrument(mesh: AbstractMesh) {
     const item = instruments.find((item) => item.id === mesh.metadata.id);
     return mesh.metadata.isItem && mesh.isEnabled() && !item.isActive;

@@ -11,7 +11,7 @@ export default class ControllEvents {
   public pickInHand = false;
   public pickInInventar = false;
   public drop = false;
-  public takeApart = false;
+  public useItem = false;
   public showInventar = false;
   public showQuickAccess = false;
   public number: number;
@@ -27,7 +27,7 @@ export default class ControllEvents {
     if (event.event.code === "KeyH") this.pickInHand = event.type === 1;
     if (event.event.code === "KeyG") this.pickInInventar = event.type === 1;
     if (event.event.code === "KeyT") this.drop = event.type === 1;
-    if (event.event.code === "KeyF") this.takeApart = event.type === 1;
+    if (event.event.code === "KeyF") this.useItem = event.type === 1;
     if (
       event.event.inputIndex >= 49 &&
       event.event.inputIndex <= 56 &&

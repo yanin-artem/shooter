@@ -2,19 +2,14 @@ import { AbstractMesh, Ray, Scene, Vector3 } from "@babylonjs/core";
 import ControllEvents from "./characterControls";
 import { Instruments } from "./instruments.ts/instruments";
 import LocationMeshes from "../scene/locationMeshes";
-import { pumpingOutFreon } from "../scene/workScenarios";
 
 export default class rayCast {
-  private location: LocationMeshes;
-
   constructor(
     private head: AbstractMesh,
     private scene: Scene,
     private controls: ControllEvents,
     private body: AbstractMesh
-  ) {
-    this.location = LocationMeshes.Instance(this.scene);
-  }
+  ) {}
   private castRay(predicate) {
     const direction = this.getVisionDirection();
     const length = 3;
@@ -73,33 +68,39 @@ export default class rayCast {
     }
   }
 
+  public doItemAction(itemActionCallBack) {
+    if (this.controls.useItem) {
+      function predicate(mesh: AbstractMesh): boolean {
+        return mesh.metadata?.isDetail;
+      }
+      const hit = this.castRay(predicate);
+      if (hit.pickedMesh) {
+        itemActionCallBack(hit);
+      }
+    }
+  }
+
   //pick item
-  public async pickDoorToHouseLocation(inventory, quickAccess): Promise<void> {
+  public async pickDoorToHouseLocation(callback): Promise<void> {
     if (this.controls.pickInInventar) {
       function predicate(mesh: AbstractMesh): boolean {
         return mesh.metadata?.isDoorToHouse && mesh.isPickable;
       }
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
-        if (
-          pumpingOutFreon.pumpingOutFreonCheckInstruments(
-            inventory,
-            quickAccess
-          )
-        )
-          await this.location.CreateHouseLocation(this.body);
+        callback();
       }
     }
   }
 
-  public pickDoorToWorkshopLocation() {
+  public pickDoorToWorkshopLocation(callback) {
     if (this.controls.pickInInventar) {
       function predicate(mesh: AbstractMesh): boolean {
         return mesh.metadata?.isDoorToWorkshop && mesh.isPickable;
       }
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
-        this.location.disposeHomeLocation();
+        callback();
       }
     }
   }

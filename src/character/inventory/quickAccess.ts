@@ -135,4 +135,8 @@ export class QuickAccess {
     }
     return pickedItem;
   }
+
+  public isInQuickAccess(id: number) {
+    return this.quickAccess.find((item) => item.id === id);
+  }
 }
