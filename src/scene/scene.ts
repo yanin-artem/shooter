@@ -22,8 +22,10 @@ import {
   VideoTexture,
   AmmoJSPlugin,
   ActionManager,
+  HavokPlugin,
 } from "@babylonjs/core";
 import * as CANNON from "cannon";
+import HavokPhysics from "@babylonjs/havok";
 
 import Root from "./root";
 
@@ -84,15 +86,15 @@ export default class MainScene {
   }
 
   async enablePhysic(): Promise<void> {
-    // const ammo = await Ammo();
+    const havok = await HavokPhysics();
     this.scene.enablePhysics(
       new Vector3(0, -9.81, 0),
-      new CannonJSPlugin(true, 10, CANNON)
+      new HavokPlugin(true, havok)
     );
   }
 
   private async createLocation(): Promise<void> {
-    this.enablePhysic();
+    await this.enablePhysic();
     await this.location.createWorkshopLocation();
     this.controller = new Character(this.scene, this.engine);
     this.camera = this.controller.camera;

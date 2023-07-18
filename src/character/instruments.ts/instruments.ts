@@ -1,4 +1,4 @@
-import { AbstractMesh, SceneLoader, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, Scene, SceneLoader, Vector3 } from "@babylonjs/core";
 
 export type instrument = {
   id: number;
@@ -13,12 +13,15 @@ export type instrument = {
 };
 
 import { instruments } from "./instrumentsList";
+import Wires from "./wires";
 
 export class Instruments {
   private instruments: Array<instrument>;
-  constructor() {
+  private wires: Wires;
+  constructor(private scene: Scene) {
     this.instruments = instruments;
     this.createInstrumentsMeshes();
+    this.wires = new Wires(this.scene);
   }
 
   private createInstrumentsMeshes() {
@@ -66,6 +69,6 @@ export class Instruments {
 
   public static isInstrument(mesh: AbstractMesh) {
     const item = instruments.find((item) => item.id === mesh.metadata.id);
-    return mesh.metadata.isItem && mesh.isEnabled() && !item.isActive;
+    return mesh.metadata.isItem && mesh.isEnabled() && !item?.isActive;
   }
 }

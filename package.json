@@ -21,6 +21,7 @@
     "webpack-dev-server": "^4.15.0"
   },
   "dependencies": {
+    "@babylonjs/havok": "^1.1.0",
     "@babylonjs/loaders": "^6.4.1",
     "@types/cannon": "^0.1.8",
     "ammojs-typed": "^1.0.6",

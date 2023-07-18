@@ -54,7 +54,7 @@ export class Inventory {
   public addInInventory(id: number) {
     const instrument = this.instruments.getByID(id);
     instrument.mesh.checkCollisions = false;
-    instrument.mesh.physicsImpostor?.dispose();
+    instrument.mesh.physicsBody?.dispose();
     instrument.isActive = false;
     instrument.mesh.setEnabled(false);
     this.calcInventory(id, instrument);

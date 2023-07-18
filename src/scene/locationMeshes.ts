@@ -2,9 +2,13 @@ import {
   AbstractMesh,
   Mesh,
   MeshBuilder,
-  PhysicsImpostor,
+  PhysicsBody,
+  PhysicsMotionType,
+  PhysicsShapeBox,
+  PhysicsShapeMesh,
   Scene,
   SceneLoader,
+  Vector3,
 } from "@babylonjs/core";
 import Conditioner from "./conditioner";
 
@@ -32,15 +36,20 @@ export default class LocationMeshes {
       { width: 40, height: 40 },
       this.scene
     );
+    ground.position.y = 4.359;
 
-    ground.physicsImpostor = new PhysicsImpostor(
+    const shape = new PhysicsShapeMesh(ground, this.scene);
+    const groundBody = new PhysicsBody(
       ground,
-      PhysicsImpostor.PlaneImpostor,
-      { mass: 0 }
+      PhysicsMotionType.STATIC,
+      true,
+      this.scene
     );
+    shape.material = {};
+    groundBody.shape = shape;
+    groundBody.setMassProperties({ mass: 0 });
 
     ground.checkCollisions = true;
-    ground.position.y = 4.359;
     ground.isVisible = false;
 
     const homeMeshes = await SceneLoader.ImportMeshAsync(
@@ -57,11 +66,16 @@ export default class LocationMeshes {
     });
     homeBox.position.set(-0.001, 6.513, -5.405);
     homeBox.scaling.set(0.838, 0.864, 1.235);
-    homeBox.physicsImpostor = new PhysicsImpostor(
+    const shapehomeBox = new PhysicsShapeMesh(ground, this.scene);
+    const bodyhomeBox = new PhysicsBody(
       homeBox,
-      PhysicsImpostor.BoxImpostor,
-      { mass: 0 }
+      PhysicsMotionType.STATIC,
+      true,
+      this.scene
     );
+    shapehomeBox.material = {};
+    bodyhomeBox.shape = shapehomeBox;
+    bodyhomeBox.setMassProperties({ mass: 0 });
     homeBox.checkCollisions = true;
     homeBox.isVisible = false;
     const rightHomeCollumn = MeshBuilder.CreateBox("rightHomeCollumn", {
@@ -74,11 +88,16 @@ export default class LocationMeshes {
     rightHomeCollumn.isVisible = false;
     rightHomeCollumn.checkCollisions = true;
     const leftHomeCollumn = rightHomeCollumn.clone("leftHomeCollumn");
-    leftHomeCollumn.physicsImpostor = new PhysicsImpostor(
+    const shapeleftHomeCollumn = new PhysicsShapeMesh(ground, this.scene);
+    const bodyleftHomeCollumn = new PhysicsBody(
       leftHomeCollumn,
-      PhysicsImpostor.BoxImpostor,
-      { mass: 0 }
+      PhysicsMotionType.STATIC,
+      false,
+      this.scene
     );
+    shapeleftHomeCollumn.material = {};
+    bodyleftHomeCollumn.shape = shapeleftHomeCollumn;
+    bodyleftHomeCollumn.setMassProperties({ mass: 0 });
     leftHomeCollumn.position.x = -2.413;
     const invisibleBackwardWall = MeshBuilder.CreateBox(
       "invisibleBackwardWall",
@@ -179,11 +198,6 @@ export default class LocationMeshes {
     plinth[0].position.set(-2.99, 4.48, -6.745);
 
     plinth.forEach((mesh) => {
-      mesh.physicsImpostor = new PhysicsImpostor(
-        mesh,
-        PhysicsImpostor.BoxImpostor,
-        { mass: 0 }
-      );
       mesh.checkCollisions = true;
     });
 
@@ -196,11 +210,6 @@ export default class LocationMeshes {
     const instrumentsBox = instrumentsBoxMeshes.meshes;
     instrumentsBox[0].setParent(null);
     instrumentsBox[0].position.set(-5, 4.68, -7);
-    instrumentsBox[0].physicsImpostor = new PhysicsImpostor(
-      instrumentsBox[0],
-      PhysicsImpostor.BoxImpostor,
-      { mass: 0 }
-    );
 
     const conditioner = new Conditioner();
     await conditioner.createConditioner();
@@ -267,11 +276,16 @@ export default class LocationMeshes {
       this.scene
     );
 
-    ground.physicsImpostor = new PhysicsImpostor(
+    const shape = new PhysicsShapeMesh(ground, this.scene);
+    const body = new PhysicsBody(
       ground,
-      PhysicsImpostor.PlaneImpostor,
-      { mass: 0 }
+      PhysicsMotionType.STATIC,
+      false,
+      this.scene
     );
+    shape.material = {};
+    body.shape = shape;
+    body.setMassProperties({ mass: 0 });
 
     ground.checkCollisions = true;
     ground.position.y = -0.024;

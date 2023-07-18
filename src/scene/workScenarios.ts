@@ -1,9 +1,4 @@
-import {
-  AbstractMesh,
-  PhysicsImpostor,
-  PickingInfo,
-  Scene,
-} from "@babylonjs/core";
+import { AbstractMesh, PickingInfo, Scene, Animation } from "@babylonjs/core";
 import { Inventory } from "../character/inventory/inventory";
 import { QuickAccess } from "../character/inventory/quickAccess";
 import rayCast from "../character/rayCast";
@@ -26,6 +21,7 @@ export default class WorkScenarios {
   private rayCastEvents() {
     this.scene.onKeyboardObservable.add((event) => {
       this.raycast.doItemAction(this.openCover.bind(this));
+      this.raycast.doItemAction(this.unscrewTheCap.bind(this));
       this.raycast.pickDoorToHouseLocation(this.goToHomeLocation.bind(this));
       this.raycast.pickDoorToWorkshopLocation(
         this.location.disposeHomeLocation.bind(this.location)
@@ -67,15 +63,63 @@ export default class WorkScenarios {
     const screwdriverID = 1;
     if (
       this.quickAccess.isInQuickAccess(screwdriverID)?.isEnabled &&
-      hit.pickedMesh.metadata.id === 92
+      hit.pickedMesh.metadata.id === 2
     ) {
-      //   hit.pickedMesh.physicsImpostor = new PhysicsImpostor(
-      //     hit.pickedMesh,
-      //     PhysicsImpostor.BoxImpostor,
-      //     { mass: 0.1 }
-      //   );
       console.log("hello");
       hit.pickedMesh.dispose();
+    }
+  }
+
+  private unscrewTheCap(hit: PickingInfo) {
+    const pliersID = 32;
+    if (
+      (this.quickAccess.isInQuickAccess(pliersID)?.isEnabled &&
+        hit.pickedMesh.metadata.id === 29) ||
+      hit.pickedMesh.metadata.id === 30
+    ) {
+      hit.pickedMesh.rotationQuaternion = null;
+      const frameRate = 10;
+
+      const xSlide = new Animation(
+        "xSlide",
+        "rotation.y",
+        frameRate,
+        Animation.ANIMATIONTYPE_FLOAT,
+        Animation.ANIMATIONLOOPMODE_CYCLE
+      );
+
+      const keyFrames = [];
+
+      keyFrames.push({
+        frame: 0,
+        value: 0,
+      });
+
+      keyFrames.push({
+        frame: frameRate,
+        value: 5,
+      });
+
+      keyFrames.push({
+        frame: 2 * frameRate,
+        value: 10,
+      });
+
+      xSlide.setKeys(keyFrames);
+
+      hit.pickedMesh.animations.push(xSlide);
+
+      const anim = this.scene.beginAnimation(
+        hit.pickedMesh,
+        0,
+        2 * frameRate,
+        true
+      );
+      const timeout = setTimeout(() => {
+        anim.stop();
+        hit.pickedMesh.dispose();
+        clearTimeout(timeout);
+      }, 3000);
     }
   }
 }

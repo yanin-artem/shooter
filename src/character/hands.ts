@@ -4,7 +4,11 @@ import {
   Bone,
   Engine,
   Mesh,
-  PhysicsImpostor,
+  PhysicsAggregate,
+  PhysicsBody,
+  PhysicsMotionType,
+  PhysicsShapeMesh,
+  PhysicsShapeType,
   Ray,
   Scene,
   SceneLoader,
@@ -89,11 +93,16 @@ export default class Hands {
     this.dettachFromHand(item);
     this.openHand();
     item.position = position;
-    item.physicsImpostor = new PhysicsImpostor(
+    const shape = new PhysicsShapeMesh(item as Mesh, this.scene);
+    const body = new PhysicsBody(
       item,
-      PhysicsImpostor.MeshImpostor,
-      { mass: 0.1, friction: 0.9 }
+      PhysicsMotionType.DYNAMIC,
+      false,
+      this.scene
     );
+    shape.material = { friction: 0.8 };
+    body.shape = shape;
+    body.setMassProperties({ mass: 0.1 });
   }
 
   public pick(item: instrument) {
@@ -113,7 +122,7 @@ export default class Hands {
     this.mesh.addChild(pickedDetail);
     pickedDetail.position.set(-0.11, 0.073, 0.028);
     pickedDetail.scaling.scaleInPlace(1 / this.detailScaleK);
-    pickedDetail?.physicsImpostor.dispose();
+    pickedDetail?.physicsBody.dispose();
   }
 
   //функция позиционирования инструмента в руке
@@ -122,7 +131,7 @@ export default class Hands {
     node: TransformNode,
     item: instrument
   ) {
-    item.mesh.physicsImpostor?.dispose();
+    item.mesh.physicsBody?.dispose();
     item.mesh.attachToBone(bone, node);
     item.mesh.position = item.position;
     item.mesh.rotationQuaternion = null;

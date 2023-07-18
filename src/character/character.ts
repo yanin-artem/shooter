@@ -8,7 +8,6 @@ import {
   Color3,
   Mesh,
   AbstractMesh,
-  PhysicsImpostor,
   PickingInfo,
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
@@ -45,7 +44,7 @@ export default class Character {
     this.pickArea = this.createPickArea();
     this.head = this.createHead();
     this.controls = new ControllEvents();
-    this.instruments = new Instruments();
+    this.instruments = new Instruments(this.scene);
     this.hands = new Hands(this.head, this.scene);
     this.raycast = new rayCast(this.head, this.scene, this.controls, this.body);
 
@@ -232,7 +231,7 @@ export default class Character {
     ) {
       this.hands.drop(this.pickedItem);
       const direction = this.raycast.getVisionDirection();
-      this.pickedItem.applyImpulse(
+      this.pickedItem.physicsBody.applyImpulse(
         direction.scaleInPlace(0.5),
         this.pickedItem.position
       );
@@ -246,11 +245,6 @@ export default class Character {
   //бросок детали
   private dropDetail() {
     if (this.controls.drop && this.pickedDetail) {
-      this.pickedDetail.physicsImpostor = new PhysicsImpostor(
-        this.pickedDetail,
-        PhysicsImpostor.BoxImpostor,
-        { mass: 0.1 }
-      );
       this.pickedDetail.metadata.isConditioner = false;
       //TODO: ТУТ БУДЕТ ЧТО-ТО ТИПО this.hands.dettachDetailFromHand
       // this.pickedDetail.scaling.scaleInPlace(this.detailScaleK);
