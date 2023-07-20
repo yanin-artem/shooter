@@ -9,14 +9,17 @@ import {
   PhysicsMotionType,
   PhysicsShapeMesh,
   PhysicsShapeType,
+  Quaternion,
   Ray,
   Scene,
   SceneLoader,
   Skeleton,
+  Space,
   TransformNode,
   Vector3,
 } from "@babylonjs/core";
 import { Instruments, instrument } from "./instruments.ts/instruments";
+import { bigInstruments } from "./instruments.ts/bigInstruments";
 
 export default class Hands {
   public hand: any;
@@ -80,6 +83,15 @@ export default class Hands {
     );
   }
 
+  public attachBigItemToHand(item: bigInstruments) {
+    this.attachedMeshes.push(item.picableMeshes[0]);
+    this.positionBigItem(
+      this.skeletons.bones[11],
+      this.mesh.parent as TransformNode,
+      item
+    );
+  }
+
   public dettachFromHand(item: AbstractMesh) {
     item.detachFromBone();
     const index = this.attachedMeshes.findIndex(
@@ -97,7 +109,7 @@ export default class Hands {
     const body = new PhysicsBody(
       item,
       PhysicsMotionType.DYNAMIC,
-      false,
+      true,
       this.scene
     );
     shape.material = { friction: 0.8 };
@@ -107,6 +119,11 @@ export default class Hands {
 
   public pick(item: instrument) {
     this.attachToHand(item);
+    this.closeHand();
+  }
+
+  public pickBigMesh(item: bigInstruments) {
+    this.attachBigItemToHand(item);
     this.closeHand();
   }
 
@@ -138,5 +155,18 @@ export default class Hands {
     item.mesh.rotation.x = item.rotation.x;
     item.mesh.rotation.y = item.rotation.y;
     item.mesh.rotation.z = item.rotation.z;
+  }
+
+  private positionBigItem(
+    bone: Bone,
+    node: TransformNode,
+    item: bigInstruments
+  ) {
+    item.picableMeshes[0].attachToBone(bone, node);
+    item.picableMeshes[0].position = item.position;
+    item.picableMeshes[0].rotationQuaternion = null;
+    item.picableMeshes[0].rotation.x = item.rotation.x;
+    item.picableMeshes[0].rotation.y = item.rotation.y;
+    item.picableMeshes[0].rotation.z = item.rotation.z;
   }
 }

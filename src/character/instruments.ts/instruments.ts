@@ -17,11 +17,9 @@ import Wires from "./wires";
 
 export class Instruments {
   private instruments: Array<instrument>;
-  private wires: Wires;
   constructor(private scene: Scene) {
     this.instruments = instruments;
     this.createInstrumentsMeshes();
-    this.wires = new Wires(this.scene);
   }
 
   private createInstrumentsMeshes() {

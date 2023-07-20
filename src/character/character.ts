@@ -12,6 +12,10 @@ import {
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
 import { Instruments, instrument } from "./instruments.ts/instruments";
+import {
+  BigInstruments,
+  bigInstruments,
+} from "./instruments.ts/bigInstruments";
 import GeneralInvenory from "./inventory/generalInvenoty";
 import ControllEvents from "./characterControls";
 import Hands from "./hands";
@@ -37,6 +41,7 @@ export default class Character {
   private pickedDetail: AbstractMesh;
   private raycast: rayCast;
   private scenarios: WorkScenarios;
+  private bigInstruments: BigInstruments;
 
   constructor(private scene: Scene, private engine: Engine) {
     this.camera = this.createController(this.scene, this.engine);
@@ -45,6 +50,7 @@ export default class Character {
     this.head = this.createHead();
     this.controls = new ControllEvents();
     this.instruments = new Instruments(this.scene);
+    this.bigInstruments = new BigInstruments(this.scene);
     this.hands = new Hands(this.head, this.scene);
     this.raycast = new rayCast(this.head, this.scene, this.controls, this.body);
 
@@ -198,6 +204,19 @@ export default class Character {
     }
   }
 
+  private pickBigItem(hit: PickingInfo) {
+    hit.pickedMesh.checkCollisions = false;
+    this.pickedItem = (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
+    const item = this.getBigItemByMesh(this.pickedItem);
+    this.hands.pickBigMesh(item);
+  }
+
+  protected getBigItemByMesh(mesh) {
+    const id = mesh.metadata.id;
+    const item = this.bigInstruments.getByID(id);
+    return item;
+  }
+
   protected getItemByMesh(mesh: AbstractMesh): instrument {
     const id = mesh.metadata.id;
     const item = this.instruments.getByID(id);
@@ -215,6 +234,7 @@ export default class Character {
         this.hands,
         this.pickedItem
       );
+      this.raycast.pickBigInstrument(this.pickBigItem.bind(this));
 
       this.pickManyFromArea();
       if (event.event.code === "KeyI" && event.type === 1) {

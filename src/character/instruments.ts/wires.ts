@@ -14,21 +14,13 @@ import {
   Vector3,
 } from "@babylonjs/core";
 
-export type wires = {
-  id: number;
-  name: string;
-  imageSrc: string;
-  description: string;
-  meshes: AbstractMesh[];
-  isActive: boolean;
-  filename: string;
-};
+import { BigInstruments, bigInstruments } from "./bigInstruments";
 
 export default class Wires {
-  private wires: wires[];
-  private redWire: wires;
-  private blueWire: wires;
-  private yellowWire: wires;
+  public wires: bigInstruments[];
+  public redWire: bigInstruments;
+  public blueWire: bigInstruments;
+  public greywWire: bigInstruments;
 
   constructor(private scene: Scene) {
     this.wires = [];
@@ -37,9 +29,12 @@ export default class Wires {
       name: "Красный шланг",
       imageSrc: "",
       description: "",
+      picableMeshes: null,
       meshes: null,
       isActive: false,
-      filename: "wirered",
+      filename: "wire_red",
+      position: Vector3.Zero(),
+      rotation: Vector3.Zero(),
     };
     this.wires.push(this.redWire);
     this.blueWire = {
@@ -47,22 +42,28 @@ export default class Wires {
       name: "Синий шланг",
       imageSrc: "",
       description: "",
+      picableMeshes: null,
       meshes: null,
       isActive: false,
-      filename: "wireblue",
+      filename: "wire_blue",
+      position: Vector3.Zero(),
+      rotation: Vector3.Zero(),
     };
     this.wires.push(this.blueWire);
 
-    this.yellowWire = {
+    this.greywWire = {
       id: 72,
-      name: "Желтый шланг",
+      name: "Серый шланг",
       imageSrc: "",
       description: "",
+      picableMeshes: null,
       meshes: null,
       isActive: false,
-      filename: "wireyellow",
+      filename: "wire_grey",
+      position: Vector3.Zero(),
+      rotation: Vector3.Zero(),
     };
-    this.wires.push(this.yellowWire);
+    this.wires.push(this.greywWire);
     this.createWiresMeshes();
   }
 
@@ -76,33 +77,47 @@ export default class Wires {
 
       const mesh = meshes.meshes[1];
       const root = mesh.parent;
-      meshes.meshes.forEach((mesh) => {
+      meshes.meshes.map((mesh) => {
         mesh.setParent(null);
       });
       root.dispose();
 
-      mesh.metadata = {
-        isItem: true,
+      // for (let i = 2; i < meshes.meshes.length; i++) {
+      //   if (meshes.meshes[i].name[0] === "n") {
+      //     meshes.meshes.push(meshes.meshes[i]);
+      //     meshes.meshes.splice(i, 1);
+      //   }
+      // }
+      meshes.meshes.shift();
+      meshes.meshes.unshift(meshes.meshes.splice(12, 1)[0]);
+
+      console.log(meshes.meshes);
+
+      meshes.meshes[0].metadata = {
+        isBigItem: true,
         isConditioner: false,
         id: wire.id,
       };
-      // mesh.getChildMeshes()[0].metadata = {
-      //   isItem: true,
-      //   isConditioner: false,
-      //   id: wire.id,
-      // };
-      meshes.meshes.shift();
+      wire.picableMeshes = [];
+      wire.picableMeshes.push(meshes.meshes[0]);
+      const otherMesh = meshes.meshes.at(-1);
+      otherMesh.metadata = {
+        isBigItem: true,
+        isConditioner: false,
+        id: wire.id,
+      };
+      wire.picableMeshes.push(otherMesh);
       wire.meshes = meshes.meshes;
       console.log(wire);
       this.makePhysics(wire);
     });
   }
 
-  private makePhysics(wire: wires) {
+  private makePhysics(wire: bigInstruments) {
     wire.meshes.forEach((mesh: Mesh, index) => {
       let mass = index == 0 || index == 1 ? 0.02 : 0.01;
       let body =
-        index === 0 || index === 1
+        index === 0
           ? new PhysicsBody(mesh, PhysicsMotionType.STATIC, true, this.scene)
           : new PhysicsBody(mesh, PhysicsMotionType.DYNAMIC, true, this.scene);
       body.setMassProperties({ mass: mass });
@@ -117,6 +132,7 @@ export default class Wires {
       body.shape.filterCollideMask = 2;
     });
     wire.meshes[0].physicsBody.disablePreStep = false;
+    wire.meshes[0].position.y += 2;
     wire.meshes.forEach((mesh: Mesh, index, wire) => {
       const radius = mesh.getBoundingInfo().boundingSphere.radius;
       let jointYA = -radius;

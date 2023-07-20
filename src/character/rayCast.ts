@@ -104,4 +104,16 @@ export default class rayCast {
       }
     }
   }
+
+  public pickBigInstrument(pickCallBack) {
+    if (this.controls.pickInHand) {
+      function predicate(mesh: AbstractMesh): boolean {
+        return mesh.metadata.isBigItem && mesh.isPickable;
+      }
+      const hit = this.castRay(predicate);
+      if (hit.pickedMesh) {
+        pickCallBack(hit);
+      }
+    }
+  }
 }
