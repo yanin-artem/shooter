@@ -79,8 +79,6 @@ export default class Movement extends characterStatus {
       } else {
         this.standUp();
       }
-      console.log(this.controls.sit);
-      console.log(this.canSit);
     });
     this.scene.registerBeforeRender(() => {
       this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000;

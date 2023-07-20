@@ -118,9 +118,8 @@ export default class rayCast {
   }
   public rotateInstrumentPart(rotateCallBack) {
     if (this.controls.deltaScroll) {
-      console.log(this.controls.deltaScroll);
       function predicate(mesh: AbstractMesh): boolean {
-        return mesh.metadata?.freonEvacuatorRotation && mesh.isPickable;
+        return mesh.metadata?.rotationPart && mesh.isPickable;
       }
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {

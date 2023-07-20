@@ -1,29 +1,29 @@
 import { SceneLoader, Vector3 } from "@babylonjs/core";
 import { bigInstruments } from "./bigInstruments";
 
-export default class FreonEvacuator {
-  public freonEvacuator: bigInstruments;
+export default class GaugeManiford {
+  public gaugeManiford: bigInstruments;
   constructor() {
-    this.freonEvacuator = {
-      id: 73,
-      name: "Станция эвакуации",
+    this.gaugeManiford = {
+      id: 74,
+      name: "Измерительный коллектор",
       imageSrc: "",
       description: "",
       picableMeshes: null,
       meshes: null,
       isActive: false,
-      filename: "Tool_Freon",
+      filename: "Tool_Gauge",
       position: Vector3.Zero(),
       rotation: Vector3.Zero(),
     };
-    this.createFreonEvacuator();
+    this.createGaugeManiford();
   }
 
-  private async createFreonEvacuator() {
+  private async createGaugeManiford() {
     const meshes = await SceneLoader.ImportMeshAsync(
       "",
       "../assets/models/workshop/",
-      this.freonEvacuator.filename + ".glb"
+      this.gaugeManiford.filename + ".glb"
     );
     const mesh = meshes.meshes[1];
     const root = mesh.parent;
@@ -34,19 +34,23 @@ export default class FreonEvacuator {
     });
     root.dispose();
 
-    mesh.name = this.freonEvacuator.filename;
+    mesh.name = this.gaugeManiford.filename;
 
     mesh.metadata = {
       isBigItem: true,
       isConditioner: false,
-      id: this.freonEvacuator.id,
+      id: this.gaugeManiford.id,
     };
 
     meshes.meshes[1].metadata = {
       rotationPart: true,
     };
 
-    this.freonEvacuator.picableMeshes = [];
-    this.freonEvacuator.picableMeshes.push(mesh);
+    meshes.meshes[2].metadata = {
+      rotationPart: true,
+    };
+
+    this.gaugeManiford.picableMeshes = [];
+    this.gaugeManiford.picableMeshes.push(mesh);
   }
 }
