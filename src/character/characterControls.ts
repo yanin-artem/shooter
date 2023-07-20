@@ -16,8 +16,10 @@ export default class ControllEvents {
   public showQuickAccess = false;
   public number: number;
   public manyPick = false;
+  public sit = false;
 
   public handleControlEvents(event: KeyboardInfo) {
+    event.event.preventDefault();
     if (event.event.code === "KeyW") this.forward = event.type === 1;
     if (event.event.code === "KeyS") this.back = event.type === 1;
     if (event.event.code === "KeyD") this.right = event.type === 1;
@@ -37,6 +39,9 @@ export default class ControllEvents {
     } else this.number = 0;
     if (event.event.shiftKey && event.event.code === "KeyG")
       this.manyPick = event.type === 1;
+    if (event.event.code === "ControlLeft") {
+      this.sit = event.type === 1;
+    }
   }
   public handleInventoryEvents(event: KeyboardInfo) {
     if (event.event.code === "KeyI" && event.type === 1)

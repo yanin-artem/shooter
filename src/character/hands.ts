@@ -109,7 +109,7 @@ export default class Hands {
     const body = new PhysicsBody(
       item,
       PhysicsMotionType.DYNAMIC,
-      true,
+      false,
       this.scene
     );
     shape.material = { friction: 0.8 };

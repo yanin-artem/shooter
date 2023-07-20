@@ -21,12 +21,13 @@ export class BigInstruments {
   constructor(private scene: Scene) {
     this.bigInstruments = [];
     this.wires = new Wires(this.scene);
+    this.addInstrument(this.wires.redWire);
     this.addInstrument(this.wires.blueWire);
     this.addInstrument(this.wires.greywWire);
-    this.addInstrument(this.wires.redWire);
   }
 
   public getByID(index: number) {
+    console.log(this.bigInstruments[index - 71]);
     return this.bigInstruments[index - 70];
   }
 

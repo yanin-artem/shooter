@@ -23,6 +23,8 @@ export default class Movement extends characterStatus {
   private mouseSensitivity = 400;
   private mouseYCheck = 0;
 
+  private canSit = true;
+
   private speedVector: Vector3;
   //координата высоты на которую должен запрыгнуть персонаж
   private jumpDestination: number;
@@ -71,11 +73,33 @@ export default class Movement extends characterStatus {
       if (this.controls.jump && this.isGround()) {
         this.isStartJump = true;
       }
+
+      if (this.controls.sit) {
+        this.sitDown();
+      } else {
+        this.standUp();
+      }
+      console.log(this.controls.sit);
+      console.log(this.canSit);
     });
     this.scene.registerBeforeRender(() => {
       this.deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
       this.handleMovement(accelerationDir);
     });
+  }
+
+  private sitDown() {
+    if (this.canSit) {
+      this.head.position.y -= 1;
+      this.canSit = false;
+    }
+  }
+
+  private standUp() {
+    if (!this.canSit) {
+      this.head.position.y += 1;
+      this.canSit = true;
+    }
   }
 
   // управление поворотом головы персонажа от движения мыши
