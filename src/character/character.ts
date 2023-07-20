@@ -9,6 +9,8 @@ import {
   Mesh,
   AbstractMesh,
   PickingInfo,
+  Quaternion,
+  PhysicsMotionType,
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
 import { Instruments, instrument } from "./instruments.ts/instruments";
@@ -23,6 +25,7 @@ import Hands from "./hands";
 import playerController from "./PlayerController";
 import rayCast from "./rayCast";
 import WorkScenarios from "../scene/workScenarios";
+import { MotionType } from "@babylonjs/havok";
 
 export default class Character {
   public camera: UniversalCamera;
@@ -78,7 +81,8 @@ export default class Character {
       this.inventory.quickAccess,
       this.raycast,
       this.scene,
-      this.body
+      this.body,
+      this.controls
     );
     this.createPickEvents();
   }
@@ -251,10 +255,18 @@ export default class Character {
     ) {
       this.hands.drop(this.pickedItem);
       const direction = this.raycast.getVisionDirection();
-      this.pickedItem.physicsBody.applyImpulse(
-        direction.scaleInPlace(0.5),
-        this.pickedItem.position
-      );
+      if (this.pickedItem.metadata?.isBigItem) {
+        // this.pickedItem.physicsBody.setMotionType(PhysicsMotionType.STATIC);
+        this.pickedItem.physicsBody.disablePreStep = false;
+        this.pickedItem.rotationQuaternion = null;
+        this.pickedItem.rotation.set(0, 0, Math.PI);
+      } else {
+        this.pickedItem.physicsBody.applyImpulse(
+          direction.scaleInPlace(0.5),
+          this.pickedItem.position
+        );
+      }
+
       this.inventory.quickAccess.deleteFromQuickAccessAndFromHand(
         this.pickedItem.metadata.id
       );

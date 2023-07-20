@@ -3,6 +3,7 @@ import { Inventory } from "../character/inventory/inventory";
 import { QuickAccess } from "../character/inventory/quickAccess";
 import rayCast from "../character/rayCast";
 import LocationMeshes from "./locationMeshes";
+import ControllEvents from "../character/characterControls";
 
 export default class WorkScenarios {
   private location: LocationMeshes;
@@ -12,7 +13,8 @@ export default class WorkScenarios {
     private quickAccess: QuickAccess,
     private raycast: rayCast,
     private scene: Scene,
-    private body: AbstractMesh
+    private body: AbstractMesh,
+    private constrols: ControllEvents
   ) {
     this.location = LocationMeshes.Instance(this.scene);
     this.rayCastEvents();
@@ -26,6 +28,10 @@ export default class WorkScenarios {
       this.raycast.pickDoorToWorkshopLocation(
         this.location.disposeHomeLocation.bind(this.location)
       );
+    });
+    this.scene.onPointerObservable.add((event) => {
+      this.constrols.handleMouseEvents(event);
+      this.raycast.rotateInstrumentPart(this.rotateInstrumentPart.bind(this));
     });
   }
 
@@ -121,5 +127,10 @@ export default class WorkScenarios {
         clearTimeout(timeout);
       }, 3000);
     }
+  }
+
+  private rotateInstrumentPart(hit: PickingInfo, rotationK: number) {
+    hit.pickedMesh.rotationQuaternion = null;
+    hit.pickedMesh.rotation.x += rotationK / 1000;
   }
 }

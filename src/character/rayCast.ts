@@ -108,11 +108,23 @@ export default class rayCast {
   public pickBigInstrument(pickCallBack) {
     if (this.controls.pickInHand) {
       function predicate(mesh: AbstractMesh): boolean {
-        return mesh.metadata.isBigItem && mesh.isPickable;
+        return mesh.metadata?.isBigItem && mesh.isPickable;
       }
       const hit = this.castRay(predicate);
       if (hit.pickedMesh) {
         pickCallBack(hit);
+      }
+    }
+  }
+  public rotateInstrumentPart(rotateCallBack) {
+    if (this.controls.deltaScroll) {
+      console.log(this.controls.deltaScroll);
+      function predicate(mesh: AbstractMesh): boolean {
+        return mesh.metadata?.freonEvacuatorRotation && mesh.isPickable;
+      }
+      const hit = this.castRay(predicate);
+      if (hit.pickedMesh) {
+        rotateCallBack(hit, this.controls.deltaScroll);
       }
     }
   }

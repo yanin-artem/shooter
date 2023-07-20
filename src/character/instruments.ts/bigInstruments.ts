@@ -14,20 +14,23 @@ export type bigInstruments = {
 };
 
 import Wires from "./wires";
+import FreonEvacuator from "./freonEvacuator";
 
 export class BigInstruments {
   private bigInstruments: Array<bigInstruments>;
   private wires: Wires;
+  private freonEvacuator: FreonEvacuator;
   constructor(private scene: Scene) {
     this.bigInstruments = [];
     this.wires = new Wires(this.scene);
     this.addInstrument(this.wires.redWire);
     this.addInstrument(this.wires.blueWire);
     this.addInstrument(this.wires.greywWire);
+    this.freonEvacuator = new FreonEvacuator();
+    this.addInstrument(this.freonEvacuator.freonEvacuator);
   }
 
   public getByID(index: number) {
-    console.log(this.bigInstruments[index - 71]);
     return this.bigInstruments[index - 70];
   }
 

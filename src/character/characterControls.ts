@@ -1,4 +1,4 @@
-import { KeyboardInfo } from "@babylonjs/core";
+import { KeyboardInfo, PointerInfo } from "@babylonjs/core";
 import Root from "../scene/root";
 
 export default class ControllEvents {
@@ -17,19 +17,34 @@ export default class ControllEvents {
   public number: number;
   public manyPick = false;
   public sit = false;
+  public deltaScroll = 0;
 
   public handleControlEvents(event: KeyboardInfo) {
-    event.event.preventDefault();
-    if (event.event.code === "KeyW") this.forward = event.type === 1;
-    if (event.event.code === "KeyS") this.back = event.type === 1;
-    if (event.event.code === "KeyD") this.right = event.type === 1;
-    if (event.event.code === "KeyA") this.left = event.type === 1;
+    if (event.event.code === "KeyW") {
+      event.event.preventDefault();
+      this.forward = event.type === 1;
+    }
+    if (event.event.code === "KeyS") {
+      event.event.preventDefault();
+      this.back = event.type === 1;
+    }
+    if (event.event.code === "KeyD") {
+      event.event.preventDefault();
+      this.right = event.type === 1;
+    }
+    if (event.event.code === "KeyA") {
+      event.event.preventDefault();
+      this.left = event.type === 1;
+    }
     if (event.event.code === "ShiftLeft") this.run = event.type === 1;
     if (event.event.code === "Space") this.jump = event.type === 1;
     if (event.event.code === "KeyH") this.pickInHand = event.type === 1;
     if (event.event.code === "KeyG") this.pickInInventar = event.type === 1;
     if (event.event.code === "KeyT") this.drop = event.type === 1;
-    if (event.event.code === "KeyF") this.useItem = event.type === 1;
+    if (event.event.code === "KeyF") {
+      event.event.preventDefault();
+      this.useItem = event.type === 1;
+    }
     if (
       event.event.inputIndex >= 49 &&
       event.event.inputIndex <= 56 &&
@@ -40,8 +55,13 @@ export default class ControllEvents {
     if (event.event.shiftKey && event.event.code === "KeyG")
       this.manyPick = event.type === 1;
     if (event.event.code === "ControlLeft") {
+      event.event.preventDefault();
       this.sit = event.type === 1;
     }
+  }
+  public handleMouseEvents(event: any) {
+    event.event.preventDefault();
+    this.deltaScroll = event.event.deltaY;
   }
   public handleInventoryEvents(event: KeyboardInfo) {
     if (event.event.code === "KeyI" && event.type === 1)

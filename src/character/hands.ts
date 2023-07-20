@@ -162,6 +162,7 @@ export default class Hands {
     node: TransformNode,
     item: bigInstruments
   ) {
+    item.picableMeshes[0].physicsBody?.dispose();
     item.picableMeshes[0].attachToBone(bone, node);
     item.picableMeshes[0].position = item.position;
     item.picableMeshes[0].rotationQuaternion = null;
