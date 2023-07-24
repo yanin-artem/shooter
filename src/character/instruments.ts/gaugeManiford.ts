@@ -49,6 +49,7 @@ export default class GaugeManiford {
       isBigItem: true,
       isConditioner: false,
       id: this.gaugeManiford.id,
+      pikcableMeshIndex: 0,
     };
 
     meshes.meshes[1].metadata = {
@@ -70,7 +71,7 @@ export default class GaugeManiford {
     body.shape = shape;
     body.setMassProperties({ mass: 0.1 });
     body.disablePreStep = false;
-
+    this.gaugeManiford.meshes = meshes.meshes;
     this.gaugeManiford.picableMeshes = [];
     this.gaugeManiford.picableMeshes.push(mesh);
   }

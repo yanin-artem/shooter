@@ -62,6 +62,7 @@ export default class Character {
       this.engine,
       this.controls,
       this.instruments,
+      this.bigInstruments,
       this.hands.drop.bind(this.hands),
       this.hands.openHand.bind(this.hands),
       this.hands.closeHand.bind(this.hands)
@@ -212,7 +213,8 @@ export default class Character {
     hit.pickedMesh.checkCollisions = false;
     this.pickedItem = (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
     const item = this.getBigItemByMesh(this.pickedItem);
-    this.hands.pickBigMesh(item);
+    this.hands.pickBigMesh(item, this.pickedItem.metadata?.pikcableMeshIndex);
+    this.inventory.quickAccess.addInInventoryAndInHand(item.id);
   }
 
   protected getBigItemByMesh(mesh) {

@@ -35,6 +35,7 @@ export class BigInstruments {
   }
 
   public getByID(index: number) {
+    console.log(this.bigInstruments[index - 70]);
     return this.bigInstruments[index - 70];
   }
 

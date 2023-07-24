@@ -48,6 +48,7 @@ export default class FreonEvacuator {
       isBigItem: true,
       isConditioner: false,
       id: this.freonEvacuator.id,
+      pikcableMeshIndex: 0,
     };
 
     meshes.meshes[1].metadata = {
@@ -65,7 +66,7 @@ export default class FreonEvacuator {
     body.shape = shape;
     body.setMassProperties({ mass: 0.1 });
     body.disablePreStep = false;
-
+    this.freonEvacuator.meshes = meshes.meshes;
     this.freonEvacuator.picableMeshes = [];
     this.freonEvacuator.picableMeshes.push(mesh);
   }

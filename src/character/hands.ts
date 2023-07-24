@@ -30,9 +30,10 @@ export default class Hands {
   private hold: AnimationGroup;
   private open: AnimationGroup;
   private detailScaleK = 3;
-  private callback: any;
+  private callbackStorage: Array<any>;
 
   constructor(private parentNode: AbstractMesh, private scene: Scene) {
+    this.callbackStorage = [];
     this.attachedMeshes = [];
     this.createHand();
     this.changeOnEventHands();
@@ -84,12 +85,13 @@ export default class Hands {
     );
   }
 
-  public attachBigItemToHand(item: bigInstruments) {
-    this.attachedMeshes.push(item.picableMeshes[0]);
+  public attachBigItemToHand(item: bigInstruments, index: number) {
+    this.attachedMeshes.push(item.picableMeshes[index]);
     this.positionBigItem(
       this.skeletons.bones[11],
       this.mesh.parent as TransformNode,
-      item
+      item,
+      index
     );
   }
 
@@ -120,7 +122,13 @@ export default class Hands {
 
   public dropBigItem(item: AbstractMesh) {
     const position = item.absolutePosition;
-    this.scene.unregisterBeforeRender(this.callback);
+    const callbackIndex = this.callbackStorage.findIndex(
+      (callback) => callback.id === item.metadata.id
+    );
+    this.scene.unregisterBeforeRender(
+      this.callbackStorage[callbackIndex].callback
+    );
+    this.callbackStorage.splice(callbackIndex, 1);
     item.physicsBody.setMotionType(PhysicsMotionType.DYNAMIC);
     this.dettachFromHand(item);
     this.openHand();
@@ -132,8 +140,8 @@ export default class Hands {
     this.closeHand();
   }
 
-  public pickBigMesh(item: bigInstruments) {
-    this.attachBigItemToHand(item);
+  public pickBigMesh(item: bigInstruments, index: number) {
+    this.attachBigItemToHand(item, index);
     this.closeHand();
   }
 
@@ -166,19 +174,24 @@ export default class Hands {
   private positionBigItem(
     bone: Bone,
     node: TransformNode,
-    item: bigInstruments
+    item: bigInstruments,
+    index: number
   ) {
-    item.picableMeshes[0].physicsBody.setMotionType(PhysicsMotionType.STATIC);
-    this.callback = () => this.setBigItemPosition(bone, node, item);
-    this.scene.registerBeforeRender(this.callback);
+    item.picableMeshes[index].physicsBody.setMotionType(
+      PhysicsMotionType.STATIC
+    );
+    const callback = () => this.setBigItemPosition(bone, node, item, index);
+    this.callbackStorage.push({ id: item.id, callback: callback });
+    this.scene.registerBeforeRender(callback);
   }
 
   private setBigItemPosition(
     bone: Bone,
     node: TransformNode,
-    item: bigInstruments
+    item: bigInstruments,
+    index: number
   ) {
-    item.picableMeshes[0].position = bone.getPosition(Space.WORLD, node);
+    item.picableMeshes[index].position = bone.getPosition(Space.WORLD, node);
   }
 
   private setItemPosition(item: instrument) {

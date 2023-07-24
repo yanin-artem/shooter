@@ -13,6 +13,7 @@ import ControllEvents from "../characterControls";
 import { Inventory } from "./inventory";
 import { Instruments, instrument } from "../instruments.ts/instruments";
 import { QuickAccess } from "./quickAccess";
+import { BigInstruments } from "../instruments.ts/bigInstruments";
 
 //в сцене
 export default class GeneralInvenory {
@@ -25,9 +26,10 @@ export default class GeneralInvenory {
     private engine: Engine,
     private controls: ControllEvents,
     private instruments: Instruments,
+    private bigInstruments: BigInstruments,
     private dropCallBack,
     private openHandCallBack,
-    private closeHandCallBack //callback
+    private closeHandCallBack
   ) {
     this.advancedTexture =
       GUI.AdvancedDynamicTexture.CreateFullscreenUI("main");
@@ -51,7 +53,8 @@ export default class GeneralInvenory {
       this.instruments,
       this.dropCallBack,
       this.openHandCallBack,
-      this.closeHandCallBack
+      this.closeHandCallBack,
+      this.bigInstruments
     );
   }
 }

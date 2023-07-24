@@ -14,6 +14,7 @@ import QuickAccessUI from "./quickAccessUI";
 import { Instruments, instrument } from "../instruments.ts/instruments";
 import { Inventory } from "./inventory";
 import Hands from "../hands";
+import { BigInstruments } from "../instruments.ts/bigInstruments";
 
 export type quickAccessItem = {
   id: number;
@@ -33,7 +34,8 @@ export class QuickAccess {
     private instruments: Instruments,
     private dropCallBack,
     private openHandCallBack,
-    private closeHandCallBack
+    private closeHandCallBack,
+    private bigInstruments: BigInstruments
   ) {
     this.quickAccess = Array(8).fill(undefined);
     this.quickAccess = this.quickAccess.map((el) => {
@@ -55,28 +57,65 @@ export class QuickAccess {
   public deleteFromQuickAccessAndFromHand(id: number) {
     const instrument = this.instruments.getByID(id);
     const index = this.quickAccess.findIndex((item) => item.id === id);
-    if (index != -1) {
+    if (index != -1 && instrument) {
       instrument.mesh.setEnabled(true);
       instrument.isActive = false;
-      this.quickAccess[index].id = -1;
-      this.quickAccess[index].isEnabled = false;
-      this.deleteCell(index, this.UI.quickAccessCells);
-      this.UI.correctStorage(this.quickAccess);
-    } else return;
+    } else if (index != -1) {
+      const bigInstrument = this.bigInstruments.getByID(id);
+      bigInstrument.meshes.forEach((mesh) => {
+        mesh.setEnabled(true);
+      });
+      bigInstrument.isActive = false;
+    } else {
+      return;
+    }
+    this.quickAccess[index].id = -1;
+    this.quickAccess[index].isEnabled = false;
+    this.deleteCell(index, this.UI.quickAccessCells);
+    this.UI.correctStorage(this.quickAccess);
   }
 
   //функция добавления предмета в руку и в инвентарь
   public addInInventoryAndInHand(id: number) {
     const instrument = this.instruments.getByID(id);
-    instrument.isActive = true;
-    const enableItem = this.quickAccess.find((item) => item.isEnabled);
-    if (enableItem) {
-      enableItem.isEnabled = false;
-      const instrument = this.instruments.getByID(enableItem.id);
-      instrument.mesh.setEnabled(false);
-      instrument.isActive = false;
+    if (instrument) {
+      instrument.isActive = true;
+      const enableItem = this.quickAccess.find((item) => item.isEnabled);
+      if (enableItem) {
+        enableItem.isEnabled = false;
+        const instrument = this.instruments.getByID(enableItem.id);
+        if (instrument) {
+          instrument.mesh.setEnabled(false);
+          instrument.isActive = false;
+        } else {
+          const instrument = this.bigInstruments.getByID(enableItem.id);
+          instrument.meshes.forEach((mesh) => {
+            mesh.setEnabled(false);
+          });
+          instrument.isActive = false;
+        }
+      }
+      this.calcQuickAccess(id, instrument);
+    } else {
+      const bigInstrument = this.bigInstruments.getByID(id);
+      bigInstrument.isActive = true;
+      const enableItem = this.quickAccess.find((item) => item.isEnabled);
+      if (enableItem) {
+        enableItem.isEnabled = false;
+        const bigInstrument = this.bigInstruments.getByID(enableItem.id);
+        if (bigInstrument) {
+          bigInstrument.meshes.forEach((mesh) => {
+            mesh.setEnabled(false);
+          });
+          bigInstrument.isActive = false;
+        } else {
+          const bigInstrument = this.instruments.getByID(enableItem.id);
+          bigInstrument.mesh.setEnabled(false);
+          bigInstrument.isActive = false;
+        }
+      }
+      this.calcQuickAccess(id, bigInstrument);
     }
-    this.calcQuickAccess(id, instrument);
   }
 
   private calcQuickAccess(id: number, instrument: any) {
@@ -118,21 +157,43 @@ export class QuickAccess {
       if (enabledElem) {
         enabledElem.isEnabled = false;
         const instrument = this.instruments.getByID(enabledElem.id);
-        instrument.isActive = false;
-        const enabledMesh = instrument.mesh;
-        enabledMesh.setEnabled(false);
-        hands.openHand();
+        if (instrument) {
+          instrument.isActive = false;
+          const enabledMesh = instrument.mesh;
+          enabledMesh.setEnabled(false);
+        } else {
+          const bigInstrument = this.bigInstruments.getByID(enabledElem.id);
+          bigInstrument.isActive = false;
+          const enabledMeshes = bigInstrument.meshes;
+          enabledMeshes.forEach((mesh) => {
+            mesh.setEnabled(false);
+          });
+        }
       }
+      hands.openHand();
+
       if (this.quickAccess[index].id != -1) {
         this.quickAccess[index].isEnabled = true;
         const instrument = this.instruments.getByID(this.quickAccess[index].id);
-        pickedItem = instrument.mesh;
-        instrument.isActive = true;
-        pickedItem.setEnabled(true);
+        if (instrument) {
+          pickedItem = instrument.mesh;
+          instrument.isActive = true;
+          pickedItem.setEnabled(true);
+        } else {
+          const bigInstrument = this.bigInstruments.getByID(
+            this.quickAccess[index].id
+          );
+          pickedItem = bigInstrument.picableMeshes[0];
+          bigInstrument.isActive = true;
+          bigInstrument.meshes.forEach((mesh) => {
+            mesh.setEnabled(true);
+          });
+        }
         hands.closeHand();
         return pickedItem;
       }
     }
+
     return pickedItem;
   }
 

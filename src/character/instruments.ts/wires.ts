@@ -89,6 +89,7 @@ export default class Wires {
         isBigItem: true,
         isConditioner: false,
         id: wire.id,
+        pikcableMeshIndex: 0,
       };
       wire.picableMeshes = [];
       wire.picableMeshes.push(meshes.meshes[0]);
@@ -97,6 +98,7 @@ export default class Wires {
         isBigItem: true,
         isConditioner: false,
         id: wire.id,
+        pikcableMeshIndex: 1,
       };
       wire.picableMeshes.push(otherMesh);
       wire.meshes = meshes.meshes;
@@ -137,7 +139,6 @@ export default class Wires {
         new Vector3(0, 1, 0),
         this.scene
       );
-      console.log(joint);
       if (index + 1 != wire.length) {
         wire[index].physicsBody.addConstraint(
           wire[index + 1].physicsBody,
