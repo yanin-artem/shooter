@@ -71,7 +71,6 @@ export default class WorkScenarios {
       this.quickAccess.isInQuickAccess(screwdriverID)?.isEnabled &&
       hit.pickedMesh.metadata.id === 2
     ) {
-      console.log("hello");
       hit.pickedMesh.dispose();
     }
   }
@@ -131,6 +130,6 @@ export default class WorkScenarios {
 
   private rotateInstrumentPart(hit: PickingInfo, rotationK: number) {
     hit.pickedMesh.rotationQuaternion = null;
-    hit.pickedMesh.rotation.x += rotationK / 1000;
+    hit.pickedMesh.rotation.x -= rotationK / 1000;
   }
 }

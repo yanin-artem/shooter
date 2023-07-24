@@ -231,6 +231,7 @@ export default class Character {
     this.scene.onKeyboardObservable.add((event) => {
       this.controls.handleControlEvents(event);
       this.dropItem();
+      this.dropBigItem();
       this.dropDetail();
       this.raycast.setPick(this.pickItem.bind(this));
       this.raycast.addIntoInventory(this.pickInInventory.bind(this));
@@ -250,22 +251,34 @@ export default class Character {
   private dropItem(): void {
     if (
       this.controls.drop &&
+      this.pickedItem.metadata?.isItem &&
       this.pickedItem?.isEnabled() &&
       !this.pickedDetail
     ) {
       this.hands.drop(this.pickedItem);
       const direction = this.raycast.getVisionDirection();
-      if (this.pickedItem.metadata?.isBigItem) {
-        // this.pickedItem.physicsBody.setMotionType(PhysicsMotionType.STATIC);
-        this.pickedItem.physicsBody.disablePreStep = false;
-        this.pickedItem.rotationQuaternion = null;
-        this.pickedItem.rotation.set(0, 0, Math.PI);
-      } else {
-        this.pickedItem.physicsBody.applyImpulse(
-          direction.scaleInPlace(0.5),
-          this.pickedItem.position
-        );
-      }
+      this.pickedItem.physicsBody.applyImpulse(
+        direction.scaleInPlace(0.5),
+        this.pickedItem.position
+      );
+      this.inventory.quickAccess.deleteFromQuickAccessAndFromHand(
+        this.pickedItem.metadata.id
+      );
+      this.pickedItem = null;
+    } else return;
+  }
+
+  private dropBigItem(): void {
+    if (
+      this.controls.drop &&
+      this.pickedItem.metadata?.isBigItem &&
+      this.pickedItem?.isEnabled() &&
+      !this.pickedDetail
+    ) {
+      this.hands.dropBigItem(this.pickedItem);
+      // this.pickedItem.physicsBody.setMotionType(PhysicsMotionType.STATIC);
+      this.pickedItem.rotationQuaternion = null;
+      this.pickedItem.rotation.set(0, 0, Math.PI);
 
       this.inventory.quickAccess.deleteFromQuickAccessAndFromHand(
         this.pickedItem.metadata.id

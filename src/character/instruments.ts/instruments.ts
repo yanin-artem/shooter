@@ -1,4 +1,13 @@
-import { AbstractMesh, Scene, SceneLoader, Vector3 } from "@babylonjs/core";
+import {
+  AbstractMesh,
+  Mesh,
+  PhysicsBody,
+  PhysicsMotionType,
+  PhysicsShapeMesh,
+  Scene,
+  SceneLoader,
+  Vector3,
+} from "@babylonjs/core";
 
 export type instrument = {
   id: number;

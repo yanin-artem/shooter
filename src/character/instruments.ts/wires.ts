@@ -82,16 +82,8 @@ export default class Wires {
       });
       root.dispose();
 
-      // for (let i = 2; i < meshes.meshes.length; i++) {
-      //   if (meshes.meshes[i].name[0] === "n") {
-      //     meshes.meshes.push(meshes.meshes[i]);
-      //     meshes.meshes.splice(i, 1);
-      //   }
-      // }
       meshes.meshes.shift();
       meshes.meshes.unshift(meshes.meshes.splice(12, 1)[0]);
-
-      console.log(meshes.meshes);
 
       meshes.meshes[0].metadata = {
         isBigItem: true,
@@ -108,7 +100,6 @@ export default class Wires {
       };
       wire.picableMeshes.push(otherMesh);
       wire.meshes = meshes.meshes;
-      console.log(wire);
       this.makePhysics(wire);
     });
   }
@@ -116,10 +107,12 @@ export default class Wires {
   private makePhysics(wire: bigInstruments) {
     wire.meshes.forEach((mesh: Mesh, index) => {
       let mass = index == 0 || index == 1 ? 0.02 : 0.01;
-      let body =
-        index === 0
-          ? new PhysicsBody(mesh, PhysicsMotionType.STATIC, true, this.scene)
-          : new PhysicsBody(mesh, PhysicsMotionType.DYNAMIC, true, this.scene);
+      let body = new PhysicsBody(
+        mesh,
+        PhysicsMotionType.DYNAMIC,
+        true,
+        this.scene
+      );
       body.setMassProperties({ mass: mass });
       body.setAngularDamping(10);
       body.setLinearDamping(1);
@@ -132,7 +125,7 @@ export default class Wires {
       body.shape.filterCollideMask = 2;
     });
     wire.meshes[0].physicsBody.disablePreStep = false;
-    wire.meshes[0].position.y += 2;
+    wire.meshes.at(-1).physicsBody.disablePreStep = false;
     wire.meshes.forEach((mesh: Mesh, index, wire) => {
       const radius = mesh.getBoundingInfo().boundingSphere.radius;
       let jointYA = -radius;

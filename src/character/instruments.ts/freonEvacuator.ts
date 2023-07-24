@@ -1,9 +1,17 @@
-import { SceneLoader, Vector3 } from "@babylonjs/core";
+import {
+  Mesh,
+  PhysicsBody,
+  PhysicsMotionType,
+  PhysicsShapeMesh,
+  Scene,
+  SceneLoader,
+  Vector3,
+} from "@babylonjs/core";
 import { bigInstruments } from "./bigInstruments";
 
 export default class FreonEvacuator {
   public freonEvacuator: bigInstruments;
-  constructor() {
+  constructor(private scene: Scene) {
     this.freonEvacuator = {
       id: 73,
       name: "Станция эвакуации",
@@ -45,6 +53,18 @@ export default class FreonEvacuator {
     meshes.meshes[1].metadata = {
       rotationPart: true,
     };
+
+    const shape = new PhysicsShapeMesh(mesh as Mesh, this.scene);
+    const body = new PhysicsBody(
+      mesh,
+      PhysicsMotionType.DYNAMIC,
+      true,
+      this.scene
+    );
+    shape.material = { friction: 0.8 };
+    body.shape = shape;
+    body.setMassProperties({ mass: 0.1 });
+    body.disablePreStep = false;
 
     this.freonEvacuator.picableMeshes = [];
     this.freonEvacuator.picableMeshes.push(mesh);

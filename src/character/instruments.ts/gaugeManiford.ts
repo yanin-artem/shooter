@@ -1,9 +1,18 @@
-import { SceneLoader, Vector3 } from "@babylonjs/core";
+import {
+  Mesh,
+  PhysicsBody,
+  PhysicsMotionType,
+  PhysicsShapeMesh,
+  PhysicsShapeSphere,
+  Scene,
+  SceneLoader,
+  Vector3,
+} from "@babylonjs/core";
 import { bigInstruments } from "./bigInstruments";
 
 export default class GaugeManiford {
   public gaugeManiford: bigInstruments;
-  constructor() {
+  constructor(private scene: Scene) {
     this.gaugeManiford = {
       id: 74,
       name: "Измерительный коллектор",
@@ -49,6 +58,18 @@ export default class GaugeManiford {
     meshes.meshes[2].metadata = {
       rotationPart: true,
     };
+
+    const shape = new PhysicsShapeMesh(mesh as Mesh, this.scene);
+    const body = new PhysicsBody(
+      mesh,
+      PhysicsMotionType.DYNAMIC,
+      true,
+      this.scene
+    );
+    shape.material = { friction: 0.8 };
+    body.shape = shape;
+    body.setMassProperties({ mass: 0.1 });
+    body.disablePreStep = false;
 
     this.gaugeManiford.picableMeshes = [];
     this.gaugeManiford.picableMeshes.push(mesh);

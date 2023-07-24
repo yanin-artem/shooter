@@ -30,6 +30,7 @@ export default class Hands {
   private hold: AnimationGroup;
   private open: AnimationGroup;
   private detailScaleK = 3;
+  private callback: any;
 
   constructor(private parentNode: AbstractMesh, private scene: Scene) {
     this.attachedMeshes = [];
@@ -117,6 +118,15 @@ export default class Hands {
     body.setMassProperties({ mass: 0.1 });
   }
 
+  public dropBigItem(item: AbstractMesh) {
+    const position = item.absolutePosition;
+    this.scene.unregisterBeforeRender(this.callback);
+    item.physicsBody.setMotionType(PhysicsMotionType.DYNAMIC);
+    this.dettachFromHand(item);
+    this.openHand();
+    item.position = position;
+  }
+
   public pick(item: instrument) {
     this.attachToHand(item);
     this.closeHand();
@@ -150,11 +160,7 @@ export default class Hands {
   ) {
     item.mesh.physicsBody?.dispose();
     item.mesh.attachToBone(bone, node);
-    item.mesh.position = item.position;
-    item.mesh.rotationQuaternion = null;
-    item.mesh.rotation.x = item.rotation.x;
-    item.mesh.rotation.y = item.rotation.y;
-    item.mesh.rotation.z = item.rotation.z;
+    this.setItemPosition(item);
   }
 
   private positionBigItem(
@@ -162,12 +168,24 @@ export default class Hands {
     node: TransformNode,
     item: bigInstruments
   ) {
-    item.picableMeshes[0].physicsBody?.dispose();
-    item.picableMeshes[0].attachToBone(bone, node);
-    item.picableMeshes[0].position = item.position;
-    item.picableMeshes[0].rotationQuaternion = null;
-    item.picableMeshes[0].rotation.x = item.rotation.x;
-    item.picableMeshes[0].rotation.y = item.rotation.y;
-    item.picableMeshes[0].rotation.z = item.rotation.z;
+    item.picableMeshes[0].physicsBody.setMotionType(PhysicsMotionType.STATIC);
+    this.callback = () => this.setBigItemPosition(bone, node, item);
+    this.scene.registerBeforeRender(this.callback);
+  }
+
+  private setBigItemPosition(
+    bone: Bone,
+    node: TransformNode,
+    item: bigInstruments
+  ) {
+    item.picableMeshes[0].position = bone.getPosition(Space.WORLD, node);
+  }
+
+  private setItemPosition(item: instrument) {
+    item.mesh.position = item.position;
+    item.mesh.rotationQuaternion = null;
+    item.mesh.rotation.x = item.rotation.x;
+    item.mesh.rotation.y = item.rotation.y;
+    item.mesh.rotation.z = item.rotation.z;
   }
 }

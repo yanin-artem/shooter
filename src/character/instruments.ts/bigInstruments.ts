@@ -28,9 +28,9 @@ export class BigInstruments {
     this.addInstrument(this.wires.redWire);
     this.addInstrument(this.wires.blueWire);
     this.addInstrument(this.wires.greywWire);
-    this.freonEvacuator = new FreonEvacuator();
+    this.freonEvacuator = new FreonEvacuator(this.scene);
     this.addInstrument(this.freonEvacuator.freonEvacuator);
-    this.gaugeManiford = new GaugeManiford();
+    this.gaugeManiford = new GaugeManiford(this.scene);
     this.addInstrument(this.gaugeManiford.gaugeManiford);
   }
 
