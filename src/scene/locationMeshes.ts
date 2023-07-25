@@ -30,27 +30,33 @@ export default class LocationMeshes {
   private constructor() {}
 
   public async CreateHouseLocation(body: AbstractMesh): Promise<void> {
-    body.position.set(0, 15, 0);
+    body.position.set(0, 7, 0);
     const ground = MeshBuilder.CreateGround(
       "ground",
       { width: 40, height: 40 },
       this.scene
     );
-    ground.position.y = 4.359;
-
-    const shape = new PhysicsShapeMesh(ground, this.scene);
-    const groundBody = new PhysicsBody(
-      ground,
-      PhysicsMotionType.STATIC,
-      true,
-      this.scene
-    );
-    shape.material = {};
-    groundBody.shape = shape;
-    groundBody.setMassProperties({ mass: 0 });
-
     ground.checkCollisions = true;
     ground.isVisible = false;
+    ground.position.y = 4.359;
+
+    let scene = false;
+    const event = this.scene.onKeyboardObservable.add((event) => {
+      if (event.event.code === "KeyT" && event.type === 1 && !scene) {
+        const shape = new PhysicsShapeMesh(ground, this.scene);
+        const groundBody = new PhysicsBody(
+          ground,
+          PhysicsMotionType.STATIC,
+          false,
+          this.scene
+        );
+        shape.material = {};
+        groundBody.shape = shape;
+        groundBody.setMassProperties({ mass: 0 });
+        groundBody.disablePreStep = false;
+        scene = true;
+      }
+    });
 
     const homeMeshes = await SceneLoader.ImportMeshAsync(
       "",
@@ -66,16 +72,7 @@ export default class LocationMeshes {
     });
     homeBox.position.set(-0.001, 6.513, -5.405);
     homeBox.scaling.set(0.838, 0.864, 1.235);
-    const shapehomeBox = new PhysicsShapeMesh(ground, this.scene);
-    const bodyhomeBox = new PhysicsBody(
-      homeBox,
-      PhysicsMotionType.STATIC,
-      true,
-      this.scene
-    );
-    shapehomeBox.material = {};
-    bodyhomeBox.shape = shapehomeBox;
-    bodyhomeBox.setMassProperties({ mass: 0 });
+
     homeBox.checkCollisions = true;
     homeBox.isVisible = false;
     const rightHomeCollumn = MeshBuilder.CreateBox("rightHomeCollumn", {
@@ -88,16 +85,7 @@ export default class LocationMeshes {
     rightHomeCollumn.isVisible = false;
     rightHomeCollumn.checkCollisions = true;
     const leftHomeCollumn = rightHomeCollumn.clone("leftHomeCollumn");
-    const shapeleftHomeCollumn = new PhysicsShapeMesh(ground, this.scene);
-    const bodyleftHomeCollumn = new PhysicsBody(
-      leftHomeCollumn,
-      PhysicsMotionType.STATIC,
-      false,
-      this.scene
-    );
-    shapeleftHomeCollumn.material = {};
-    bodyleftHomeCollumn.shape = shapeleftHomeCollumn;
-    bodyleftHomeCollumn.setMassProperties({ mass: 0 });
+
     leftHomeCollumn.position.x = -2.413;
     const invisibleBackwardWall = MeshBuilder.CreateBox(
       "invisibleBackwardWall",
@@ -286,7 +274,6 @@ export default class LocationMeshes {
     shape.material = {};
     body.shape = shape;
     body.setMassProperties({ mass: 0 });
-
     ground.checkCollisions = true;
     ground.position.y = -0.024;
     ground.isVisible = false;

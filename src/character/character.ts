@@ -83,7 +83,11 @@ export default class Character {
       this.raycast,
       this.scene,
       this.body,
-      this.controls
+      this.controls,
+      this.instruments,
+      this.bigInstruments,
+      this.hands,
+      this.pickedItem
     );
     this.createPickEvents();
   }

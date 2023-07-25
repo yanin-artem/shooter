@@ -1,9 +1,19 @@
-import { AbstractMesh, PickingInfo, Scene, Animation } from "@babylonjs/core";
+import {
+  AbstractMesh,
+  PickingInfo,
+  Scene,
+  Animation,
+  PhysicsMotionType,
+  Vector3,
+} from "@babylonjs/core";
 import { Inventory } from "../character/inventory/inventory";
 import { QuickAccess } from "../character/inventory/quickAccess";
 import rayCast from "../character/rayCast";
 import LocationMeshes from "./locationMeshes";
 import ControllEvents from "../character/characterControls";
+import { Instruments } from "../character/instruments.ts/instruments";
+import { BigInstruments } from "../character/instruments.ts/bigInstruments";
+import Hands from "../character/hands";
 
 export default class WorkScenarios {
   private location: LocationMeshes;
@@ -14,7 +24,11 @@ export default class WorkScenarios {
     private raycast: rayCast,
     private scene: Scene,
     private body: AbstractMesh,
-    private constrols: ControllEvents
+    private constrols: ControllEvents,
+    private instruments: Instruments,
+    private bigInstruments: BigInstruments,
+    private hands: Hands,
+    private pickedItem: AbstractMesh
   ) {
     this.location = LocationMeshes.Instance(this.scene);
     this.rayCastEvents();
@@ -24,6 +38,10 @@ export default class WorkScenarios {
     this.scene.onKeyboardObservable.add((event) => {
       this.raycast.doItemAction(this.openCover.bind(this));
       this.raycast.doItemAction(this.unscrewTheCap.bind(this));
+      this.raycast.doItemAction(this.hookGaugeManiford.bind(this));
+      this.raycast.doItemAction(this.connectRedWire.bind(this));
+      this.raycast.doItemAction(this.connectBlueWire.bind(this));
+      this.raycast.doItemActionWithOtherItem(this.connectgGreyWire.bind(this));
       this.raycast.pickDoorToHouseLocation(this.goToHomeLocation.bind(this));
       this.raycast.pickDoorToWorkshopLocation(
         this.location.disposeHomeLocation.bind(this.location)
@@ -122,9 +140,119 @@ export default class WorkScenarios {
       );
       const timeout = setTimeout(() => {
         anim.stop();
-        hit.pickedMesh.dispose();
+        hit.pickedMesh.isVisible = false;
         clearTimeout(timeout);
       }, 3000);
+    }
+  }
+
+  private hookGaugeManiford(hit: PickingInfo) {
+    const gaugeManifordId = 74;
+    if (this.quickAccess.isInQuickAccess(gaugeManifordId)?.isEnabled) {
+      const gaugeManiford = this.bigInstruments.getByID(gaugeManifordId);
+      this.hands.dropBigItem(gaugeManiford.picableMeshes[0]);
+      // this.pickedItem.physicsBody.setMotionType(PhysicsMotionType.STATIC);
+      gaugeManiford.picableMeshes[0].rotationQuaternion = null;
+      gaugeManiford.picableMeshes[0].rotation.set(Math.PI / 2, Math.PI / 2, 0);
+      gaugeManiford.picableMeshes[0].physicsBody.setMotionType(
+        PhysicsMotionType.STATIC
+      );
+      gaugeManiford.picableMeshes[0].position.set(-3.303, 5.483, -5.627);
+      this.quickAccess.deleteFromQuickAccessAndFromHand(gaugeManiford.id);
+      this.pickedItem = null;
+    }
+  }
+
+  private connectRedWire(hit: PickingInfo) {
+    const redWireId = 70;
+    const gaugeManifordId = 74;
+    if (
+      this.quickAccess.isInQuickAccess(redWireId)?.isEnabled &&
+      hit.pickedMesh.metadata.id === 30
+    ) {
+      const redWire = this.bigInstruments.getByID(redWireId);
+      this.hands.dropBigItem(redWire.picableMeshes[0]);
+      // this.pickedItem.physicsBody.setMotionType(PhysicsMotionType.STATIC);
+      redWire.picableMeshes[0].rotationQuaternion = null;
+      redWire.picableMeshes[0].rotation.set(Math.PI / 2, 0, 0);
+      redWire.picableMeshes[0].physicsBody.setMotionType(
+        PhysicsMotionType.STATIC
+      );
+      redWire.picableMeshes[0].position = hit.pickedMesh.getAbsolutePosition();
+      redWire.picableMeshes[1].physicsBody.setMotionType(
+        PhysicsMotionType.STATIC
+      );
+      redWire.picableMeshes[1].rotationQuaternion = null;
+      redWire.picableMeshes[1].rotation.set(Math.PI / 2, 0, 0);
+      redWire.picableMeshes[1].position.set(-3.303, 5.42, -5.659);
+
+      this.quickAccess.deleteFromQuickAccessAndFromHand(redWire.id);
+      this.pickedItem = null;
+    }
+  }
+
+  private connectBlueWire(hit: PickingInfo) {
+    const blueWireId = 71;
+    const gaugeManifordId = 74;
+    if (
+      this.quickAccess.isInQuickAccess(blueWireId)?.isEnabled &&
+      hit.pickedMesh.metadata.id === 29
+    ) {
+      const blueWire = this.bigInstruments.getByID(blueWireId);
+      this.hands.dropBigItem(blueWire.picableMeshes[0]);
+      // this.pickedItem.physicsBody.setMotionType(PhysicsMotionType.STATIC);
+      blueWire.picableMeshes[0].rotationQuaternion = null;
+      blueWire.picableMeshes[0].rotation.set(Math.PI / 2, 0, 0);
+      blueWire.picableMeshes[0].physicsBody.setMotionType(
+        PhysicsMotionType.STATIC
+      );
+      blueWire.picableMeshes[0].position = hit.pickedMesh.getAbsolutePosition();
+      blueWire.picableMeshes[1].physicsBody.setMotionType(
+        PhysicsMotionType.STATIC
+      );
+      const gaugeManiford = this.bigInstruments.getByID(gaugeManifordId);
+
+      blueWire.picableMeshes[1].position.set(-3.303, 5.419, -5.6);
+      blueWire.picableMeshes[1].rotationQuaternion = null;
+      blueWire.picableMeshes[1].rotation.set(Math.PI / 2, 0, 0);
+
+      this.quickAccess.deleteFromQuickAccessAndFromHand(blueWire.id);
+      this.pickedItem = null;
+    }
+  }
+
+  private connectgGreyWire(hit: PickingInfo) {
+    const greyWireId = 72;
+    const freonEvacuatorId = 73;
+    if (
+      this.quickAccess.isInQuickAccess(greyWireId)?.isEnabled &&
+      hit.pickedMesh.metadata.id === freonEvacuatorId
+    ) {
+      const greyWire = this.bigInstruments.getByID(greyWireId);
+      const freonEvacuator = this.bigInstruments.getByID(freonEvacuatorId);
+
+      this.hands.dropBigItem(greyWire.picableMeshes[0]);
+
+      greyWire.picableMeshes[0].physicsBody.setMotionType(
+        PhysicsMotionType.STATIC
+      );
+      freonEvacuator.picableMeshes[0].physicsBody.dispose();
+      greyWire.picableMeshes[0].rotationQuaternion =
+        freonEvacuator.picableMeshes[0].rotationQuaternion;
+      const greyWirePosition = hit.pickedMesh.getAbsolutePosition().clone();
+      greyWirePosition.addInPlace(new Vector3(-0.1, -0.1, -0.1));
+      greyWire.picableMeshes[0].position = greyWirePosition;
+
+      greyWire.picableMeshes[1].physicsBody.setMotionType(
+        PhysicsMotionType.STATIC
+      );
+
+      greyWire.picableMeshes[1].position.set(-3.303, 5.419, -5.6);
+      greyWire.picableMeshes[1].rotationQuaternion = null;
+      greyWire.picableMeshes[1].rotation.set(Math.PI / 2, 0, 0);
+
+      this.quickAccess.deleteFromQuickAccessAndFromHand(greyWire.id);
+      this.pickedItem = null;
     }
   }
 

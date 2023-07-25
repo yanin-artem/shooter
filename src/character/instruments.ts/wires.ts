@@ -112,7 +112,7 @@ export default class Wires {
       let body = new PhysicsBody(
         mesh,
         PhysicsMotionType.DYNAMIC,
-        true,
+        false,
         this.scene
       );
       body.setMassProperties({ mass: mass });

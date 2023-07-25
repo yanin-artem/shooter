@@ -80,6 +80,18 @@ export default class rayCast {
     }
   }
 
+  public doItemActionWithOtherItem(itemActionCallBack) {
+    if (this.controls.useItem) {
+      function predicate(mesh: AbstractMesh): boolean {
+        return mesh.metadata?.isBigItem;
+      }
+      const hit = this.castRay(predicate);
+      if (hit.pickedMesh) {
+        itemActionCallBack(hit);
+      }
+    }
+  }
+
   //pick item
   public async pickDoorToHouseLocation(callback): Promise<void> {
     if (this.controls.pickInInventar) {
