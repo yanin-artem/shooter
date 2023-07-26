@@ -53,6 +53,7 @@ export default class FreonEvacuator {
 
     meshes.meshes[1].metadata = {
       rotationPart: true,
+      axis: "x",
     };
 
     const shape = new PhysicsShapeMesh(mesh as Mesh, this.scene);

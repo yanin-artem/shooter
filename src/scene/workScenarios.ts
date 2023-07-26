@@ -5,6 +5,7 @@ import {
   Animation,
   PhysicsMotionType,
   Vector3,
+  Sound,
 } from "@babylonjs/core";
 import { Inventory } from "../character/inventory/inventory";
 import { QuickAccess } from "../character/inventory/quickAccess";
@@ -17,6 +18,7 @@ import Hands from "../character/hands";
 
 export default class WorkScenarios {
   private location: LocationMeshes;
+  private gasSound: Sound;
 
   constructor(
     private inventory: Inventory,
@@ -30,6 +32,11 @@ export default class WorkScenarios {
     private hands: Hands,
     private pickedItem: AbstractMesh
   ) {
+    this.gasSound = new Sound(
+      "gasSound",
+      "../assets/sounds/gas.mp3",
+      this.scene
+    );
     this.location = LocationMeshes.Instance(this.scene);
     this.rayCastEvents();
   }
@@ -46,10 +53,12 @@ export default class WorkScenarios {
       this.raycast.pickDoorToWorkshopLocation(
         this.location.disposeHomeLocation.bind(this.location)
       );
+      this.letOffTheGas();
     });
     this.scene.onPointerObservable.add((event) => {
       this.constrols.handleMouseEvents(event);
       this.raycast.rotateInstrumentPart(this.rotateInstrumentPart.bind(this));
+      this.gaugeManifordManipulations();
     });
   }
 
@@ -172,7 +181,6 @@ export default class WorkScenarios {
     ) {
       const redWire = this.bigInstruments.getByID(redWireId);
       this.hands.dropBigItem(redWire.picableMeshes[0]);
-      // this.pickedItem.physicsBody.setMotionType(PhysicsMotionType.STATIC);
       redWire.picableMeshes[0].rotationQuaternion = null;
       redWire.picableMeshes[0].rotation.set(Math.PI / 2, 0, 0);
       redWire.picableMeshes[0].physicsBody.setMotionType(
@@ -281,6 +289,34 @@ export default class WorkScenarios {
 
   private rotateInstrumentPart(hit: PickingInfo, rotationK: number) {
     hit.pickedMesh.rotationQuaternion = null;
-    hit.pickedMesh.rotation.x -= rotationK / 1000;
+    hit.pickedMesh.rotation[hit.pickedMesh.metadata.axis] -= rotationK / 1000;
+  }
+
+  private gaugeManifordManipulations() {
+    const gaugeManifordId = 75;
+    const greyWireId = 73;
+    const gaugeManiford = this.bigInstruments.getByID(gaugeManifordId);
+    const greyWire = this.bigInstruments.getByID(greyWireId);
+    const redRotation = gaugeManiford.meshes[1].rotation.x;
+    const blueRotation = gaugeManiford.meshes[2].rotation.x;
+    const greyWireRotation = greyWire.meshes.at(-1).rotation.y;
+    if (
+      redRotation >= Math.PI / 2 &&
+      blueRotation >= Math.PI / 2 &&
+      greyWireRotation >= Math.PI / 2
+    )
+      console.log("докрутил");
+  }
+
+  private letOffTheGas() {
+    const secondGreyWireId = 77;
+    const isInHand =
+      this.quickAccess.isInQuickAccess(secondGreyWireId)?.isEnabled;
+    if (this.constrols.useItem && isInHand) {
+      const secondGreyWire = this.bigInstruments.getByID(secondGreyWireId);
+      secondGreyWire.meshes.at(-1).rotationQuaternion = null;
+      secondGreyWire.meshes.at(-1).rotation.y = Math.PI / 2;
+      this.gasSound.play();
+    }
   }
 }

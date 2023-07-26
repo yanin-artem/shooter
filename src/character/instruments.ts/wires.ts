@@ -116,6 +116,10 @@ export default class Wires {
         const lastNode = meshes.meshes.at(-1);
         const position = lastNode.getAbsolutePosition();
         lastNode.setParent(otherMesh);
+        lastNode.metadata = {
+          rotationPart: true,
+          axis: "y",
+        };
       } else {
         otherMesh = meshes.meshes.at(-1);
       }
@@ -129,7 +133,6 @@ export default class Wires {
       wire.picableMeshes.push(otherMesh);
       wire.meshes = meshes.meshes;
       this.makePhysics(wire);
-      console.log(wire);
     });
   }
 

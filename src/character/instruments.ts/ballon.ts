@@ -53,15 +53,19 @@ export default class Ballon {
 
     meshes.meshes[1].metadata = {
       rotationPart: true,
+      axis: "x",
     };
     meshes.meshes[2].metadata = {
       rotationPart: true,
+      axis: "x",
     };
     meshes.meshes[3].metadata = {
       rotationPart: true,
+      axis: "x",
     };
     meshes.meshes[4].metadata = {
       rotationPart: true,
+      axis: "x",
     };
 
     const shape = new PhysicsShapeMesh(mesh as Mesh, this.scene);
