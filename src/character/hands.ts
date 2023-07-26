@@ -86,6 +86,7 @@ export default class Hands {
   }
 
   public attachBigItemToHand(item: bigInstruments, index: number) {
+    console.log(item, index);
     this.attachedMeshes.push(item.picableMeshes[index]);
     this.positionBigItem(
       this.skeletons.bones[11],

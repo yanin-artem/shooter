@@ -41,7 +41,7 @@ export default class WorkScenarios {
       this.raycast.doItemAction(this.hookGaugeManiford.bind(this));
       this.raycast.doItemAction(this.connectRedWire.bind(this));
       this.raycast.doItemAction(this.connectBlueWire.bind(this));
-      this.raycast.doItemActionWithOtherItem(this.connectgGreyWire.bind(this));
+      this.raycast.pickPlacementArea(this.placementFreonEvacuator.bind(this));
       this.raycast.pickDoorToHouseLocation(this.goToHomeLocation.bind(this));
       this.raycast.pickDoorToWorkshopLocation(
         this.location.disposeHomeLocation.bind(this.location)
@@ -147,7 +147,7 @@ export default class WorkScenarios {
   }
 
   private hookGaugeManiford(hit: PickingInfo) {
-    const gaugeManifordId = 74;
+    const gaugeManifordId = 75;
     if (this.quickAccess.isInQuickAccess(gaugeManifordId)?.isEnabled) {
       const gaugeManiford = this.bigInstruments.getByID(gaugeManifordId);
       this.hands.dropBigItem(gaugeManiford.picableMeshes[0]);
@@ -164,8 +164,8 @@ export default class WorkScenarios {
   }
 
   private connectRedWire(hit: PickingInfo) {
-    const redWireId = 70;
-    const gaugeManifordId = 74;
+    const redWireId = 71;
+    const gaugeManifordId = 75;
     if (
       this.quickAccess.isInQuickAccess(redWireId)?.isEnabled &&
       hit.pickedMesh.metadata.id === 30
@@ -192,8 +192,8 @@ export default class WorkScenarios {
   }
 
   private connectBlueWire(hit: PickingInfo) {
-    const blueWireId = 71;
-    const gaugeManifordId = 74;
+    const blueWireId = 72;
+    const gaugeManifordId = 75;
     if (
       this.quickAccess.isInQuickAccess(blueWireId)?.isEnabled &&
       hit.pickedMesh.metadata.id === 29
@@ -221,37 +221,60 @@ export default class WorkScenarios {
     }
   }
 
-  private connectgGreyWire(hit: PickingInfo) {
-    const greyWireId = 72;
-    const freonEvacuatorId = 73;
+  private placementFreonEvacuator(hit: PickingInfo) {
+    const greyWireId = 73;
+    const secondGreyWireId = 77;
+    const freonEvacuatorId = 74;
     if (
-      this.quickAccess.isInQuickAccess(greyWireId)?.isEnabled &&
-      hit.pickedMesh.metadata.id === freonEvacuatorId
+      this.quickAccess.isInQuickAccess(greyWireId) &&
+      this.quickAccess.isInQuickAccess(secondGreyWireId) &&
+      this.quickAccess.isInQuickAccess(freonEvacuatorId)?.isEnabled
     ) {
       const greyWire = this.bigInstruments.getByID(greyWireId);
+      const secondGreyWire = this.bigInstruments.getByID(secondGreyWireId);
       const freonEvacuator = this.bigInstruments.getByID(freonEvacuatorId);
 
       this.hands.dropBigItem(greyWire.picableMeshes[0]);
+      this.hands.dropBigItem(secondGreyWire.picableMeshes[0]);
+      this.hands.dropBigItem(freonEvacuator.picableMeshes[0]);
+
+      freonEvacuator.picableMeshes[0].physicsBody.dispose();
+      freonEvacuator.picableMeshes[0].position.set(-3.009, 4.359, -4.793);
+      freonEvacuator.picableMeshes[0].rotationQuaternion = null;
+      freonEvacuator.picableMeshes[0].rotation.set(0, Math.PI, -Math.PI);
 
       greyWire.picableMeshes[0].physicsBody.setMotionType(
         PhysicsMotionType.STATIC
       );
-      freonEvacuator.picableMeshes[0].physicsBody.dispose();
       greyWire.picableMeshes[0].rotationQuaternion =
         freonEvacuator.picableMeshes[0].rotationQuaternion;
-      const greyWirePosition = hit.pickedMesh.getAbsolutePosition().clone();
-      greyWirePosition.addInPlace(new Vector3(-0.1, -0.1, -0.1));
+      const greyWirePosition = freonEvacuator.meshes[6].getAbsolutePosition();
       greyWire.picableMeshes[0].position = greyWirePosition;
 
       greyWire.picableMeshes[1].physicsBody.setMotionType(
         PhysicsMotionType.STATIC
       );
-
       greyWire.picableMeshes[1].position.set(-3.303, 5.419, -5.6);
       greyWire.picableMeshes[1].rotationQuaternion = null;
       greyWire.picableMeshes[1].rotation.set(Math.PI / 2, 0, 0);
 
+      secondGreyWire.picableMeshes[0].physicsBody.setMotionType(
+        PhysicsMotionType.STATIC
+      );
+      secondGreyWire.picableMeshes[0].rotationQuaternion =
+        freonEvacuator.picableMeshes[0].rotationQuaternion;
+      const secondGreyWirePosition =
+        freonEvacuator.meshes[5].getAbsolutePosition();
+      secondGreyWire.picableMeshes[0].position = secondGreyWirePosition;
+
+      secondGreyWire.picableMeshes[1].physicsBody.setMotionType(
+        PhysicsMotionType.DYNAMIC
+      );
+
       this.quickAccess.deleteFromQuickAccessAndFromHand(greyWire.id);
+      this.quickAccess.deleteFromQuickAccessAndFromHand(secondGreyWire.id);
+      this.quickAccess.deleteFromQuickAccessAndFromHand(freonEvacuator.id);
+
       this.pickedItem = null;
     }
   }

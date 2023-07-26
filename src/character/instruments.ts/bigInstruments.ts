@@ -36,10 +36,11 @@ export class BigInstruments {
     this.addInstrument(this.gaugeManiford.gaugeManiford);
     this.ballon = new Ballon(this.scene);
     this.addInstrument(this.ballon.ballon);
+    this.addInstrument(this.wires.greywWireForBallon);
   }
 
   public getByID(index: number) {
-    return this.bigInstruments[index - 70];
+    return this.bigInstruments[index - 71];
   }
 
   public addInstrument(instrument: bigInstruments) {

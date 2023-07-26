@@ -42,7 +42,11 @@ export default class LocationMeshes {
 
     let scene = false;
     const event = this.scene.onKeyboardObservable.add((event) => {
-      if (event.event.code === "KeyT" && event.type === 1 && !scene) {
+      if (
+        (event.event.code === "KeyT" || event.event.code === "KeyF") &&
+        event.type === 1 &&
+        !scene
+      ) {
         const shape = new PhysicsShapeMesh(ground, this.scene);
         const groundBody = new PhysicsBody(
           ground,
@@ -57,6 +61,15 @@ export default class LocationMeshes {
         scene = true;
       }
     });
+
+    const conditionerArea = MeshBuilder.CreateBox(
+      "conditionerArea",
+      { width: 2, height: 0.2, depth: 2 },
+      this.scene
+    );
+    conditionerArea.isVisible = false;
+    conditionerArea.position.set(-4.667, 4.359, -6.12);
+    conditionerArea.metadata = { conditionerArea: true };
 
     const homeMeshes = await SceneLoader.ImportMeshAsync(
       "",

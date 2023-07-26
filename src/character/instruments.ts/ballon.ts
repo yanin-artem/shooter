@@ -13,7 +13,7 @@ export default class Ballon {
   public ballon: bigInstruments;
   constructor(private scene: Scene) {
     this.ballon = {
-      id: 75,
+      id: 76,
       name: "Баллон",
       imageSrc: "",
       description: "",
@@ -68,7 +68,7 @@ export default class Ballon {
     const body = new PhysicsBody(
       mesh,
       PhysicsMotionType.DYNAMIC,
-      true,
+      false,
       this.scene
     );
     shape.material = { friction: 0.8 };

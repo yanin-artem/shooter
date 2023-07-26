@@ -257,6 +257,7 @@ export default class Character {
   private dropItem(): void {
     if (
       this.controls.drop &&
+      this.pickedItem &&
       this.pickedItem.metadata?.isItem &&
       this.pickedItem?.isEnabled() &&
       !this.pickedDetail
@@ -277,6 +278,7 @@ export default class Character {
   private dropBigItem(): void {
     if (
       this.controls.drop &&
+      this.pickedItem &&
       this.pickedItem.metadata?.isBigItem &&
       this.pickedItem?.isEnabled() &&
       !this.pickedDetail

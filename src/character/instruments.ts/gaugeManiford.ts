@@ -14,7 +14,7 @@ export default class GaugeManiford {
   public gaugeManiford: bigInstruments;
   constructor(private scene: Scene) {
     this.gaugeManiford = {
-      id: 74,
+      id: 75,
       name: "Измерительный коллектор",
       imageSrc: "",
       description: "",
@@ -64,7 +64,7 @@ export default class GaugeManiford {
     const body = new PhysicsBody(
       mesh,
       PhysicsMotionType.DYNAMIC,
-      true,
+      false,
       this.scene
     );
     shape.material = { friction: 0.8 };

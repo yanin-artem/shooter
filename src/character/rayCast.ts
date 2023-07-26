@@ -92,6 +92,18 @@ export default class rayCast {
     }
   }
 
+  public pickPlacementArea(placementCallBack) {
+    if (this.controls.useItem) {
+      function predicate(mesh: AbstractMesh): boolean {
+        return mesh.metadata?.conditionerArea;
+      }
+      const hit = this.castRay(predicate);
+      if (hit.pickedMesh) {
+        placementCallBack(hit);
+      }
+    }
+  }
+
   //pick item
   public async pickDoorToHouseLocation(callback): Promise<void> {
     if (this.controls.pickInInventar) {

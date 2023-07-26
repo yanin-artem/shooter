@@ -13,7 +13,7 @@ export default class FreonEvacuator {
   public freonEvacuator: bigInstruments;
   constructor(private scene: Scene) {
     this.freonEvacuator = {
-      id: 73,
+      id: 74,
       name: "Станция эвакуации",
       imageSrc: "",
       description: "",
@@ -59,7 +59,7 @@ export default class FreonEvacuator {
     const body = new PhysicsBody(
       mesh,
       PhysicsMotionType.DYNAMIC,
-      true,
+      false,
       this.scene
     );
     shape.material = { friction: 0.8 };
