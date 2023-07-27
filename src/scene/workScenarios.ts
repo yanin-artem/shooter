@@ -367,8 +367,10 @@ export default class WorkScenarios {
       secondGreyWire.picableMeshes[0].position = secondGreyWirePosition;
 
       secondGreyWire.picableMeshes[1].physicsBody.setMotionType(
-        PhysicsMotionType.DYNAMIC
+        PhysicsMotionType.STATIC
       );
+
+      secondGreyWire.picableMeshes[1].position.set(-3.728, 4.448, -4.808);
 
       this.quickAccess.deleteFromQuickAccessAndFromHand(greyWire.id);
       this.quickAccess.deleteFromQuickAccessAndFromHand(secondGreyWire.id);
