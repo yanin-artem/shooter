@@ -381,8 +381,15 @@ export default class WorkScenarios {
 
   private rotateInstrumentPart(hit: PickingInfo, rotationK: number) {
     hit.pickedMesh.rotationQuaternion = null;
-    hit.pickedMesh.rotation[hit.pickedMesh.metadata.axis] -= rotationK / 1000;
-    console.log(hit.pickedMesh.rotation);
+    const rotation =
+      hit.pickedMesh.rotation[hit.pickedMesh.metadata.axis] - rotationK / 1000;
+    if (
+      rotation < hit.pickedMesh.metadata.min &&
+      rotation > hit.pickedMesh.metadata.max
+    ) {
+      hit.pickedMesh.rotation[hit.pickedMesh.metadata.axis] -= rotationK / 1000;
+      console.log(hit.pickedMesh.rotation);
+    }
     // const axis = hit.pickedMesh.metadata.axis;
     // hit.pickedMesh.addRotation(rotationK / 1000, 0, 0);
   }
@@ -395,11 +402,7 @@ export default class WorkScenarios {
     const redRotation = gaugeManiford.meshes[1].rotation.x;
     const blueRotation = gaugeManiford.meshes[2].rotation.x;
     const greyWireRotation = greyWire.meshes.at(-1).rotation.y;
-    if (
-      redRotation >= Math.PI / 2 &&
-      blueRotation >= Math.PI / 2 &&
-      greyWireRotation >= Math.PI / 2
-    )
+    if (redRotation >= 1.4 && blueRotation >= 1.4 && greyWireRotation >= 1.4)
       this.scenariosStep++;
   }
 
@@ -410,7 +413,7 @@ export default class WorkScenarios {
     if (this.constrols.useItem && isInHand) {
       const secondGreyWire = this.bigInstruments.getByID(secondGreyWireId);
       secondGreyWire.meshes.at(-1).rotationQuaternion = null;
-      secondGreyWire.meshes.at(-1).rotation.y = Math.PI / 2;
+      secondGreyWire.meshes.at(-1).rotation.y = 1.4;
       this.gasSound.play();
       this.scenariosStep++;
     }

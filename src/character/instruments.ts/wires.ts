@@ -120,6 +120,8 @@ export default class Wires {
         lastNode.metadata = {
           rotationPart: true,
           axis: "y",
+          max: 0,
+          min: 1.6,
         };
       } else {
         otherMesh = meshes.meshes.at(-1);

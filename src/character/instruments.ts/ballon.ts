@@ -55,6 +55,8 @@ export default class Ballon {
     meshes.meshes[1].metadata = {
       rotationPart: true,
       axis: "y",
+      max: -1.6,
+      min: 0,
     };
     // meshes.meshes[1].rotation =
     //   meshes.meshes[1].rotationQuaternion.toEulerAngles();
@@ -62,6 +64,8 @@ export default class Ballon {
     meshes.meshes[2].metadata = {
       rotationPart: true,
       axis: "y",
+      max: -1.6,
+      min: 0,
     };
     // meshes.meshes[2].rotation =
     //   meshes.meshes[2].rotationQuaternion.toEulerAngles();

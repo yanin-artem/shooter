@@ -56,11 +56,15 @@ export default class GaugeManiford {
     meshes.meshes[1].metadata = {
       rotationPart: true,
       axis: "x",
+      max: 0,
+      min: 1.6,
     };
 
     meshes.meshes[2].metadata = {
       rotationPart: true,
       axis: "x",
+      max: 0,
+      min: 1.6,
     };
 
     const shape = new PhysicsShapeMesh(mesh as Mesh, this.scene);
