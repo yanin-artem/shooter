@@ -1,4 +1,5 @@
 import {
+  Axis,
   Mesh,
   PhysicsBody,
   PhysicsMotionType,

@@ -1,5 +1,6 @@
 import {
   AbstractMesh,
+  Axis,
   BallAndSocketConstraint,
   Mesh,
   PhysicsBody,

@@ -1,4 +1,5 @@
 import {
+  Axis,
   Mesh,
   PhysicsBody,
   PhysicsMotionType,
@@ -53,12 +54,17 @@ export default class Ballon {
 
     meshes.meshes[1].metadata = {
       rotationPart: true,
-      axis: "x",
+      axis: "y",
     };
+    // meshes.meshes[1].rotation =
+    //   meshes.meshes[1].rotationQuaternion.toEulerAngles();
+
     meshes.meshes[2].metadata = {
       rotationPart: true,
-      axis: "x",
+      axis: "y",
     };
+    // meshes.meshes[2].rotation =
+    //   meshes.meshes[2].rotationQuaternion.toEulerAngles();
     meshes.meshes[3].metadata = {
       rotationPart: true,
       axis: "x",

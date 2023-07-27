@@ -6,6 +6,7 @@ import {
   PhysicsMotionType,
   Vector3,
   Sound,
+  Axis,
 } from "@babylonjs/core";
 import { Inventory } from "../character/inventory/inventory";
 import { QuickAccess } from "../character/inventory/quickAccess";
@@ -19,6 +20,7 @@ import Hands from "../character/hands";
 export default class WorkScenarios {
   private location: LocationMeshes;
   private gasSound: Sound;
+  private freonEvacuatorSound: Sound;
 
   constructor(
     private inventory: Inventory,
@@ -35,6 +37,11 @@ export default class WorkScenarios {
     this.gasSound = new Sound(
       "gasSound",
       "../assets/sounds/gas.mp3",
+      this.scene
+    );
+    this.freonEvacuatorSound = new Sound(
+      "freonEvacuatorSound",
+      "../assets/sounds/workingFreonEvacuator.mp3",
       this.scene
     );
     this.location = LocationMeshes.Instance(this.scene);
@@ -54,11 +61,18 @@ export default class WorkScenarios {
         this.location.disposeHomeLocation.bind(this.location)
       );
       this.letOffTheGas();
+      this.raycast.pickPlacementArea(this.placementBallon.bind(this));
+      this.raycast.pickButton(this.pullButton.bind(this));
+      this.raycast.pickButton(this.StartFreonEvacuator.bind(this));
     });
     this.scene.onPointerObservable.add((event) => {
       this.constrols.handleMouseEvents(event);
       this.raycast.rotateInstrumentPart(this.rotateInstrumentPart.bind(this));
       this.gaugeManifordManipulations();
+      this.prepareFreonEvacuatorWork();
+      this.freonEvacuatorToRecoverFast();
+      this.freonEvacuatorToPurge();
+      this.freonEvacuatorToDown();
     });
   }
 
@@ -290,6 +304,9 @@ export default class WorkScenarios {
   private rotateInstrumentPart(hit: PickingInfo, rotationK: number) {
     hit.pickedMesh.rotationQuaternion = null;
     hit.pickedMesh.rotation[hit.pickedMesh.metadata.axis] -= rotationK / 1000;
+    console.log(hit.pickedMesh.rotation);
+    // const axis = hit.pickedMesh.metadata.axis;
+    // hit.pickedMesh.addRotation(rotationK / 1000, 0, 0);
   }
 
   private gaugeManifordManipulations() {
@@ -317,6 +334,99 @@ export default class WorkScenarios {
       secondGreyWire.meshes.at(-1).rotationQuaternion = null;
       secondGreyWire.meshes.at(-1).rotation.y = Math.PI / 2;
       this.gasSound.play();
+    }
+  }
+
+  private placementBallon() {
+    const ballonId = 76;
+    const secondGreyWireId = 77;
+
+    const isInHand = this.quickAccess.isInQuickAccess(ballonId)?.isEnabled;
+    if (isInHand) {
+      const ballon = this.bigInstruments.getByID(ballonId);
+      const secondGreyWire = this.bigInstruments.getByID(secondGreyWireId);
+      this.hands.dropBigItem(ballon.picableMeshes[0]);
+      if (this.quickAccess.isInQuickAccess(secondGreyWireId))
+        this.hands.dropBigItem(secondGreyWire.picableMeshes[0]);
+      ballon.picableMeshes[0].physicsBody.dispose();
+      ballon.picableMeshes[0].position.set(-2.995, 4.828, -5.257);
+      ballon.picableMeshes[0].rotationQuaternion = null;
+      ballon.picableMeshes[0].rotation.set(0, Math.PI, Math.PI);
+      secondGreyWire.meshes
+        .at(-2)
+        .physicsBody.setMotionType(PhysicsMotionType.STATIC);
+      secondGreyWire.meshes.at(-2).position =
+        ballon.meshes[3].getAbsolutePosition();
+      this.quickAccess.deleteFromQuickAccessAndFromHand(ballon.id);
+      this.quickAccess.deleteFromQuickAccessAndFromHand(secondGreyWire.id);
+    }
+  }
+
+  private pullButton(hit: PickingInfo) {
+    if (hit.pickedMesh.metadata?.axis && hit.pickedMesh.metadata?.angle) {
+      hit.pickedMesh.rotation[hit.pickedMesh.metadata.axis] =
+        hit.pickedMesh.metadata.angle;
+      hit.pickedMesh.metadata.angle = -hit.pickedMesh.metadata.angle;
+      hit.pickedMesh.metadata.isActive = !hit.pickedMesh.metadata.isActive;
+      this.prepareFreonEvacuatorWork();
+    }
+  }
+
+  private prepareFreonEvacuatorWork() {
+    const freonEvacuatorId = 74;
+    const ballonId = 76;
+    const freonEvacuator = this.bigInstruments.getByID(freonEvacuatorId);
+    const ballon = this.bigInstruments.getByID(ballonId);
+    const freonEvacuatorRotate = freonEvacuator.meshes[1];
+    const freonEvacuatorRotation = freonEvacuatorRotate.rotation.x;
+    const ballonValve = ballon.meshes[1];
+    const ballonValveRotation = ballonValve.rotation.y;
+    const auto = freonEvacuator.meshes[3].metadata.isActive;
+    const power = freonEvacuator.meshes[2].metadata.isActive;
+    if (
+      freonEvacuatorRotation < -0.8 &&
+      freonEvacuatorRotation > -1.3 &&
+      ballonValveRotation <= 0.3 &&
+      auto &&
+      power
+    ) {
+      console.log("приготовил");
+    }
+  }
+
+  private freonEvacuatorToRecoverFast() {
+    const freonEvacuatorId = 74;
+    const freonEvacuator = this.bigInstruments.getByID(freonEvacuatorId);
+    const freonEvacuatorRotate = freonEvacuator.meshes[1];
+    const freonEvacuatorRotation = freonEvacuatorRotate.rotation.x;
+    if (freonEvacuatorRotation > -0.4 && freonEvacuatorRotation < 0.4) {
+      console.log("recover fast");
+    }
+  }
+
+  private freonEvacuatorToPurge() {
+    const freonEvacuatorId = 74;
+    const freonEvacuator = this.bigInstruments.getByID(freonEvacuatorId);
+    const freonEvacuatorRotate = freonEvacuator.meshes[1];
+    const freonEvacuatorRotation = freonEvacuatorRotate.rotation.x;
+    if (freonEvacuatorRotation > 1.3 && freonEvacuatorRotation < 1.9) {
+      console.log("purge");
+    }
+  }
+
+  private freonEvacuatorToDown() {
+    const freonEvacuatorId = 74;
+    const freonEvacuator = this.bigInstruments.getByID(freonEvacuatorId);
+    const freonEvacuatorRotate = freonEvacuator.meshes[1];
+    const freonEvacuatorRotation = freonEvacuatorRotate.rotation.x;
+    if (freonEvacuatorRotation > 2.9 && freonEvacuatorRotation < 3.3) {
+      console.log("down");
+    }
+  }
+
+  private StartFreonEvacuator(hit: PickingInfo) {
+    if (hit.pickedMesh.metadata.startButton) {
+      this.freonEvacuatorSound.play();
     }
   }
 }

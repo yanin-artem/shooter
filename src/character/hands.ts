@@ -183,6 +183,7 @@ export default class Hands {
     );
     const callback = () => this.setBigItemPosition(bone, node, item, index);
     this.callbackStorage.push({ id: item.id, callback: callback });
+    console.log(this.callbackStorage);
     this.scene.registerBeforeRender(callback);
   }
 

@@ -1,4 +1,5 @@
 import {
+  Axis,
   Mesh,
   PhysicsBody,
   PhysicsMotionType,
@@ -54,6 +55,35 @@ export default class FreonEvacuator {
     meshes.meshes[1].metadata = {
       rotationPart: true,
       axis: "x",
+    };
+    //power
+    meshes.meshes[2].metadata = {
+      button: true,
+      axis: "x",
+      angle: 0,
+      isActive: false,
+    };
+    meshes.meshes[2].rotation =
+      meshes.meshes[2].rotationQuaternion.toEulerAngles();
+    meshes.meshes[2].rotationQuaternion = null;
+    //auto
+    meshes.meshes[3].metadata = {
+      button: true,
+      axis: "z",
+      angle: Math.PI / 5.8,
+      isActive: false,
+    };
+
+    console.log(meshes);
+    meshes.meshes[3].rotation =
+      meshes.meshes[3].rotationQuaternion.toEulerAngles();
+    meshes.meshes[3].rotationQuaternion = null;
+
+    //start
+    meshes.meshes[4].metadata = {
+      button: true,
+      isActive: false,
+      startButton: true,
     };
 
     const shape = new PhysicsShapeMesh(mesh as Mesh, this.scene);

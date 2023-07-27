@@ -151,4 +151,16 @@ export default class rayCast {
       }
     }
   }
+
+  public pickButton(buttonCallBack) {
+    if (this.controls.useItem) {
+      function predicate(mesh: AbstractMesh): boolean {
+        return mesh.metadata?.button && mesh.isPickable;
+      }
+      const hit = this.castRay(predicate);
+      if (hit.pickedMesh) {
+        buttonCallBack(hit);
+      }
+    }
+  }
 }
