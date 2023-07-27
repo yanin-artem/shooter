@@ -135,6 +135,7 @@ export class QuickAccess {
     const index = this.quickAccess.findIndex((item) => item.id === -1);
     if (index === -1) {
       this.inventory.addInInventory(id);
+      this.openHandCallBack();
     } else {
       this.quickAccess[index] = { id: id, isEnabled: true };
     }
