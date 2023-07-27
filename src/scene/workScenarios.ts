@@ -17,10 +17,33 @@ import { Instruments } from "../character/instruments.ts/instruments";
 import { BigInstruments } from "../character/instruments.ts/bigInstruments";
 import Hands from "../character/hands";
 
+const enum scenarios {
+  goToLocation,
+  prepareToWork,
+  unscrewTheCaps,
+  connectRedAndBlueWires,
+  placementFreonEvacuator,
+  gaugeManifordManipulations,
+  letOffTheGas,
+  placementBallon,
+  prepareFreonEvacuatorWork,
+  firstStart,
+  freonEvacuatorToRecoverFast,
+  secondStart,
+  freonEvacuatorToPurge,
+  thirdStart,
+  freonEvacuatorToDown,
+}
+
 export default class WorkScenarios {
   private location: LocationMeshes;
   private gasSound: Sound;
   private freonEvacuatorSound: Sound;
+  private scenariosStep = 0;
+  private openCoverIndicator = false;
+  private hookManifordIndicator = false;
+  //эта переменная нужна для шагов в которых требуется два действия
+  private doubleStepsCounter = 0;
 
   constructor(
     private inventory: Inventory,
@@ -50,29 +73,59 @@ export default class WorkScenarios {
 
   private rayCastEvents() {
     this.scene.onKeyboardObservable.add((event) => {
-      this.raycast.doItemAction(this.openCover.bind(this));
-      this.raycast.doItemAction(this.unscrewTheCap.bind(this));
-      this.raycast.doItemAction(this.hookGaugeManiford.bind(this));
-      this.raycast.doItemAction(this.connectRedWire.bind(this));
-      this.raycast.doItemAction(this.connectBlueWire.bind(this));
-      this.raycast.pickPlacementArea(this.placementFreonEvacuator.bind(this));
-      this.raycast.pickDoorToHouseLocation(this.goToHomeLocation.bind(this));
+      console.log(this.scenariosStep);
+      if (scenarios.goToLocation === this.scenariosStep)
+        this.raycast.pickDoorToHouseLocation(this.goToHomeLocation.bind(this));
+      if (scenarios.prepareToWork === this.scenariosStep) {
+        this.raycast.doItemAction(this.openCover.bind(this));
+        this.raycast.doItemAction(this.hookGaugeManiford.bind(this));
+      }
+      if (scenarios.unscrewTheCaps === this.scenariosStep) {
+        this.raycast.doItemAction(this.unscrewTheCap.bind(this));
+      }
+      if (scenarios.connectRedAndBlueWires === this.scenariosStep) {
+        this.raycast.doItemAction(this.connectRedWire.bind(this));
+        this.raycast.doItemAction(this.connectBlueWire.bind(this));
+      }
+      if (scenarios.placementFreonEvacuator === this.scenariosStep) {
+        this.raycast.pickPlacementArea(this.placementFreonEvacuator.bind(this));
+      }
+      if (scenarios.placementBallon === this.scenariosStep) {
+        this.raycast.pickPlacementArea(this.placementBallon.bind(this));
+      }
+      if (scenarios.letOffTheGas === this.scenariosStep) {
+        this.letOffTheGas();
+      }
+      this.raycast.pickButton(this.pullButton.bind(this));
+      if (
+        scenarios.firstStart === this.scenariosStep ||
+        scenarios.secondStart === this.scenariosStep ||
+        scenarios.thirdStart === this.scenariosStep
+      ) {
+        this.raycast.pickButton(this.StartFreonEvacuator.bind(this));
+      }
       this.raycast.pickDoorToWorkshopLocation(
         this.location.disposeHomeLocation.bind(this.location)
       );
-      this.letOffTheGas();
-      this.raycast.pickPlacementArea(this.placementBallon.bind(this));
-      this.raycast.pickButton(this.pullButton.bind(this));
-      this.raycast.pickButton(this.StartFreonEvacuator.bind(this));
     });
     this.scene.onPointerObservable.add((event) => {
       this.constrols.handleMouseEvents(event);
       this.raycast.rotateInstrumentPart(this.rotateInstrumentPart.bind(this));
-      this.gaugeManifordManipulations();
-      this.prepareFreonEvacuatorWork();
-      this.freonEvacuatorToRecoverFast();
-      this.freonEvacuatorToPurge();
-      this.freonEvacuatorToDown();
+      if (scenarios.gaugeManifordManipulations === this.scenariosStep) {
+        this.gaugeManifordManipulations();
+      }
+      if (scenarios.prepareFreonEvacuatorWork === this.scenariosStep) {
+        this.prepareFreonEvacuatorWork();
+      }
+      if (scenarios.freonEvacuatorToRecoverFast === this.scenariosStep) {
+        this.freonEvacuatorToRecoverFast();
+      }
+      if (scenarios.freonEvacuatorToPurge === this.scenariosStep) {
+        this.freonEvacuatorToPurge();
+      }
+      if (scenarios.freonEvacuatorToDown === this.scenariosStep) {
+        this.freonEvacuatorToDown();
+      }
     });
   }
 
@@ -104,6 +157,7 @@ export default class WorkScenarios {
   private async goToHomeLocation() {
     if (this.pumpingOutFreonCheckInstruments())
       await this.location.CreateHouseLocation(this.body);
+    this.scenariosStep++;
   }
 
   private openCover(hit: PickingInfo) {
@@ -113,6 +167,10 @@ export default class WorkScenarios {
       hit.pickedMesh.metadata.id === 2
     ) {
       hit.pickedMesh.dispose();
+      this.openCoverIndicator = true;
+      if (this.hookManifordIndicator) {
+        this.scenariosStep++;
+      }
     }
   }
 
@@ -166,6 +224,11 @@ export default class WorkScenarios {
         hit.pickedMesh.isVisible = false;
         clearTimeout(timeout);
       }, 3000);
+      this.doubleStepsCounter++;
+      if (this.doubleStepsCounter === 2) {
+        this.scenariosStep++;
+        this.doubleStepsCounter = 0;
+      }
     }
   }
 
@@ -183,6 +246,10 @@ export default class WorkScenarios {
       gaugeManiford.picableMeshes[0].position.set(-3.303, 5.483, -5.627);
       this.quickAccess.deleteFromQuickAccessAndFromHand(gaugeManiford.id);
       this.pickedItem = null;
+      this.hookManifordIndicator = true;
+      if (this.openCoverIndicator) {
+        this.scenariosStep++;
+      }
     }
   }
 
@@ -210,6 +277,11 @@ export default class WorkScenarios {
 
       this.quickAccess.deleteFromQuickAccessAndFromHand(redWire.id);
       this.pickedItem = null;
+      this.doubleStepsCounter++;
+      if (this.doubleStepsCounter === 2) {
+        this.scenariosStep++;
+        this.doubleStepsCounter = 0;
+      }
     }
   }
 
@@ -240,6 +312,11 @@ export default class WorkScenarios {
 
       this.quickAccess.deleteFromQuickAccessAndFromHand(blueWire.id);
       this.pickedItem = null;
+      this.doubleStepsCounter++;
+      if (this.doubleStepsCounter === 2) {
+        this.scenariosStep++;
+        this.doubleStepsCounter = 0;
+      }
     }
   }
 
@@ -298,6 +375,7 @@ export default class WorkScenarios {
       this.quickAccess.deleteFromQuickAccessAndFromHand(freonEvacuator.id);
 
       this.pickedItem = null;
+      this.scenariosStep++;
     }
   }
 
@@ -322,7 +400,7 @@ export default class WorkScenarios {
       blueRotation >= Math.PI / 2 &&
       greyWireRotation >= Math.PI / 2
     )
-      console.log("докрутил");
+      this.scenariosStep++;
   }
 
   private letOffTheGas() {
@@ -334,6 +412,7 @@ export default class WorkScenarios {
       secondGreyWire.meshes.at(-1).rotationQuaternion = null;
       secondGreyWire.meshes.at(-1).rotation.y = Math.PI / 2;
       this.gasSound.play();
+      this.scenariosStep++;
     }
   }
 
@@ -359,6 +438,7 @@ export default class WorkScenarios {
         ballon.meshes[3].getAbsolutePosition();
       this.quickAccess.deleteFromQuickAccessAndFromHand(ballon.id);
       this.quickAccess.deleteFromQuickAccessAndFromHand(secondGreyWire.id);
+      this.scenariosStep++;
     }
   }
 
@@ -368,7 +448,8 @@ export default class WorkScenarios {
         hit.pickedMesh.metadata.angle;
       hit.pickedMesh.metadata.angle = -hit.pickedMesh.metadata.angle;
       hit.pickedMesh.metadata.isActive = !hit.pickedMesh.metadata.isActive;
-      this.prepareFreonEvacuatorWork();
+      if (scenarios.prepareFreonEvacuatorWork === this.scenariosStep)
+        this.prepareFreonEvacuatorWork();
     }
   }
 
@@ -383,6 +464,13 @@ export default class WorkScenarios {
     const ballonValveRotation = ballonValve.rotation.y;
     const auto = freonEvacuator.meshes[3].metadata.isActive;
     const power = freonEvacuator.meshes[2].metadata.isActive;
+    console.log(
+      freonEvacuatorRotation,
+      freonEvacuatorRotation,
+      ballonValveRotation,
+      auto,
+      power
+    );
     if (
       freonEvacuatorRotation < -0.8 &&
       freonEvacuatorRotation > -1.3 &&
@@ -390,7 +478,7 @@ export default class WorkScenarios {
       auto &&
       power
     ) {
-      console.log("приготовил");
+      this.scenariosStep++;
     }
   }
 
@@ -400,7 +488,7 @@ export default class WorkScenarios {
     const freonEvacuatorRotate = freonEvacuator.meshes[1];
     const freonEvacuatorRotation = freonEvacuatorRotate.rotation.x;
     if (freonEvacuatorRotation > -0.4 && freonEvacuatorRotation < 0.4) {
-      console.log("recover fast");
+      this.scenariosStep++;
     }
   }
 
@@ -410,7 +498,7 @@ export default class WorkScenarios {
     const freonEvacuatorRotate = freonEvacuator.meshes[1];
     const freonEvacuatorRotation = freonEvacuatorRotate.rotation.x;
     if (freonEvacuatorRotation > 1.3 && freonEvacuatorRotation < 1.9) {
-      console.log("purge");
+      this.scenariosStep++;
     }
   }
 
@@ -420,13 +508,14 @@ export default class WorkScenarios {
     const freonEvacuatorRotate = freonEvacuator.meshes[1];
     const freonEvacuatorRotation = freonEvacuatorRotate.rotation.x;
     if (freonEvacuatorRotation > 2.9 && freonEvacuatorRotation < 3.3) {
-      console.log("down");
+      this.scenariosStep++;
     }
   }
 
   private StartFreonEvacuator(hit: PickingInfo) {
     if (hit.pickedMesh.metadata.startButton) {
       this.freonEvacuatorSound.play();
+      this.scenariosStep++;
     }
   }
 }

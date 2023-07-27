@@ -55,12 +55,14 @@ export default class FreonEvacuator {
     meshes.meshes[1].metadata = {
       rotationPart: true,
       axis: "x",
+      // min:3,
+      // max:3.2
     };
     //power
     meshes.meshes[2].metadata = {
       button: true,
       axis: "x",
-      angle: 0,
+      angle: Math.PI * 2,
       isActive: false,
     };
     meshes.meshes[2].rotation =
