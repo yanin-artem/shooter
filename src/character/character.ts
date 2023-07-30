@@ -21,10 +21,10 @@ import Hands from "./hands";
 import playerController from "./PlayerController";
 import rayCast from "./rayCast";
 import WorkScenarios from "../scene/workScenarios";
-import { MotionType } from "@babylonjs/havok";
 import * as GUI from "@babylonjs/gui";
 import { Inventory } from "./inventory/inventory";
 import { QuickAccess } from "./inventory/quickAccess";
+import ScenarioManager from "../scene/scenarioManager";
 
 export default class Character {
   public camera: UniversalCamera;
@@ -45,6 +45,7 @@ export default class Character {
   private bigInstruments: BigInstruments;
   private inventory: Inventory;
   private quickAccess: QuickAccess;
+  private scenarioManager: ScenarioManager;
 
   constructor(
     private scene: Scene,
@@ -94,18 +95,20 @@ export default class Character {
     );
     this.characterOpportunities.setController();
 
-    this.scenarios = new WorkScenarios(
+    this.scenarioManager = new ScenarioManager(
+      this.advancedTexture,
       this.inventory,
       this.quickAccess,
       this.raycast,
       this.scene,
+      this.engine,
       this.body,
       this.controls,
-      this.instruments,
       this.bigInstruments,
       this.hands,
       this.pickedItem
     );
+
     this.createPickEvents();
   }
 

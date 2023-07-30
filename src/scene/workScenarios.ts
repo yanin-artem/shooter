@@ -17,7 +17,7 @@ import { Instruments } from "../character/instruments.ts/instruments";
 import { BigInstruments } from "../character/instruments.ts/bigInstruments";
 import Hands from "../character/hands";
 
-const enum scenarios {
+export enum scenarios {
   goToLocation,
   prepareToWork,
   unscrewTheCaps,
@@ -52,10 +52,10 @@ export default class WorkScenarios {
     private scene: Scene,
     private body: AbstractMesh,
     private constrols: ControllEvents,
-    private instruments: Instruments,
     private bigInstruments: BigInstruments,
     private hands: Hands,
-    private pickedItem: AbstractMesh
+    private pickedItem: AbstractMesh,
+    private markFinishedStepCallBack
   ) {
     this.gasSound = new Sound(
       "gasSound",
@@ -157,6 +157,7 @@ export default class WorkScenarios {
   private async goToHomeLocation() {
     if (this.pumpingOutFreonCheckInstruments())
       await this.location.CreateHouseLocation(this.body);
+    this.markFinishedStepCallBack(this.scenariosStep);
     this.scenariosStep++;
   }
 
@@ -169,6 +170,7 @@ export default class WorkScenarios {
       hit.pickedMesh.dispose();
       this.openCoverIndicator = true;
       if (this.hookManifordIndicator) {
+        this.markFinishedStepCallBack(this.scenariosStep);
         this.scenariosStep++;
       }
     }
@@ -226,6 +228,7 @@ export default class WorkScenarios {
       }, 3000);
       this.doubleStepsCounter++;
       if (this.doubleStepsCounter === 2) {
+        this.markFinishedStepCallBack(this.scenariosStep);
         this.scenariosStep++;
         this.doubleStepsCounter = 0;
       }
@@ -248,6 +251,7 @@ export default class WorkScenarios {
       this.pickedItem = null;
       this.hookManifordIndicator = true;
       if (this.openCoverIndicator) {
+        this.markFinishedStepCallBack(this.scenariosStep);
         this.scenariosStep++;
       }
     }
@@ -279,6 +283,7 @@ export default class WorkScenarios {
       this.pickedItem = null;
       this.doubleStepsCounter++;
       if (this.doubleStepsCounter === 2) {
+        this.markFinishedStepCallBack(this.scenariosStep);
         this.scenariosStep++;
         this.doubleStepsCounter = 0;
       }
@@ -314,6 +319,7 @@ export default class WorkScenarios {
       this.pickedItem = null;
       this.doubleStepsCounter++;
       if (this.doubleStepsCounter === 2) {
+        this.markFinishedStepCallBack(this.scenariosStep);
         this.scenariosStep++;
         this.doubleStepsCounter = 0;
       }
@@ -377,6 +383,7 @@ export default class WorkScenarios {
       this.quickAccess.deleteFromQuickAccessAndFromHand(freonEvacuator.id);
 
       this.pickedItem = null;
+      this.markFinishedStepCallBack(this.scenariosStep);
       this.scenariosStep++;
     }
   }
@@ -404,8 +411,10 @@ export default class WorkScenarios {
     const redRotation = gaugeManiford.meshes[1].rotation.x;
     const blueRotation = gaugeManiford.meshes[2].rotation.x;
     const greyWireRotation = greyWire.meshes.at(-1).rotation.y;
-    if (redRotation >= 1.4 && blueRotation >= 1.4 && greyWireRotation >= 1.4)
+    if (redRotation >= 1.4 && blueRotation >= 1.4 && greyWireRotation >= 1.4) {
+      this.markFinishedStepCallBack(this.scenariosStep);
       this.scenariosStep++;
+    }
   }
 
   private letOffTheGas() {
@@ -417,6 +426,7 @@ export default class WorkScenarios {
       secondGreyWire.meshes.at(-1).rotationQuaternion = null;
       secondGreyWire.meshes.at(-1).rotation.y = 1.4;
       this.gasSound.play();
+      this.markFinishedStepCallBack(this.scenariosStep);
       this.scenariosStep++;
     }
   }
@@ -443,6 +453,7 @@ export default class WorkScenarios {
         ballon.meshes[3].getAbsolutePosition();
       this.quickAccess.deleteFromQuickAccessAndFromHand(ballon.id);
       this.quickAccess.deleteFromQuickAccessAndFromHand(secondGreyWire.id);
+      this.markFinishedStepCallBack(this.scenariosStep);
       this.scenariosStep++;
     }
   }
@@ -483,6 +494,7 @@ export default class WorkScenarios {
       auto &&
       power
     ) {
+      this.markFinishedStepCallBack(this.scenariosStep);
       this.scenariosStep++;
     }
   }
@@ -493,6 +505,7 @@ export default class WorkScenarios {
     const freonEvacuatorRotate = freonEvacuator.meshes[1];
     const freonEvacuatorRotation = freonEvacuatorRotate.rotation.x;
     if (freonEvacuatorRotation > -0.4 && freonEvacuatorRotation < 0.4) {
+      this.markFinishedStepCallBack(this.scenariosStep);
       this.scenariosStep++;
     }
   }
@@ -503,6 +516,7 @@ export default class WorkScenarios {
     const freonEvacuatorRotate = freonEvacuator.meshes[1];
     const freonEvacuatorRotation = freonEvacuatorRotate.rotation.x;
     if (freonEvacuatorRotation > 1.3 && freonEvacuatorRotation < 1.9) {
+      this.markFinishedStepCallBack(this.scenariosStep);
       this.scenariosStep++;
     }
   }
@@ -513,6 +527,7 @@ export default class WorkScenarios {
     const freonEvacuatorRotate = freonEvacuator.meshes[1];
     const freonEvacuatorRotation = freonEvacuatorRotate.rotation.x;
     if (freonEvacuatorRotation > 2.9 && freonEvacuatorRotation < 3.3) {
+      this.markFinishedStepCallBack(this.scenariosStep);
       this.scenariosStep++;
     }
   }
@@ -520,6 +535,7 @@ export default class WorkScenarios {
   private StartFreonEvacuator(hit: PickingInfo) {
     if (hit.pickedMesh.metadata.startButton) {
       this.freonEvacuatorSound.play();
+      this.markFinishedStepCallBack(this.scenariosStep);
       this.scenariosStep++;
     }
   }

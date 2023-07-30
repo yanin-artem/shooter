@@ -18,6 +18,7 @@ export default class ControllEvents {
   public manyPick = false;
   public sit = false;
   public deltaScroll = 0;
+  public tasks = false;
 
   public handleControlEvents(event: KeyboardInfo) {
     if (event.event.code === "KeyW") {
@@ -57,6 +58,13 @@ export default class ControllEvents {
     if (event.event.code === "ControlLeft") {
       event.event.preventDefault();
       this.sit = event.type === 1;
+    }
+  }
+
+  public handleTasksMenuEvents(event: KeyboardInfo) {
+    if (event.event.code === "Tab" && event.type === 1) {
+      event.event.preventDefault();
+      this.tasks = !this.tasks;
     }
   }
   public handleMouseEvents(event: any) {

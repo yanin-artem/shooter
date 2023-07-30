@@ -8,7 +8,6 @@ import {
 
 import Movement from "./movement";
 import { Instruments, instrument } from "./instruments.ts/instruments";
-import GeneralInvenory from "./inventory/generalInvenoty";
 import ControllEvents from "./characterControls";
 import Hands from "./hands";
 
