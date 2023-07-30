@@ -23,9 +23,9 @@ export class Inventory {
   private UI: InventoryUI;
 
   constructor(
+    private advancedTexture: GUI.AdvancedDynamicTexture,
     protected scene: Scene,
     protected engine: Engine,
-    protected advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private instruments: Instruments,
     private dropCallBack,

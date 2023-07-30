@@ -14,11 +14,7 @@ import {
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
 import { Instruments, instrument } from "./instruments.ts/instruments";
-import {
-  BigInstruments,
-  bigInstruments,
-} from "./instruments.ts/bigInstruments";
-import GeneralInvenory from "./inventory/generalInvenoty";
+import { BigInstruments } from "./instruments.ts/bigInstruments";
 import ControllEvents from "./characterControls";
 import Hands from "./hands";
 
@@ -26,6 +22,9 @@ import playerController from "./PlayerController";
 import rayCast from "./rayCast";
 import WorkScenarios from "../scene/workScenarios";
 import { MotionType } from "@babylonjs/havok";
+import * as GUI from "@babylonjs/gui";
+import { Inventory } from "./inventory/inventory";
+import { QuickAccess } from "./inventory/quickAccess";
 
 export default class Character {
   public camera: UniversalCamera;
@@ -38,15 +37,20 @@ export default class Character {
   characterOpportunities: playerController;
   newHand: any;
   private controls: ControllEvents;
-  private inventory: GeneralInvenory;
   private instruments: Instruments;
   private pickedItem: AbstractMesh;
   private pickedDetail: AbstractMesh;
   private raycast: rayCast;
   private scenarios: WorkScenarios;
   private bigInstruments: BigInstruments;
+  private inventory: Inventory;
+  private quickAccess: QuickAccess;
 
-  constructor(private scene: Scene, private engine: Engine) {
+  constructor(
+    private scene: Scene,
+    private engine: Engine,
+    private advancedTexture: GUI.AdvancedDynamicTexture
+  ) {
     this.camera = this.createController(this.scene, this.engine);
     this.setBody(this.camera, this.scene);
     this.pickArea = this.createPickArea();
@@ -57,15 +61,28 @@ export default class Character {
     this.hands = new Hands(this.head, this.scene);
     this.raycast = new rayCast(this.head, this.scene, this.controls, this.body);
 
-    this.inventory = new GeneralInvenory(
+    this.inventory = new Inventory(
+      this.advancedTexture,
       this.scene,
       this.engine,
       this.controls,
       this.instruments,
-      this.bigInstruments,
       this.hands.drop.bind(this.hands),
       this.hands.openHand.bind(this.hands),
       this.hands.closeHand.bind(this.hands)
+    );
+
+    this.quickAccess = new QuickAccess(
+      this.advancedTexture,
+      this.inventory,
+      this.scene,
+      this.engine,
+      this.controls,
+      this.instruments,
+      this.hands.drop.bind(this.hands),
+      this.hands.openHand.bind(this.hands),
+      this.hands.closeHand.bind(this.hands),
+      this.bigInstruments
     );
 
     this.characterOpportunities = new playerController(
@@ -78,8 +95,8 @@ export default class Character {
     this.characterOpportunities.setController();
 
     this.scenarios = new WorkScenarios(
-      this.inventory.invetory,
-      this.inventory.quickAccess,
+      this.inventory,
+      this.quickAccess,
       this.raycast,
       this.scene,
       this.body,
@@ -202,7 +219,7 @@ export default class Character {
         (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
       const item = this.getItemByMesh(this.pickedItem);
       this.hands.pick(item);
-      this.inventory.quickAccess.addInInventoryAndInHand(item.id);
+      this.quickAccess.addInInventoryAndInHand(item.id);
     }
     if (hit.pickedMesh.metadata?.isDetail) {
       // this.hands.positionPickedDetail(
@@ -218,7 +235,7 @@ export default class Character {
     this.pickedItem = (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
     const item = this.getBigItemByMesh(this.pickedItem);
     this.hands.pickBigMesh(item, this.pickedItem.metadata?.pikcableMeshIndex);
-    this.inventory.quickAccess.addInInventoryAndInHand(item.id);
+    this.quickAccess.addInInventoryAndInHand(item.id);
   }
 
   protected getBigItemByMesh(mesh) {
@@ -241,7 +258,7 @@ export default class Character {
       this.dropDetail();
       this.raycast.setPick(this.pickItem.bind(this));
       this.raycast.addIntoInventory(this.pickInInventory.bind(this));
-      this.pickedItem = this.inventory.quickAccess.changeItemInHand(
+      this.pickedItem = this.quickAccess.changeItemInHand(
         this.hands,
         this.pickedItem
       );
@@ -249,7 +266,7 @@ export default class Character {
 
       this.pickManyFromArea();
       if (event.event.code === "KeyI" && event.type === 1) {
-        this.pickedItem = this.inventory.quickAccess.correctCurrentItem()?.mesh;
+        this.pickedItem = this.quickAccess.correctCurrentItem()?.mesh;
       }
     });
   }
@@ -268,7 +285,7 @@ export default class Character {
         direction.scaleInPlace(0.5),
         this.pickedItem.position
       );
-      this.inventory.quickAccess.deleteFromQuickAccessAndFromHand(
+      this.quickAccess.deleteFromQuickAccessAndFromHand(
         this.pickedItem.metadata.id
       );
       this.pickedItem = null;
@@ -288,7 +305,7 @@ export default class Character {
       this.pickedItem.rotationQuaternion = null;
       this.pickedItem.rotation.set(0, 0, Math.PI);
 
-      this.inventory.quickAccess.deleteFromQuickAccessAndFromHand(
+      this.quickAccess.deleteFromQuickAccessAndFromHand(
         this.pickedItem.metadata.id
       );
       this.pickedItem = null;
@@ -311,7 +328,7 @@ export default class Character {
     this.pickedItem = (hit.pickedMesh.parent as AbstractMesh) || hit.pickedMesh;
     const item = this.getItemByMesh(this.pickedItem);
     this.hands.attachToHand(item);
-    this.inventory.invetory.addInInventory(item.id);
+    this.inventory.addInInventory(item.id);
   }
 
   private pickManyFromArea() {

@@ -33,6 +33,7 @@ import { Inspector } from "@babylonjs/inspector";
 
 import Character from "../character/character";
 import LocationMeshes from "./locationMeshes";
+import * as GUI from "@babylonjs/gui";
 
 export default class MainScene {
   public scene: Scene;
@@ -42,6 +43,7 @@ export default class MainScene {
   fps: HTMLElement;
   light: DirectionalLight;
   private location: LocationMeshes;
+  private advancedTexture: GUI.AdvancedDynamicTexture;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.engine = new Engine(this.canvas, true, { stencil: true });
@@ -49,6 +51,8 @@ export default class MainScene {
     // this.createWorkshopLocation();
     // this.CreateHouseLocation();
     this.location = LocationMeshes.Instance(this.scene);
+    this.advancedTexture =
+      GUI.AdvancedDynamicTexture.CreateFullscreenUI("main");
     this.createLocation();
 
     this.createInspector();
@@ -96,7 +100,11 @@ export default class MainScene {
   private async createLocation(): Promise<void> {
     await this.enablePhysic();
     await this.location.createWorkshopLocation();
-    this.controller = new Character(this.scene, this.engine);
+    this.controller = new Character(
+      this.scene,
+      this.engine,
+      this.advancedTexture
+    );
     this.camera = this.controller.camera;
     this.setShadow();
   }

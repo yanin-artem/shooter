@@ -26,10 +26,10 @@ export class QuickAccess {
   protected id = 0;
   public UI: QuickAccessUI;
   constructor(
+    private advancedTexture: GUI.AdvancedDynamicTexture,
     private inventory: Inventory,
     protected scene: Scene,
     protected engine: Engine,
-    private advancedTexture: GUI.AdvancedDynamicTexture,
     private controls: ControllEvents,
     private instruments: Instruments,
     private dropCallBack,
